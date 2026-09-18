@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- ============================================================
+     CAMBIAR AQUÍ (lo mínimo para tener la web en marcha):
+       1. [TU NOMBRE O MARCA]  -> tu nombre o el de tu marca
+       2. 34XXXXXXXXX          -> tu WhatsApp con prefijo y sin espacios (ej. 34612345678)
+       3. +34 XXX XXX XXX      -> el mismo número, tal como quieres que se lea
+       4. TU_EMAIL@EJEMPLO.COM -> tu email
+       5. TU_CUENTA            -> tu usuario de Instagram (o borra el enlace, está marcado)
+       6. TU_ID_FORMSPREE      -> el id del formulario de Formspree
+       7. https://TU-USUARIO.github.io/TU-REPO/ -> la URL real de la web (canonical y Open Graph)
+     Búscalo y reemplázalo con "buscar y reemplazar" del editor: aparece varias veces.
+     ============================================================ -->
+
+<title>Fotos de producto con IA para ecommerce | [TU NOMBRE O MARCA]</title>
+<meta name="description" content="Fotografía de producto para ecommerce sin montar un estudio. Me mandas las fotos que ya tienes y te devuelvo de 10 a 30 imágenes de catálogo y de ambiente, generadas con IA y rematadas en Photoshop. Desde 199 €.">
+<meta name="author" content="[TU NOMBRE O MARCA]">
+<meta name="theme-color" content="#faf9f6">
+<link rel="canonical" href="https://TU-USUARIO.github.io/TU-REPO/">
+
+<!-- Open Graph: así se ve la tarjeta al pasar el enlace por WhatsApp -->
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_ES">
+<meta property="og:site_name" content="[TU NOMBRE O MARCA]">
+<meta property="og:title" content="Fotos de producto listas para vender, sin montar un estudio">
+<meta property="og:description" content="Me mandas las fotos que ya tienes y te devuelvo de 10 a 30 imágenes para tu web, tu Instagram y tus anuncios. En 5 días. Desde 199 €.">
+<meta property="og:url" content="https://TU-USUARIO.github.io/TU-REPO/">
+<!-- CAMBIAR: img/og.jpg (1200x630). La URL tiene que ser absoluta o WhatsApp no la lee. -->
+<meta property="og:image" content="https://TU-USUARIO.github.io/TU-REPO/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Fotos de producto listas para vender">
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- Icono: es un SVG en línea, no pide ningún archivo extra. CAMBIAR la letra si quieres. -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23c4562f'/><text x='32' y='45' font-size='36' font-family='sans-serif' fill='%23fff' text-anchor='middle'>F</text></svg>">
+
+<style>
+/* ============================================================
+   DISEÑO. Todo el color y el ritmo salen de estas variables:
+   cambia --acento y cambia la web entera.
+   ============================================================ */
+:root{
+  --fondo:#faf9f6;
+  --fondo-2:#f2efe9;
+  --tinta:#17140f;
+  --tinta-suave:#5b554c;
+  --linea:#e2ded4;
+  --acento:#c4562f;          /* CAMBIAR: color de acento (botones, detalles) */
+  --acento-oscuro:#a9461f;
+  --blanco:#fff;
+  --radio:14px;
+  --ancho:1120px;
+  --sombra:0 1px 2px rgba(23,20,15,.05), 0 12px 32px rgba(23,20,15,.06);
+  --fuente:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px;-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--fondo);color:var(--tinta);font-family:var(--fuente);
+  font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;
+}
+img{max-width:100%;height:auto;display:block}
+a{color:inherit}
+h1,h2,h3{line-height:1.15;letter-spacing:-.02em;margin:0 0 .5em;font-weight:700}
+h1{font-size:clamp(2.1rem,6vw,3.6rem)}
+h2{font-size:clamp(1.6rem,4vw,2.4rem)}
+h3{font-size:1.15rem}
+p{margin:0 0 1em}
+:focus-visible{outline:3px solid var(--acento);outline-offset:3px;border-radius:6px}
+
+.contenedor{width:100%;max-width:var(--ancho);margin:0 auto;padding:0 20px}
+section{padding:clamp(56px,9vw,112px) 0;border-top:1px solid var(--linea)}
+section:first-of-type{border-top:0}
+.centro{text-align:center}
+.intro{max-width:620px;color:var(--tinta-suave);font-size:1.05rem}
+.centro .intro{margin-left:auto;margin-right:auto}
+.etiqueta{
+  display:inline-block;font-size:.78rem;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--acento);margin:0 0 14px
+}
+.salta{position:absolute;left:-9999px}
+.salta:focus{left:12px;top:12px;z-index:100;background:var(--tinta);color:#fff;padding:10px 16px;border-radius:8px}
+
+/* ---- Botones ---- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  padding:15px 24px;border-radius:999px;border:1.5px solid transparent;
+  font:inherit;font-weight:600;text-decoration:none;cursor:pointer;
+  transition:transform .12s ease, background-color .15s ease, border-color .15s ease;
+}
+.btn:hover{transform:translateY(-1px)}
+.btn-1{background:var(--acento);color:#fff}
+.btn-1:hover{background:var(--acento-oscuro)}
+.btn-2{background:transparent;color:var(--tinta);border-color:var(--linea)}
+.btn-2:hover{border-color:var(--tinta)}
+.btn-3{background:var(--tinta);color:#fff}
+.btn-grande{padding:19px 32px;font-size:1.05rem}
+.btn svg{width:20px;height:20px;flex:none;fill:currentColor}
+
+/* ---- Cabecera ---- */
+header{
+  position:sticky;top:0;z-index:40;background:rgba(250,249,246,.9);
+  backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--linea)
+}
+.barra{display:flex;align-items:center;justify-content:space-between;gap:18px;height:64px}
+.marca{font-weight:700;letter-spacing:-.02em;text-decoration:none;font-size:1.05rem}
+.marca span{color:var(--acento)}
+nav ul{display:flex;gap:26px;list-style:none;margin:0;padding:0}
+nav a{text-decoration:none;color:var(--tinta-suave);font-size:.95rem}
+nav a:hover{color:var(--tinta)}
+.nav-links,.header-cta{display:none}
+@media(min-width:900px){.nav-links{display:block}.header-cta{display:inline-flex}}
+
+/* ---- Hero ---- */
+.hero{padding:clamp(48px,8vw,96px) 0 clamp(40px,6vw,72px)}
+.hero h1{max-width:16ch}
+.hero .sub{font-size:clamp(1.05rem,2.3vw,1.3rem);color:var(--tinta-suave);max-width:46ch;margin-bottom:28px}
+.hero-botones{display:flex;flex-wrap:wrap;gap:12px}
+.hero-pie{margin:26px 0 0;font-size:.92rem;color:var(--tinta-suave)}
+
+/* ---- Antes / después ---- */
+.comparadores{display:grid;gap:clamp(28px,4vw,44px)}
+.pieza figcaption{margin-top:12px;font-size:.93rem;color:var(--tinta-suave)}
+@media(min-width:860px){
+  .pareja{display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,4vw,44px)}
+}
+.ba{
+  --pos:50;position:relative;overflow:hidden;border-radius:var(--radio);
+  background:var(--fondo-2);box-shadow:var(--sombra);
+  touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:ew-resize;
+}
+.ba img{width:100%;display:block;pointer-events:none;-webkit-user-drag:none}
+.ba .antes{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;clip-path:inset(0 calc(100% - var(--pos)*1%) 0 0)}
+.ba-tag{
+  position:absolute;top:12px;z-index:2;background:rgba(23,20,15,.72);color:#fff;
+  font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  padding:6px 10px;border-radius:999px;pointer-events:none
+}
+.ba-tag.izq{left:12px}
+.ba-tag.der{right:12px}
+.ba-mango{
+  position:absolute;top:0;bottom:0;left:calc(var(--pos)*1%);width:44px;transform:translateX(-50%);
+  background:none;border:0;padding:0;cursor:ew-resize;z-index:3;touch-action:pan-y
+}
+.ba-mango::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 0 1px rgba(23,20,15,.18)}
+.ba-mango::after{
+  content:"";position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px 0 0 -22px;
+  border-radius:50%;background:#fff;box-shadow:0 2px 10px rgba(23,20,15,.28);
+  background-image:
+    linear-gradient(currentColor,currentColor),
+    linear-gradient(currentColor,currentColor);
+  background-size:2px 12px,2px 12px;background-position:calc(50% - 5px) 50%,calc(50% + 5px) 50%;
+  background-repeat:no-repeat;color:var(--tinta)
+}
+
+/* ---- Tarjetas (qué hago) ---- */
+.rejilla-3{display:grid;gap:clamp(22px,3vw,34px)}
+@media(min-width:820px){.rejilla-3{grid-template-columns:repeat(3,1fr)}}
+.servicio img{border-radius:var(--radio);box-shadow:var(--sombra);margin-bottom:18px}
+.servicio h3{margin-bottom:.35em}
+.servicio p{color:var(--tinta-suave);margin:0;font-size:.98rem}
+
+/* ---- Packs ---- */
+.packs{display:grid;gap:22px;align-items:start}
+@media(min-width:900px){.packs{grid-template-columns:repeat(3,1fr)}}
+.pack{
+  background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio);
+  padding:30px 26px;display:flex;flex-direction:column;height:100%
+}
+.pack.destacado{border-color:var(--acento);box-shadow:var(--sombra);position:relative}
+@media(min-width:900px){.pack.destacado{transform:translateY(-10px)}}
+.pack .cinta{
+  position:absolute;top:-13px;left:26px;background:var(--acento);color:#fff;
+  font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  padding:5px 12px;border-radius:999px
+}
+.pack h3{font-size:.82rem;letter-spacing:.16em;text-transform:uppercase;color:var(--tinta-suave)}
+.precio{font-size:2.4rem;font-weight:700;letter-spacing:-.03em;margin:4px 0 18px}
+.precio small{font-size:1rem;font-weight:500;color:var(--tinta-suave)}
+.pack ul{list-style:none;margin:0 0 22px;padding:0;display:grid;gap:10px}
+.pack li{position:relative;padding-left:26px;font-size:.97rem}
+.pack li::before{
+  content:"";position:absolute;left:0;top:.45em;width:14px;height:8px;
+  border-left:2px solid var(--acento);border-bottom:2px solid var(--acento);
+  transform:rotate(-45deg)
+}
+.pack .nota{font-size:.93rem;color:var(--tinta-suave);margin:0 0 22px}
+.pack .btn{margin-top:auto;width:100%}
+.packs-pie{margin:26px 0 0;font-size:.95rem;color:var(--tinta-suave)}
+
+/* ---- Pasos ---- */
+.pasos{counter-reset:paso;display:grid;gap:clamp(24px,3vw,36px);list-style:none;margin:0;padding:0}
+@media(min-width:820px){.pasos{grid-template-columns:repeat(3,1fr)}}
+.pasos li{counter-increment:paso}
+.pasos li::before{
+  content:counter(paso);display:flex;align-items:center;justify-content:center;
+  width:42px;height:42px;border-radius:50%;background:var(--acento);color:#fff;
+  font-weight:700;margin-bottom:14px
+}
+.pasos h3{margin-bottom:.3em}
+.pasos p{color:var(--tinta-suave);margin:0;font-size:.98rem}
+
+/* ---- Por qué conmigo ---- */
+.porque{background:var(--fondo-2)}
+.razones{display:grid;gap:26px;list-style:none;margin:0;padding:0}
+@media(min-width:760px){.razones{grid-template-columns:1fr 1fr}}
+.razones h3{margin-bottom:.3em}
+.razones p{color:var(--tinta-suave);margin:0;font-size:.98rem}
+
+/* ---- FAQ ---- */
+.faq{max-width:760px}
+.faq details{border-bottom:1px solid var(--linea)}
+.faq summary{
+  cursor:pointer;list-style:none;padding:20px 40px 20px 0;position:relative;
+  font-weight:600;font-size:1.05rem
+}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{
+  content:"";position:absolute;right:8px;top:50%;width:11px;height:11px;margin-top:-8px;
+  border-right:2px solid var(--tinta-suave);border-bottom:2px solid var(--tinta-suave);
+  transform:rotate(45deg);transition:transform .2s ease
+}
+.faq details[open] summary::after{transform:rotate(-135deg);margin-top:-3px}
+.faq p{color:var(--tinta-suave);margin:0 0 20px;max-width:65ch}
+
+/* ---- Contacto ---- */
+.contacto-cols{display:grid;gap:clamp(32px,5vw,64px)}
+@media(min-width:880px){.contacto-cols{grid-template-columns:1fr 1fr;align-items:start}}
+.dato{margin:0 0 10px;font-size:1.02rem}
+.dato a{color:var(--tinta)}
+form{background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio);padding:26px}
+label{display:block;font-weight:600;font-size:.92rem;margin:0 0 6px}
+input,textarea{
+  width:100%;font:inherit;color:inherit;background:var(--fondo);
+  border:1px solid var(--linea);border-radius:10px;padding:13px 14px;margin-bottom:16px
+}
+textarea{min-height:110px;resize:vertical}
+input:focus,textarea:focus{border-color:var(--acento);outline:none}
+form .btn{width:100%}
+.form-nota{font-size:.86rem;color:var(--tinta-suave);margin:14px 0 0;text-align:center}
+
+/* ---- Pie ---- */
+footer{border-top:1px solid var(--linea);padding:40px 0 100px;font-size:.92rem;color:var(--tinta-suave)}
+footer a{color:var(--tinta-suave)}
+.pie{display:flex;flex-wrap:wrap;gap:10px 24px;justify-content:space-between}
+
+/* ---- Botón flotante de WhatsApp (sólo móvil) ---- */
+.flotante{
+  position:fixed;right:16px;bottom:16px;z-index:50;width:58px;height:58px;border-radius:50%;
+  background:#25d366;color:#fff;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 20px rgba(23,20,15,.28);text-decoration:none
+}
+.flotante svg{width:30px;height:30px;fill:currentColor}
+@media(min-width:900px){.flotante{display:none}}
+
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+
+<body>
+<a class="salta" href="#contenido">Saltar al contenido</a>
+
+<header>
+  <div class="contenedor barra">
+    <!-- CAMBIAR: nombre o marca -->
+    <a class="marca" href="#inicio">[TU NOMBRE O MARCA]<span>.</span></a>
+    <nav class="nav-links" aria-label="Principal">
+      <ul>
+        <li><a href="#antes-despues">Antes y después</a></li>
+        <li><a href="#que-hago">Qué hago</a></li>
+        <li><a href="#packs">Precios</a></li>
+        <li><a href="#faq">Preguntas</a></li>
+        <li><a href="#contacto">Contacto</a></li>
+      </ul>
+    </nav>
+    <!-- CAMBIAR: número de WhatsApp (aquí y en todos los enlaces wa.me de la página) -->
+    <a class="btn btn-1 header-cta" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20quiero%20la%20muestra%20gratis%20de%20una%20foto%20de%20producto.">Escríbeme</a>
+  </div>
+</header>
+
+<main id="contenido">
+
+<!-- ============ 1. HERO ============ -->
+<section id="inicio" class="hero">
+  <div class="contenedor">
+    <p class="etiqueta">Fotografía de producto con IA</p>
+    <h1>Fotos de producto listas para vender, sin montar un estudio.</h1>
+    <p class="sub">Me mandas las fotos que ya tienes y te devuelvo entre 10 y 30 imágenes listas para tu web, tu Instagram y tus anuncios, en 5 días.</p>
+    <div class="hero-botones">
+      <a class="btn btn-1 btn-grande" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20te%20mando%20una%20foto%20de%20mi%20producto%20para%20la%20muestra%20gratis.">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.97L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.85 9.85 0 0 0 12.04 2m0 1.67c2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.25 8.24-1.48 0-2.93-.4-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24m-2.6 3.98c-.16 0-.42.06-.64.3-.22.24-.85.83-.85 2.02s.87 2.34.99 2.5c.12.16 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.43-.59 1.63-1.15.2-.56.2-1.04.14-1.15-.06-.1-.22-.16-.46-.28-.24-.12-1.43-.71-1.66-.79-.22-.08-.38-.12-.54.12-.16.24-.62.79-.76.95-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.93-1.19-.71-.64-1.2-1.42-1.34-1.66-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.31-.74-1.79-.19-.46-.39-.4-.54-.41h-.46Z"/></svg>
+        Mándame una foto y te la devuelvo gratis
+      </a>
+      <a class="btn btn-2 btn-grande" href="#packs">Ver precios</a>
+    </div>
+    <p class="hero-pie">Desde 199 €. Estoy en Solsona (Lleida) y trabajo con marcas de toda España.</p>
+  </div>
+</section>
+
+<!-- ============ 2. ANTES / DESPUÉS ============
+     CAMBIAR: sustituye los archivos de la carpeta img/ por los tuyos
+     (mismo nombre y mismo tamaño en las dos fotos de cada pareja).
+     Cambia también el alt y el pie de cada imagen.
+     ================================================ -->
+<section id="antes-despues">
+  <div class="contenedor">
+    <p class="etiqueta">Antes y después</p>
+    <h2>Esto es lo que me mandas y esto es lo que recibes.</h2>
+    <p class="intro">Arrastra el círculo para comparar. A la izquierda, la foto original del cliente. A la derecha, lo que se publica.</p>
+
+    <div class="comparadores" style="margin-top:36px">
+
+      <figure class="pieza" style="margin:0">
+        <div class="ba" data-ba>
+          <span class="ba-tag izq">Antes</span>
+          <span class="ba-tag der">Después</span>
+          <img src="img/despues-1.jpg" width="1200" height="900" alt="Bote de cosmética sobre fondo neutro con luz de estudio, listo para la ficha de producto">
+          <img class="antes" src="img/antes-1.jpg" width="1200" height="900" alt="El mismo bote fotografiado con el móvil sobre una encimera, con sombra dura y fondo con trastos">
+          <button class="ba-mango" type="button" role="slider" aria-label="Comparar antes y después: cosmética" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="50% de la foto original"></button>
+        </div>
+        <figcaption>Cosmética · foto de móvil sobre la encimera → packshot de catálogo.</figcaption>
+      </figure>
+
+      <div class="pareja">
+        <figure class="pieza" style="margin:0">
+          <div class="ba" data-ba>
+            <span class="ba-tag izq">Antes</span>
+            <span class="ba-tag der">Después</span>
+            <img src="img/despues-2.jpg" width="1200" height="900" loading="lazy" alt="Producto de alimentación colocado en una escena de cocina con luz natural">
+            <img class="antes" src="img/antes-2.jpg" width="1200" height="900" loading="lazy" alt="El mismo producto de alimentación fotografiado de cualquier manera con el móvil">
+            <button class="ba-mango" type="button" role="slider" aria-label="Comparar antes y después: alimentación" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="50% de la foto original"></button>
+          </div>
+          <figcaption>Alimentación · foto suelta → foto de ambiente en una cocina.</figcaption>
+        </figure>
+
+        <figure class="pieza" style="margin:0">
+          <div class="ba" data-ba>
+            <span class="ba-tag izq">Antes</span>
+            <span class="ba-tag der">Después</span>
+            <img src="img/despues-3.jpg" width="1200" height="900" loading="lazy" alt="Pieza de decoración sobre fondo limpio con sombra suave, lista para marketplace">
+            <img class="antes" src="img/antes-3.jpg" width="1200" height="900" loading="lazy" alt="La misma pieza de decoración fotografiada en casa con poca luz">
+            <button class="ba-mango" type="button" role="slider" aria-label="Comparar antes y después: decoración" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="50% de la foto original"></button>
+          </div>
+          <figcaption>Decoración · foto con poca luz → imagen lista para Amazon.</figcaption>
+        </figure>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. QUÉ HAGO ============ -->
+<section id="que-hago">
+  <div class="contenedor">
+    <p class="etiqueta">Qué hago</p>
+    <h2>Tres cosas, y las tres bien.</h2>
+
+    <div class="rejilla-3" style="margin-top:36px">
+      <article class="servicio">
+        <img src="img/catalogo.jpg" width="1200" height="900" loading="lazy" alt="Ejemplo de foto de catálogo: producto sobre fondo blanco con luz de estudio">
+        <h3>Foto de catálogo</h3>
+        <p>Fondo blanco o neutro, luz de estudio. Lista para tu tienda y para marketplaces.</p>
+      </article>
+      <article class="servicio">
+        <img src="img/ambiente.jpg" width="1200" height="900" loading="lazy" alt="Ejemplo de foto de ambiente: producto colocado en una escena de casa">
+        <h3>Foto de ambiente</h3>
+        <p>Tu producto colocado en una escena real: una cocina, un baño, una mesa de terraza. Sin hacer una sesión de fotos.</p>
+      </article>
+      <article class="servicio">
+        <img src="img/video.jpg" width="1200" height="900" loading="lazy" alt="Ejemplo de fotograma de un vídeo corto de producto para redes">
+        <h3>Vídeo corto</h3>
+        <p>Clips de 5 a 10 segundos hechos a partir de las fotos, para reels y anuncios.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. PACKS ============
+     CAMBIAR: precios, lo que incluye cada pack y los plazos.
+     ================================= -->
+<section id="packs">
+  <div class="contenedor">
+    <p class="etiqueta">Packs</p>
+    <h2>Precios claros, sin presupuestos raros.</h2>
+    <p class="intro">IVA no incluido. Pagas la mitad al empezar y la otra mitad al recibir las imágenes.</p>
+
+    <div class="packs" style="margin-top:40px">
+
+      <article class="pack">
+        <h3>Prueba</h3>
+        <p class="precio">199 <small>€</small></p>
+        <ul>
+          <li>1 producto</li>
+          <li>10 imágenes (catálogo + ambiente)</li>
+          <li>1 ronda de cambios</li>
+          <li>Entrega en 5 días</li>
+        </ul>
+        <p class="nota">Para ver cómo trabajo sin comprometerte a nada.</p>
+        <a class="btn btn-2" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20me%20interesa%20el%20pack%20PRUEBA%20de%20199%20%E2%82%AC.">Quiero el pack Prueba</a>
+      </article>
+
+      <article class="pack destacado">
+        <span class="cinta">El que más se pide</span>
+        <h3>Catálogo</h3>
+        <p class="precio">490 <small>€</small></p>
+        <ul>
+          <li>3 productos</li>
+          <li>30 imágenes</li>
+          <li>Adaptadas a web, Instagram y anuncios (1:1, 4:5, 9:16)</li>
+          <li>2 rondas de cambios</li>
+          <li>Entrega en 7 días</li>
+        </ul>
+        <a class="btn btn-1" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20me%20interesa%20el%20pack%20CAT%C3%81LOGO%20de%20490%20%E2%82%AC.">Quiero el pack Catálogo</a>
+      </article>
+
+      <article class="pack">
+        <h3>Marca</h3>
+        <p class="precio">890 <small>€/mes</small></p>
+        <ul>
+          <li>Hasta 10 productos al mes</li>
+          <li>Fotos y 2 vídeos cortos</li>
+          <li>Cambios ilimitados</li>
+          <li>Entregas cada semana</li>
+        </ul>
+        <p class="nota">Para marcas que sacan producto nuevo de forma continua.</p>
+        <a class="btn btn-2" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20me%20interesa%20el%20pack%20MARCA%20de%20890%20%E2%82%AC%2Fmes.">Quiero el pack Marca</a>
+      </article>
+
+    </div>
+    <p class="packs-pie">¿Tienes un catálogo grande o algo distinto? <a href="#contacto">Escríbeme y lo ajustamos.</a></p>
+  </div>
+</section>
+
+<!-- ============ 5. CÓMO FUNCIONA ============ -->
+<section id="como-funciona">
+  <div class="contenedor">
+    <p class="etiqueta">Cómo funciona</p>
+    <h2>Tres pasos y ya está.</h2>
+    <ol class="pasos" style="margin-top:36px">
+      <li>
+        <h3>Me mandas tus fotos</h3>
+        <p>Las que ya tienes, aunque sean del móvil. Por WhatsApp o por email.</p>
+      </li>
+      <li>
+        <h3>Acordamos el estilo</h3>
+        <p>Te enseño una primera muestra antes de seguir, para que veas por dónde va.</p>
+      </li>
+      <li>
+        <h3>Recibes las imágenes</h3>
+        <p>Todas en 5 días, en los tamaños que necesitas y listas para subir.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ 6. POR QUÉ CONMIGO ============ -->
+<section id="por-que" class="porque">
+  <div class="contenedor">
+    <p class="etiqueta">Por qué conmigo</p>
+    <h2>Lo que no hacen las herramientas automáticas.</h2>
+    <ul class="razones" style="margin-top:36px">
+      <li>
+        <h3>Tu producto sale idéntico al real</h3>
+        <p>Misma forma, mismo color, misma etiqueta, mismo logo. No se reinventa nada: ahí es justo donde fallan las herramientas automáticas.</p>
+      </li>
+      <li>
+        <h3>Cada imagen pasa por Photoshop</h3>
+        <p>No te entrego lo que escupe la IA. Repaso y remato una por una antes de mandártelas.</p>
+      </li>
+      <li>
+        <h3>Hablas directamente conmigo</h3>
+        <p>Persona real, sin agencia de por medio ni gestor de cuentas. Me escribes y te contesto yo.</p>
+      </li>
+      <li>
+        <h3>Si no te convence, no pagas</h3>
+        <p>Si la primera entrega no te sirve, no me pagas. Así de simple.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ 7. PREGUNTAS FRECUENTES ============ -->
+<section id="faq">
+  <div class="contenedor">
+    <p class="etiqueta">Preguntas frecuentes</p>
+    <h2>Lo que me suelen preguntar.</h2>
+
+    <!-- El atributo name="faq" hace que sólo quede una abierta en los navegadores que lo soportan -->
+    <div class="faq" style="margin-top:32px">
+      <details name="faq">
+        <summary>¿Qué fotos necesito mandarte?</summary>
+        <p>Fotos del producto entero, bien enfocado y con luz suficiente para que se lea la etiqueta. Con tres o cuatro ángulos me sobra. Si tienes el logo o la etiqueta en archivo, mándalo también: el resultado sale más fino.</p>
+      </details>
+      <details name="faq">
+        <summary>¿Sirven fotos hechas con el móvil?</summary>
+        <p>Sí, es lo normal. La mayoría de marcas con las que trabajo me manda fotos del móvil hechas encima de una mesa. Sólo necesito que se vea bien el producto; del fondo y de la luz me encargo yo.</p>
+      </details>
+      <details name="faq">
+        <summary>¿Se nota que son generadas con IA?</summary>
+        <p>No, porque no entrego lo que sale de la IA sin más. Cada imagen la remato en Photoshop y el producto se mantiene igual que el real. Lo que cambia es el fondo, la luz y la escena, no tu producto.</p>
+      </details>
+      <details name="faq">
+        <summary>¿Y si no me gusta el resultado?</summary>
+        <p>Cada pack incluye rondas de cambios, y me dices qué quieres corregir. Si la primera entrega no te convence, no pagas.</p>
+      </details>
+      <details name="faq">
+        <summary>¿Puedo usarlas en Amazon y en anuncios?</summary>
+        <p>Sí. Las imágenes son tuyas y las puedes usar donde quieras: tu tienda, marketplaces, redes y publicidad de pago. Te las paso en los tamaños de cada sitio (1:1, 4:5 y 9:16).</p>
+      </details>
+      <details name="faq">
+        <summary>¿Cuánto tardas?</summary>
+        <p>Cinco días para el pack Prueba y siete para el de Catálogo, contando desde que me mandas las fotos. Si tienes una fecha de lanzamiento, dímelo y lo cuadramos.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. CONTACTO ============ -->
+<section id="contacto">
+  <div class="contenedor">
+    <p class="etiqueta">Contacto</p>
+    <h2>Mándame una foto y te la devuelvo gratis.</h2>
+    <p class="intro">Sin compromiso ni letra pequeña: eliges un producto, me mandas una foto y te devuelvo una imagen terminada para que veas el resultado antes de pagar nada.</p>
+
+    <div class="contacto-cols" style="margin-top:40px">
+      <div>
+        <a class="btn btn-1 btn-grande" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20te%20mando%20una%20foto%20de%20mi%20producto%20para%20la%20muestra%20gratis.">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.97L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.85 9.85 0 0 0 12.04 2m0 1.67c2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.25 8.24-1.48 0-2.93-.4-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24m-2.6 3.98c-.16 0-.42.06-.64.3-.22.24-.85.83-.85 2.02s.87 2.34.99 2.5c.12.16 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.43-.59 1.63-1.15.2-.56.2-1.04.14-1.15-.06-.1-.22-.16-.46-.28-.24-.12-1.43-.71-1.66-.79-.22-.08-.38-.12-.54.12-.16.24-.62.79-.76.95-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.93-1.19-.71-.64-1.2-1.42-1.34-1.66-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.31-.74-1.79-.19-.46-.39-.4-.54-.41h-.46Z"/></svg>
+          Escríbeme por WhatsApp
+        </a>
+        <!-- CAMBIAR: teléfono, email e Instagram -->
+        <p class="dato" style="margin-top:26px"><strong>WhatsApp:</strong> <a href="https://wa.me/34XXXXXXXXX">+34 XXX XXX XXX</a></p>
+        <p class="dato"><strong>Email:</strong> <a href="mailto:TU_EMAIL@EJEMPLO.COM">TU_EMAIL@EJEMPLO.COM</a></p>
+        <!-- CAMBIAR o BORRAR esta línea entera si no tienes Instagram -->
+        <p class="dato"><strong>Instagram:</strong> <a href="https://instagram.com/TU_CUENTA" rel="me noopener">@TU_CUENTA</a></p>
+        <p class="dato" style="color:var(--tinta-suave)">Solsona (Lleida) · trabajo con marcas de toda España.</p>
+      </div>
+
+      <!-- CAMBIAR: pon tu endpoint de Formspree en action="..."
+           (lo sacas creando un formulario gratis en formspree.io) -->
+      <form action="https://formspree.io/f/TU_ID_FORMSPREE" method="POST">
+        <h3 style="margin-top:0">O déjame tus datos</h3>
+        <label for="nombre">Nombre</label>
+        <input id="nombre" name="nombre" type="text" autocomplete="name" required>
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email" required>
+
+        <label for="producto">¿Qué vendes?</label>
+        <textarea id="producto" name="producto" placeholder="Cosmética natural, unas 20 referencias. Necesito fotos para la web y para Instagram." required></textarea>
+
+        <!-- Asunto del email que te llega y trampa anti-spam de Formspree -->
+        <input type="hidden" name="_subject" value="Nuevo contacto desde la web">
+        <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none">
+
+        <button class="btn btn-3" type="submit">Enviar</button>
+        <p class="form-nota">Te contesto el mismo día. Si prefieres, mándame la foto directamente por WhatsApp.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="contenedor pie">
+    <p style="margin:0">© <span id="anio">2026</span> [TU NOMBRE O MARCA] · Solsona (Lleida)</p>
+    <p style="margin:0">
+      <a href="https://wa.me/34XXXXXXXXX">WhatsApp</a> ·
+      <a href="mailto:TU_EMAIL@EJEMPLO.COM">Email</a> ·
+      <!-- CAMBIAR o BORRAR si no tienes Instagram -->
+      <a href="https://instagram.com/TU_CUENTA" rel="me noopener">Instagram</a>
+    </p>
+  </div>
+</footer>
+
+<!-- Botón flotante de WhatsApp, sólo se ve en móvil -->
+<a class="flotante" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20te%20mando%20una%20foto%20de%20mi%20producto%20para%20la%20muestra%20gratis." aria-label="Escríbeme por WhatsApp">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.97L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.85 9.85 0 0 0 12.04 2m0 1.67c2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.25 8.24-1.48 0-2.93-.4-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24m-2.6 3.98c-.16 0-.42.06-.64.3-.22.24-.85.83-.85 2.02s.87 2.34.99 2.5c.12.16 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.43-.59 1.63-1.15.2-.56.2-1.04.14-1.15-.06-.1-.22-.16-.46-.28-.24-.12-1.43-.71-1.66-.79-.22-.08-.38-.12-.54.12-.16.24-.62.79-.76.95-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.93-1.19-.71-.64-1.2-1.42-1.34-1.66-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.31-.74-1.79-.19-.46-.39-.4-.54-.41h-.46Z"/></svg>
+</a>
+
+<script>
+/* ============================================================
+   Comparadores antes / después. JS propio, sin librerías.
+   Funciona con ratón, con el dedo y con el teclado (flechas).
+   No hace falta tocar nada aquí para cambiar las fotos.
+   ============================================================ */
+(function () {
+  var comparadores = document.querySelectorAll('[data-ba]');
+
+  Array.prototype.forEach.call(comparadores, function (caja) {
+    var mango = caja.querySelector('.ba-mango');
+    var arrastrando = false;
+
+    function poner(valor) {
+      var pos = Math.max(0, Math.min(100, valor));
+      caja.style.setProperty('--pos', pos);
+      if (mango) {
+        mango.setAttribute('aria-valuenow', Math.round(pos));
+        mango.setAttribute('aria-valuetext', Math.round(pos) + '% de la foto original');
+      }
+    }
+
+    function desdeEvento(e) {
+      var r = caja.getBoundingClientRect();
+      if (!r.width) return;
+      poner(((e.clientX - r.left) / r.width) * 100);
+    }
+
+    caja.addEventListener('pointerdown', function (e) {
+      arrastrando = true;
+      caja.setPointerCapture && caja.setPointerCapture(e.pointerId);
+      desdeEvento(e);
+    });
+
+    caja.addEventListener('pointermove', function (e) {
+      if (!arrastrando) return;
+      e.preventDefault();              // evita que la página se mueva al arrastrar
+      desdeEvento(e);
+    });
+
+    ['pointerup', 'pointercancel'].forEach(function (evt) {
+      caja.addEventListener(evt, function () { arrastrando = false; });
+    });
+    /* por si se suelta el ratón fuera de la imagen */
+    document.addEventListener('pointerup', function () { arrastrando = false; });
+
+    if (mango) {
+      mango.addEventListener('keydown', function (e) {
+        var actual = parseFloat(caja.style.getPropertyValue('--pos')) || 50;
+        var paso = e.shiftKey ? 10 : 2;
+        if (e.key === 'ArrowLeft') { poner(actual - paso); e.preventDefault(); }
+        else if (e.key === 'ArrowRight') { poner(actual + paso); e.preventDefault(); }
+        else if (e.key === 'Home') { poner(0); e.preventDefault(); }
+        else if (e.key === 'End') { poner(100); e.preventDefault(); }
+      });
+      /* el clic en el mango no debe reposicionar el deslizador de golpe */
+      mango.addEventListener('click', function (e) { e.preventDefault(); });
+    }
+
+    poner(50);
+  });
+
+  /* Año del pie, para no tener que tocarlo cada enero */
+  var anio = document.getElementById('anio');
+  if (anio) anio.textContent = new Date().getFullYear();
+})();
+</script>
+</body>
+</html>

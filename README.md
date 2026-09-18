@@ -229,3 +229,12 @@ python3 tools/validate_workflows.py   # comprueba enlaces, sockets y tipos
 
 `tools/validate_workflows.py --comfyui /ruta/a/ComfyUI` comprueba además que todos los tipos de
 nodo usados existen en tu instalación.
+
+---
+
+## La web del servicio
+
+En la raíz del repositorio hay también **[`index.html`](index.html)**: una página única para
+vender el servicio (antes/después, packs, preguntas y contacto), sin frameworks ni dependencias,
+lista para publicar en GitHub Pages. Cómo cambiar los textos, sustituir las fotos de `img/` y
+publicarla está en **[`README-WEB.md`](README-WEB.md)**.
