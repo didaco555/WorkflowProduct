@@ -110,6 +110,17 @@ SCHEMAS: dict[str, dict] = {
         "widgets": [("x", "INT"), ("y", "INT"), ("resize_source", "BOOLEAN")],
         "outputs": [("IMAGE", "IMAGE")],
     },
+    "BatchImagesNode": {
+        # entradas autogrow: images.image0, images.image1, ... y un hueco libre al final
+        "inputs": [
+            ("images.image0", "IMAGE", False),
+            ("images.image1", "IMAGE", False),
+            ("images.image2", "IMAGE", True),
+            ("images.image3", "IMAGE", True),
+        ],
+        "widgets": [],
+        "outputs": [("IMAGE", "IMAGE")],
+    },
     "JoinImageWithAlpha": {
         "inputs": [("image", "IMAGE", False), ("alpha", "MASK", False)],
         "widgets": [],
@@ -361,27 +372,6 @@ SCHEMAS: dict[str, dict] = {
         "outputs": [("BOOLEAN", "BOOLEAN")],
     },
 
-    # ---- nodo de API de pago (opcional) ---------------------------------------------------
-    "OpenAIGPTImageNodeV2": {
-        "inputs": [
-            ("model.images.image_1", "IMAGE", True),
-            ("model.images.image_2", "IMAGE", True),
-            ("model.mask", "MASK", True),
-        ],
-        "widgets": [
-            ("prompt", "STRING"),
-            ("model", "COMBO"),
-            ("model.size", "COMBO"),
-            ("model.custom_width", "INT"),
-            ("model.custom_height", "INT"),
-            ("model.background", "COMBO"),
-            ("model.quality", "COMBO"),
-            ("n", "INT"),
-            ("seed", "INT"),
-            ("control_after_generate", "COMBO"),
-        ],
-        "outputs": [("IMAGE", "IMAGE")],
-    },
 }
 
 # Nodos cuyo número de widgets lo define el usuario en el frontend.
@@ -412,7 +402,6 @@ class Node:
     title: str | None = None
     color: str | None = None
     match_type: str | None = None  # para nodos de tipo genérico (ComfySwitchNode)
-    named: dict | None = None      # widgets_values_named, para nodos de widgets anidados
     inputs: dict = field(default_factory=dict)   # nombre -> link_id
     widget_inputs: dict = field(default_factory=dict)  # nombre -> link_id
     out_links: dict = field(default_factory=dict)      # slot -> [link_id]
@@ -449,7 +438,6 @@ class Graph:
         mode: int = MODE_ALWAYS,
         color: str | None = None,
         match_type: str | None = None,
-        named: dict | None = None,
     ) -> Node:
         if node_type not in SCHEMAS:
             raise KeyError(f"nodo desconocido: {node_type}")
@@ -462,7 +450,6 @@ class Graph:
             title=title,
             color=color,
             match_type=match_type,
-            named=named,
         )
         self._next_node += 1
         self.nodes.append(n)
@@ -521,8 +508,6 @@ class Graph:
             return (420, 300)
         if n.type == "CustomCombo":
             return (300, 60 + 26 * max(1, len(n.widgets) - 2))
-        if n.type == "OpenAIGPTImageNodeV2":
-            return (400, 460)
         if n.type in ("CLIPTextEncode", "PrimitiveStringMultiline", "TextEncodeQwenImageEditPlus"):
             base = 200
         else:
@@ -581,8 +566,6 @@ class Graph:
                 "properties": {"Node name for S&R": n.type},
                 "widgets_values": n.widgets,
             }
-            if n.named:
-                data["widgets_values_named"] = n.named
             if n.type in FRONTEND_ONLY:
                 data["properties"] = {}
             if n.title:

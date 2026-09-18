@@ -11,10 +11,15 @@ from __future__ import annotations
 import json
 import os
 import sys
+from collections import namedtuple
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from comfy_graph import MODE_BYPASS, MODE_NEVER, Graph  # noqa: E402
+
+# Lo que devuelve `qwen_edit_engine`: la imagen editada, la entrada ya normalizada y los
+# cargadores, para poder colgar más ramas del mismo modelo sin duplicarlo.
+Engine = namedtuple("Engine", "image fitted clip vae model steps cfg")
 
 OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "workflows")
 
@@ -125,10 +130,11 @@ def qwen_edit_engine(
     noise_mask=None,
     noise_mask_switch=None,
     differential: bool = False,
+    turbo_switch=None,
 ):
     """Motor Qwen-Image-Edit 2511 con conmutador TURBO (LoRA Lightning, 4 pasos) / CALIDAD.
 
-    Devuelve (puerto_imagen_salida, puerto_imagen_entrada_normalizada).
+    Devuelve un `Engine` (imagen, entrada normalizada, clip, vae, modelo).
     """
     unet = g.add("UNETLoader", [QWEN_UNET, "default"], title="Modelo · Qwen-Image-Edit 2511")
     clip = g.add("CLIPLoader", [QWEN_CLIP, "qwen_image", "default"], title="Text encoder · Qwen2.5-VL 7B")
@@ -148,16 +154,14 @@ def qwen_edit_engine(
 
     lora = g.add("LoraLoaderModelOnly", [QWEN_TURBO_LORA, 1.0], {"model": model_port}, title="LoRA Lightning 4 pasos")
 
-    turbo = g.add(
-        "PrimitiveBoolean",
-        [False],
-        title="⚡ TURBO  (false = CALIDAD)",
-        color=ORANGE,
-    )
+    if turbo_switch is None:
+        turbo_switch = g.add(
+            "PrimitiveBoolean", [False], title="⚡ TURBO  (false = CALIDAD)", color=ORANGE
+        ).out(0)
     sw_model = g.add(
         "ComfySwitchNode",
         [False],
-        {"on_false": model_port, "on_true": lora.out(0), "switch": turbo.out(0)},
+        {"on_false": model_port, "on_true": lora.out(0), "switch": turbo_switch},
         title="Modelo: calidad / turbo",
     )
     steps_q = g.add("PrimitiveInt", [steps_quality, "fixed"], title="Pasos (calidad)")
@@ -167,13 +171,13 @@ def qwen_edit_engine(
     sw_steps = g.add(
         "ComfySwitchNode",
         [False],
-        {"on_false": steps_q.out(0), "on_true": steps_t.out(0), "switch": turbo.out(0)},
+        {"on_false": steps_q.out(0), "on_true": steps_t.out(0), "switch": turbo_switch},
         title="Pasos",
     )
     sw_cfg = g.add(
         "ComfySwitchNode",
         [False],
-        {"on_false": cfg_q.out(0), "on_true": cfg_t.out(0), "switch": turbo.out(0)},
+        {"on_false": cfg_q.out(0), "on_true": cfg_t.out(0), "switch": turbo_switch},
         title="CFG",
     )
 
@@ -244,7 +248,9 @@ def qwen_edit_engine(
         title="KSampler",
     )
     dec = g.add("VAEDecode", [], {"samples": ks.out(0), "vae": vae.out(0)})
-    return dec.out(0), fit_port
+    return Engine(
+        dec.out(0), fit_port, clip.out(0), vae.out(0), sw_model.out(0), sw_steps.out(0), sw_cfg.out(0)
+    )
 
 
 def flux2_klein_engine(g: Graph, image_port, prompt, *, ref_port=None, seed: int = 1, steps: int = 4):
@@ -427,9 +433,9 @@ def build_packshot():
             "Más plantillas de prompt en `docs/PROMPTS.md`.",
             title="Prompting",
         )
-        packshot, _ = qwen_edit_engine(
+        packshot = qwen_edit_engine(
             g, sw_in.out(0), PACKSHOT_POS, PACKSHOT_NEG, seed=815, steps_quality=20, cfg_quality=4.0
-        )
+        ).image
         g.add("PreviewImage", [], {"images": packshot}, title="Previsualizar nivel 1")
 
     with g.group("NIVEL 2 · Recorte BiRefNet + fondo blanco puro + sombra", ORANGE):
@@ -559,7 +565,7 @@ def build_lifestyle():
             "reflejo en la superficie, óptica (*50mm f/2.8*) y profundidad de campo.",
             title="Prompting lifestyle",
         )
-        qwen_raw, qwen_fitted = qwen_edit_engine(
+        motor_a = qwen_edit_engine(
             g,
             sw_in.out(0),
             LIFESTYLE_POS,
@@ -569,6 +575,7 @@ def build_lifestyle():
             steps_quality=20,
             cfg_quality=4.0,
         )
+        qwen_raw, qwen_fitted = motor_a.image, motor_a.fitted
 
     with g.group("PROTEGER LA ETIQUETA (opcional, sólo motor A)", ORANGE):
         note(
@@ -670,7 +677,7 @@ def build_retouch():
         g.add("MaskPreview", [], {"mask": fea.out(0)}, title="Zona que se va a regenerar")
 
     with g.group("REGENERAR SÓLO LA ZONA (Qwen-Image-Edit 2511)", PURPLE):
-        edited, fitted = qwen_edit_engine(
+        retoque = qwen_edit_engine(
             g,
             base.out(0),
             RETOUCH_POS,
@@ -682,6 +689,7 @@ def build_retouch():
             noise_mask=fea.out(0),
             differential=True,
         )
+        edited, fitted = retoque.image, retoque.fitted
 
     with g.group("REINTEGRAR Y GUARDAR", RED):
         comp = g.add(
@@ -697,7 +705,7 @@ def build_retouch():
 
 
 # ======================================================================================
-# 10 · Estudio de producto — todo en uno, con selector de tipo de foto
+# 10 · Estudio de producto — todo en uno, gratis, con selector de categoría
 # ======================================================================================
 PACK_TAIL = (
     "Product: keep the geometry, proportions, colours, materials, logo and label text EXACTLY as in "
@@ -734,41 +742,43 @@ def _lifestyle(scene: str) -> str:
 
 
 CATALOGO = {
-    "packshot_blanco": _packshot(
+    "packshot_fondo_blanco": _packshot(
         "seamless pure white studio cyclorama (#FFFFFF), completely clean, no props, no text, no watermark.",
         "large softbox key light from the upper left, soft fill from the right, subtle rim light "
         "separating the edges from the background, no blown highlights, no colour cast.",
     ),
-    "packshot_degradado_gris": _packshot(
-        "light grey seamless gradient background, brighter behind the product, darker towards the "
-        "corners, no props, no text.",
+    "packshot_fondo_gris_degradado": _packshot(
+        "light grey seamless gradient background, brighter behind the product, darker towards the corners.",
         "large softbox key light from the upper left, soft fill from the right, rim light on the edges, "
         "smooth gradient falloff.",
+    ),
+    "packshot_fondo_color_pastel": _packshot(
+        "seamless solid pastel sand background (#E8DCC8), completely uniform, no texture, no props.",
+        "soft frontal key light with a gentle gradient, low contrast, editorial catalogue look.",
     ),
     "packshot_superficie_reflejo": _packshot(
         "product standing on a glossy white acrylic surface with a soft mirror reflection below it, "
         "seamless white backdrop behind.",
         "two large strip softboxes at both sides creating clean vertical highlights, soft overhead fill.",
     ),
-    "packshot_fondo_color": _packshot(
-        "seamless solid pastel sand background (#E8DCC8), completely uniform, no texture, no props.",
-        "soft frontal key light with a gentle gradient, low contrast, editorial catalogue look.",
+    "packshot_detalle_macro": (
+        "Turn this into a macro detail shot of the product on a seamless pure white background.\n\n"
+        "Framing: move in close on the most characteristic part of the product (cap, texture, seam, "
+        "label edge), the product fills the frame.\n"
+        "Lighting: raking side light that reveals the surface texture, soft fill on the opposite side.\n"
+        "Depth: very shallow depth of field, the focus point tack sharp, smooth falloff behind.\n" + PACK_TAIL
     ),
     "lifestyle_bano_marmol": _lifestyle(
         "a bright modern bathroom, white marble countertop with subtle grey veining, soft morning light "
         "through a window on the left, a folded linen towel and a small eucalyptus branch blurred behind."
     ),
-    "lifestyle_terraza_atardecer": _lifestyle(
-        "a wooden terrace table at golden hour, warm low sun from behind creating long soft shadows, "
-        "blurred mediterranean garden and sea in the background, empty glasses out of focus."
-    ),
     "lifestyle_cocina_nordica": _lifestyle(
         "a light oak kitchen counter, matte white tiles behind, diffused daylight from a large window on "
         "the right, fresh ingredients scattered and blurred in the background."
     ),
-    "lifestyle_hormigon_estudio": _lifestyle(
-        "a raw polished concrete surface, cool overcast daylight from above, deep neutral grey "
-        "background, minimal styling, a single hard-edged soft shadow."
+    "lifestyle_mesa_terraza": _lifestyle(
+        "a wooden terrace table at golden hour, warm low sun from behind creating long soft shadows, "
+        "blurred mediterranean garden and sea in the background, empty glasses out of focus."
     ),
     "lifestyle_escritorio_madera": _lifestyle(
         "a walnut desk with a linen notebook and a matte black pen slightly out of focus, warm lamp "
@@ -778,11 +788,15 @@ CATALOGO = {
         "a dark wooden nightstand at night, warm candlelight from the left as the only light source, "
         "deep shadows, cosy and intimate atmosphere."
     ),
+    "lifestyle_hormigon_minimal": _lifestyle(
+        "a raw polished concrete surface, cool overcast daylight from above, deep neutral grey "
+        "background, minimal styling, a single hard-edged soft shadow."
+    ),
     "lifestyle_exterior_natural": _lifestyle(
         "a flat mossy rock in a forest clearing, dappled sunlight filtering through leaves, soft green "
         "bokeh in the background."
     ),
-    "lifestyle_usar_referencia": (
+    "lifestyle_con_foto_referencia": (
         "Place the product from image 1 into the scene of image 2.\n\n"
         "Match the lighting direction, colour temperature, contrast and grain of image 2 exactly.\n"
         "Put the product on the main surface of image 2 at a realistic scale, with a contact shadow "
@@ -803,6 +817,17 @@ duplicated product, extra objects, props, hands, people, clutter, harsh shadows,
 colour cast, dirty background, reflections of the room, watermark, text overlay, oversaturated,
 plastic look, cartoon, illustration"""
 
+VISTA_BASE = (
+    "Keep the exact same product: same shape, proportions, materials, colours, logo and label text.\n"
+    "Keep the same background, the same lighting setup and the same framing and scale.\n"
+    "Only the camera angle changes.\n\n"
+)
+VISTAS = [
+    VISTA_BASE + "Rotate the product to a three-quarter view seen from the left, about 35 degrees.",
+    VISTA_BASE + "Rotate the product to a three-quarter view seen from the right, about 35 degrees.",
+    VISTA_BASE + "Move the camera above the product for a top-down flat-lay view, looking straight down.",
+]
+
 
 def combo(g: Graph, options: list[str], default: str, *, title: str, color: str = ORANGE):
     """Desplegable con opciones escritas por el usuario (nodo `CustomCombo` del núcleo)."""
@@ -813,29 +838,46 @@ def combo(g: Graph, options: list[str], default: str, *, title: str, color: str 
 def build_estudio():
     g = Graph("10-estudio")
 
-    # ---------------------------------------------------------------- entradas
-    with g.group("1 · ENTRADAS", BLUE):
+    # ------------------------------------------------------------ panel de control
+    with g.group("PANEL DE CONTROL · lo único que tocas", ORANGE):
         note(
             g,
             "# Estudio de producto — todo en uno\n\n"
-            "Subes la foto, **eliges en el desplegable qué tipo de foto quieres** y ejecutas. "
-            "El grafo se reconfigura solo según lo que elijas.\n\n"
-            "## En tres pasos\n"
-            "1. Sube la foto del cliente en **1 · PRODUCTO**.\n"
-            "2. En **TIPO DE FOTO** elige `packshot_…` o `lifestyle_…`.\n"
-            "3. Ejecutar.\n\n"
-            "## Los otros dos cargadores están en bypass\n"
-            "Salen en gris a propósito, para no tener que subirles nada. Quítales el bypass con "
-            "**Ctrl+B** sólo cuando los necesites:\n\n"
-            "- **2 · REFERENCIA DE ESCENA** → para el tipo `lifestyle_usar_referencia`.\n"
-            "- **3 · IMAGEN A RETOCAR** → para el tipo `retoque_zona_marcada`.\n\n"
-            "## Qué hace cada cosa automáticamente\n"
-            "- Tipo que contiene `packshot` → activa el recorte y el fondo blanco puro.\n"
-            "- Tipo que contiene `retoque` → cambia a modo máscara: sólo se regenera lo que pintes.\n"
-            "- Todo lo demás (rescate de foto mala, motor, turbo) son interruptores manuales.\n\n"
-            "> Si prefieres los workflows sueltos y más simples, están en `01_packshot_catalogo.json`, "
-            "`02_lifestyle_escena.json` y `03_retoque_zona.json`.",
+            "Subes la foto, **eliges la categoría** y ejecutas. Sin costes: todo corre en tu GPU.\n\n"
+            "## Los tres mandos\n"
+            "| Mando | Qué hace |\n"
+            "|---|---|\n"
+            "| **▼ CATEGORÍA DE FOTO** | Elige qué foto quieres. Es el mando principal. |\n"
+            "| **⚡ TURBO** | `true` = 4 pasos (rápido, para probar). `false` = 20 pasos (toma final). |\n"
+            "| **RESCATE** | `true` si la foto del cliente viene mala (móvil, ruido, JPEG, borrosa). |\n\n"
+            "Lo demás se configura solo a partir de la categoría:\n"
+            "- Categoría que empieza por `packshot` → recorta y pone fondo blanco puro.\n"
+            "- Categoría `retoque_zona_marcada` → modo máscara, sólo se regenera lo que pintes.\n\n"
+            "## Las 3 vistas del producto\n"
+            "Abajo del todo hay un bloque que genera **tres ángulos** del producto ya mejorado. Viene "
+            "apagado; para activarlo selecciona el nodo **GUARDAR 3 VISTAS** y pulsa **Ctrl+M**.\n\n"
+            "## Si no ves el desplegable de categoría\n"
+            "El nodo `CustomCombo` es reciente: actualiza ComfyUI. Mientras tanto puedes borrar el enlace "
+            "que va de **CATEGORÍA** a **PROMPT elegido** y escribir la categoría a mano en el campo "
+            "`key` de ese nodo (p. ej. `lifestyle_bano_marmol`).",
             title="LÉEME PRIMERO",
+        )
+        categoria = combo(g, list(CATALOGO.keys()), "packshot_fondo_blanco", title="▼ CATEGORÍA DE FOTO")
+        turbo = g.add("PrimitiveBoolean", [True], title="⚡ TURBO (false = calidad)", color=ORANGE)
+        use_rescue = g.add("PrimitiveBoolean", [False], title="RESCATE de foto mala", color=ORANGE)
+
+    # ---------------------------------------------------------------- entradas
+    with g.group("ENTRADAS", BLUE):
+        note(
+            g,
+            "### Qué subir\n\n"
+            "**1 · PRODUCTO** es la única obligatoria: la foto que te manda el cliente, tal cual.\n\n"
+            "Las otras dos vienen **en bypass** (en gris) para no tener que subirles nada. Quítaselo con "
+            "**Ctrl+B** sólo cuando las necesites:\n\n"
+            "- **2 · REFERENCIA DE ESCENA** → para la categoría `lifestyle_con_foto_referencia`.\n"
+            "- **3 · IMAGEN A RETOCAR** → para `retoque_zona_marcada`. Clic derecho sobre el nodo → "
+            "*Open in MaskEditor*, pinta encima de lo que no te gusta y guarda.",
+            title="Entradas",
         )
         prod = g.add("LoadImage", ["ejemplo_producto.png", "image"], title="1 · PRODUCTO (foto del cliente)")
         ref = g.add(
@@ -851,28 +893,22 @@ def build_estudio():
             mode=MODE_BYPASS,
         )
 
-    # ------------------------------------------------------------- el selector
-    with g.group("2 · QUÉ FOTO QUIERES  ←  el único mando que tienes que tocar", ORANGE):
+    # ---------------------------------------------------------------- catálogo
+    with g.group("CATÁLOGO DE CATEGORÍAS", GREY):
         note(
             g,
-            "### El desplegable manda\n\n"
-            "**TIPO DE FOTO** elige una clave del catálogo de la derecha, y el nodo *Extract Text from "
-            "JSON* saca ese prompt y lo enchufa a los tres motores.\n\n"
-            "## Añadir tus propios tipos\n"
-            "1. Escribe una entrada nueva en el **CATÁLOGO**: `\"mi_tipo\": \"tu prompt aquí\"`.\n"
-            "2. Haz doble clic en el desplegable **TIPO DE FOTO** para añadir `mi_tipo` a la lista.\n\n"
-            "Respeta el prefijo: lo que empiece por `packshot` activa el recorte sobre fondo puro, y lo "
-            "que contenga `retoque` activa el modo máscara.\n\n"
-            "El JSON tiene que ser válido: comillas dobles y sin coma final. Si te equivocas, el prompt "
-            "sale vacío y la imagen no cambia — es la pista de que hay una coma de más.\n\n"
-            "Los prompts largos y el porqué de cada línea están en `docs/PROMPTS.md`.",
-            title="Cómo funciona / cómo ampliarlo",
-        )
-        tipo = combo(
-            g,
-            list(CATALOGO.keys()),
-            "packshot_blanco",
-            title="▼ TIPO DE FOTO",
+            "### Cómo funciona la categoría\n\n"
+            "El desplegable devuelve una clave; *Extract Text from JSON* saca ese prompt del catálogo y "
+            "lo enchufa al motor. Nada más.\n\n"
+            "## Añadir categorías tuyas\n"
+            "1. Escribe una entrada nueva en el **CATÁLOGO**: `\"mi_categoria\": \"tu prompt\"`.\n"
+            "2. Doble clic en el desplegable **CATEGORÍA** para añadir `mi_categoria` a la lista.\n\n"
+            "Respeta el prefijo: `packshot…` activa el recorte sobre fondo puro y `retoque…` activa el "
+            "modo máscara. Cualquier otro nombre se trata como escena lifestyle.\n\n"
+            "El JSON tiene que ser válido (comillas dobles, sin coma final). Si te equivocas, el prompt "
+            "sale vacío y la imagen no cambia: esa es la pista.\n\n"
+            "Las plantillas largas y el porqué de cada línea están en `docs/PROMPTS.md`.",
+            title="Ampliar el catálogo",
         )
         catalogo = g.add(
             "PrimitiveStringMultiline",
@@ -882,70 +918,37 @@ def build_estudio():
         prompt = g.add(
             "JsonExtractString",
             ["", ""],
-            {"json_string": catalogo.out(0), "key": tipo.out(0)},
+            {"json_string": catalogo.out(0), "key": categoria.out(0)},
             title="PROMPT elegido",
         )
         negativo = g.add("PrimitiveStringMultiline", [NEGATIVO_COMUN], title="PROMPT ❌ negativo (común)")
         es_packshot = g.add(
             "StringContains",
             ["", "packshot", True],
-            {"string": tipo.out(0)},
-            title="¿es packshot? → recorte automático",
+            {"string": categoria.out(0)},
+            title="¿packshot? → recorte automático",
         )
         es_retoque = g.add(
             "StringContains",
             ["", "retoque", True],
-            {"string": tipo.out(0)},
-            title="¿es retoque? → modo máscara",
-        )
-
-    # ------------------------------------------------------------------ motor
-    with g.group("3 · MOTOR", GREY):
-        note(
-            g,
-            "### Qué motor usa\n\n"
-            "| Opción | Qué es | Coste |\n"
-            "|---|---|---|\n"
-            "| `qwen_local` | Qwen-Image-Edit 2511 en tu GPU | gratis |\n"
-            "| `flux2_local` | FLUX.2 [klein] 9B en tu GPU | gratis |\n"
-            "| `gpt_image_api` | GPT Image 2.5 de OpenAI, por la nube | **se paga por imagen** |\n\n"
-            "Sólo se ejecuta el motor elegido: los interruptores son perezosos, así que el modelo de "
-            "los otros dos ni se carga ni se factura.\n\n"
-            "**Para `retoque_zona_marcada` usa `qwen_local`**: es el único de los tres conectado a la "
-            "máscara del MaskEditor en este grafo.\n\n"
-            "`gpt_image_api` necesita saldo de API en tu cuenta de Comfy. El nodo enseña el precio "
-            "estimado antes de ejecutar; con `quality: high` a 1024×1024 ronda los 0,08 $ por imagen.",
-            title="Motores",
-        )
-        motor = combo(
-            g,
-            ["qwen_local", "flux2_local", "gpt_image_api"],
-            "qwen_local",
-            title="▼ MOTOR",
-            color=GREY,
-        )
-        usar_flux = g.add(
-            "StringCompare", ["", "flux2_local", "Equal", True], {"string_a": motor.out(0)}, title="¿FLUX.2?"
-        )
-        usar_gpt = g.add(
-            "StringCompare", ["", "gpt_image_api", "Equal", True], {"string_a": motor.out(0)}, title="¿GPT Image?"
+            {"string": categoria.out(0)},
+            title="¿retoque? → modo máscara",
         )
 
     # ---------------------------------------------------------------- rescate
-    with g.group("4 · RESCATE de foto mala (SeedVR2) — opcional", GREEN):
+    with g.group("RESCATE de foto mala (SeedVR2) · sólo si RESCATE = true", GREEN):
         note(
             g,
-            "### Cuándo encenderlo\n\n"
-            "Pon **`Rescate`** en `true` si la foto del cliente viene de móvil, con ruido, poca luz, "
-            "compresión JPEG o poco tamaño. SeedVR2 la reconstruye antes de tocar nada más.\n\n"
-            "En `false` no se carga: no gasta VRAM ni tiempo.\n\n"
+            "### Rescate\n\n"
+            "SeedVR2 reconstruye detalle real (no es un upscaler que interpola): aguanta fotos de móvil, "
+            "con ruido, poca luz o compresión JPEG visible.\n\n"
+            "Con `RESCATE = false` no se carga: cero VRAM y cero tiempo.\n\n"
             "Sube el *pre-escalado* a 3x o 4x si la foto es diminuta; bájalo si te quedas sin memoria.",
             title="Rescate",
         )
         base = g.add("ImageScaleToTotalPixels", ["lanczos", 1.0, 16], {"image": prod.out(0)}, title="Normalizar a 1 MP")
         rescued = seedvr2_rescue(g, base.out(0), scale=2.0)
         rescued_fit = g.add("ImageScaleToTotalPixels", ["lanczos", 1.0, 16], {"image": rescued}, title="Volver a 1 MP")
-        use_rescue = g.add("PrimitiveBoolean", [False], title="Rescate", color=ORANGE)
         img_gen = g.add(
             "ComfySwitchNode",
             [False],
@@ -954,40 +957,42 @@ def build_estudio():
         )
 
     # -------------------------------------------------------- entrada efectiva
-    with g.group("5 · ENTRADA EFECTIVA Y MÁSCARA", BLUE):
-        note(
-            g,
-            "### De dónde sale la imagen que entra al motor\n\n"
-            "- Tipo normal → la foto del producto (rescatada o no), ajustada a la resolución óptima del "
-            "modelo de edición.\n"
-            "- Tipo `retoque_…` → la **imagen a retocar**, escalada conservando la proporción para que "
-            "la máscara que pintaste siga cuadrando píxel a píxel.\n\n"
-            "La máscara sale de la salida `MASK` del cargador 3, que es exactamente lo que pintaste en "
-            "el MaskEditor. Se amplía 16 px y se suaviza 24 px para que el empalme no se note.",
-            title="Entrada y máscara",
-        )
+    with g.group("PREPARAR ENTRADA Y MÁSCARA", BLUE):
         src = g.add(
             "ComfySwitchNode",
             [False],
             {"on_false": img_gen.out(0), "on_true": ret.out(0), "switch": es_retoque.out(0)},
-            title="Imagen de partida",
-        )
-        kfit = g.add("FluxKontextImageScale", [], {"image": src.out(0)}, title="Resolución óptima (generar)")
-        pfit = g.add(
-            "ImageScaleToTotalPixels", ["lanczos", 1.0, 16], {"image": src.out(0)}, title="1 MP proporcional (retoque)"
+            title="Imagen de partida (producto / imagen a retocar)",
         )
         img_in = g.add(
-            "ComfySwitchNode",
-            [False],
-            {"on_false": kfit.out(0), "on_true": pfit.out(0), "switch": es_retoque.out(0)},
-            title="Entrada del motor",
+            "ImageScaleToTotalPixels", ["lanczos", 1.0, 16], {"image": src.out(0)}, title="1 MP proporcional"
         )
         grow = g.add("GrowMask", [16, True], {"mask": ret.out(1)}, title="Ampliar selección")
         m_soft = g.add("FeatherMask", [24] * 4, {"mask": grow.out(0)}, title="Suavizar borde")
+        note(
+            g,
+            "### Por qué 1 MP proporcional\n\n"
+            "Es la resolución de trabajo del modelo de edición, y al conservar la proporción la máscara "
+            "que pintaste en el MaskEditor sigue cuadrando píxel a píxel con la imagen.\n\n"
+            "La selección se amplía 16 px y se suaviza 24 px para que el empalme del retoque no se note. "
+            "Si se ve el parche, sube ambos valores.",
+            title="Entrada y máscara",
+        )
 
-    # -------------------------------------------------------------- motor A
-    with g.group("6 · MOTOR A · Qwen-Image-Edit 2511 (local, gratis)", PURPLE):
-        qwen_out, _ = qwen_edit_engine(
+    # -------------------------------------------------------------- motor
+    with g.group("MOTOR · Qwen-Image-Edit 2511 (local, gratis)", PURPLE):
+        note(
+            g,
+            "### El motor\n\n"
+            "Qwen-Image-Edit 2511 es el modelo libre que mejor conserva **logotipos y texto de etiqueta**, "
+            "que es justo lo que se rompe en fotografía de producto.\n\n"
+            "**⚡ TURBO** conmuta entre el LoRA Lightning (4 pasos, CFG 1) y la calidad completa "
+            "(20 pasos, CFG 4). Encuadra el prompt en turbo y lanza la final en calidad.\n\n"
+            "Si quieres probar **FLUX.2 [klein]** como motor alternativo, está montado en "
+            "`02_lifestyle_escena.json`.",
+            title="Motor",
+        )
+        motor = qwen_edit_engine(
             g,
             img_in.out(0),
             prompt.out(0),
@@ -1000,107 +1005,42 @@ def build_estudio():
             noise_mask=m_soft.out(0),
             noise_mask_switch=es_retoque.out(0),
             differential=True,
+            turbo_switch=turbo.out(0),
         )
+        salida_motor = motor.image
 
-    # -------------------------------------------------------------- motor B
-    with g.group("7 · MOTOR B · FLUX.2 [klein] 9B (local, gratis)", BLUE):
-        note(
-            g,
-            "### FLUX.2 [klein]\n\n"
-            "4 pasos, CFG 1. Muy bueno en luz y materiales. Trabaja **sólo con el producto y el texto**: "
-            "no usa ni la referencia de escena ni la máscara.\n\n"
-            "Para VRAM baja cambia en los cargadores `flux-2-klein-9b-fp8` → `flux-2-klein-4b-fp8` y "
-            "`qwen_3_8b_fp8mixed` → `qwen_3_4b`.",
-            title="Notas FLUX.2",
-        )
-        flux_out = flux2_klein_engine(g, img_in.out(0), prompt.out(0), seed=815, steps=4)
-
-    # -------------------------------------------------------------- motor C
-    with g.group("8 · MOTOR C · GPT Image 2.5 (API de OpenAI · DE PAGO)", RED):
-        note(
-            g,
-            "### GPT Image 2.5\n\n"
-            "Nodo de API: la imagen del cliente **sale de tu máquina** hacia OpenAI y cada ejecución "
-            "consume saldo. Sólo se ejecuta si eliges `gpt_image_api` en el desplegable MOTOR.\n\n"
-            "**Ajustes que mueven el precio**: `model.quality` y `model.size`. Referencia por imagen "
-            "con gpt-image-2.5: `low` 1024² ≈ 0,008 $ · `medium` ≈ 0,019 $ · `high` ≈ 0,075 $ · "
-            "`max` 2048² ≈ 0,61 $.\n\n"
-            "**`model.background: transparent`** te devuelve el PNG recortado directamente, sin pasar "
-            "por BiRefNet.\n\n"
-            "Si el producto lleva una marca reconocible, el modelo puede negarse a editarlo: es una "
-            "limitación de la API que los motores locales no tienen.",
-            title="Aviso: esto cuesta dinero",
-        )
-        gpt = g.add(
-            "OpenAIGPTImageNodeV2",
-            ["", "gpt-image-2.5-flare", "auto", 1024, 1024, "auto", "high", 1, 0, "randomize"],
-            {
-                "model.images.image_1": img_in.out(0),
-                "model.images.image_2": ref.out(0),
-                "prompt": prompt.out(0),
-            },
-            title="GPT Image 2.5",
-            color="#653",
-            named={
-                "prompt": "",
-                "model": "gpt-image-2.5-flare",
-                "model.size": "auto",
-                "model.custom_width": 1024,
-                "model.custom_height": 1024,
-                "model.background": "auto",
-                "model.quality": "high",
-                "n": 1,
-                "seed": 0,
-                "control_after_generate": "randomize",
-            },
-        )
-
-    # ------------------------------------------------------ selección + retoque
-    with g.group("9 · SALIDA DEL MOTOR Y REINTEGRACIÓN DEL RETOQUE", GREY):
-        sw1 = g.add(
-            "ComfySwitchNode",
-            [False],
-            {"on_false": qwen_out, "on_true": flux_out, "switch": usar_flux.out(0)},
-            title="Qwen / FLUX.2",
-        )
-        sw2 = g.add(
-            "ComfySwitchNode",
-            [False],
-            {"on_false": sw1.out(0), "on_true": gpt.out(0), "switch": usar_gpt.out(0)},
-            title="… / GPT Image",
-        )
+    # ------------------------------------------------------ reintegrar retoque
+    with g.group("REINTEGRAR EL RETOQUE (automático)", GREY):
         comp_ret = g.add(
             "ImageCompositeMasked",
             [0, 0, True],
-            {"destination": img_in.out(0), "source": sw2.out(0), "mask": m_soft.out(0)},
+            {"destination": img_in.out(0), "source": salida_motor, "mask": m_soft.out(0)},
             title="Pegar sólo la zona marcada",
         )
         salida = g.add(
             "ComfySwitchNode",
             [False],
-            {"on_false": sw2.out(0), "on_true": comp_ret.out(0), "switch": es_retoque.out(0)},
+            {"on_false": salida_motor, "on_true": comp_ret.out(0), "switch": es_retoque.out(0)},
             title="Imagen generada",
         )
         g.add("PreviewImage", [], {"images": salida.out(0)}, title="Previsualizar")
 
     # ----------------------------------------------------- recorte automático
-    with g.group("10 · RECORTE + FONDO PURO  (automático si el tipo es packshot)", ORANGE):
+    with g.group("RECORTE + FONDO PURO · automático si la categoría es packshot", ORANGE):
         note(
             g,
             "### Recorte y fondo garantizado\n\n"
-            "Se activa solo cuando el **TIPO DE FOTO** contiene `packshot`. El modelo deja un fondo "
-            "*casi* blanco; los marketplaces suelen exigir **255,255,255 exacto**, así que BiRefNet "
-            "recorta el producto y lo pega sobre un blanco puro generado, con una sombra de contacto "
-            "sintética debajo.\n\n"
+            "El modelo deja un fondo *casi* blanco; los marketplaces suelen exigir **255,255,255 "
+            "exacto**. BiRefNet recorta el producto y lo pega sobre un blanco puro generado, con una "
+            "sombra de contacto sintética debajo.\n\n"
             "**Ajustes**\n"
-            "- `Erosionar borde` `-2` quita el halo del recorte; `-4` si aún se ve borde claro.\n"
+            "- `Erosionar borde` `-2` quita el halo; `-4` si aún se ve borde claro.\n"
             "- `color` del fondo: `16777215` = blanco, `15790320` = #F0F0F0.\n"
             "- Sombra: `blend_factor` del nodo *Sombra de contacto*; `0` la quita.\n\n"
-            "**Guardar el PNG transparente**: el nodo *GUARDAR PNG alpha* está silenciado para no "
-            "escribir archivos inútiles cuando haces lifestyle. Selecciónalo y pulsa **Ctrl+M** para "
-            "activarlo (igual que el de *Comprobar máscara*).\n\n"
-            "> Si la máscara sale al revés, borra el nodo `InvertMask`: la convención depende del "
-            "modelo de segmentación que cargues.",
+            "**PNG transparente**: el nodo *GUARDAR PNG alpha* está silenciado para no escribir archivos "
+            "inútiles cuando haces lifestyle. Selecciónalo y pulsa **Ctrl+M** para activarlo.\n\n"
+            "> Si la máscara sale al revés, borra el nodo `InvertMask`: la convención depende del modelo "
+            "de segmentación que cargues.",
             title="Recorte",
         )
         alpha = cutout_block(g, salida.out(0), erode=-2, feather=3, preview=False)
@@ -1134,27 +1074,107 @@ def build_estudio():
             title="GUARDAR PNG alpha  (Ctrl+M para activar)",
             mode=MODE_NEVER,
         )
-        final_img = g.add(
+        master = g.add(
             "ComfySwitchNode",
             [False],
             {"on_false": salida.out(0), "on_true": comp.out(0), "switch": es_packshot.out(0)},
-            title="Imagen final",
+            title="MASTER (foto buena a 1 MP)",
         )
 
-    # ------------------------------------------------------------- alta resolución
-    with g.group("11 · ALTA RESOLUCIÓN Y ENTREGA", RED):
+    # ------------------------------------------------------------- entrega
+    with g.group("ENTREGA EN ALTA RESOLUCIÓN", RED):
         note(
             g,
             "### Entrega\n\n"
-            "Upscaler GAN 4x → reencuadre al lado largo → enfoque sutil.\n\n"
-            "- Cambia `2048` por lo que pida la tienda (1600 / 2400 / 3000).\n"
-            "- Si quieres que el reescalado **invente** micro-detalle real en vez de sólo interpolar, "
-            "pasa la salida por `00_rescate_foto_cliente.json`.\n"
-            "- Otros modelos: `4x-UltraSharp.safetensors`, `4x_NMKD-Siax_200k.pth`.",
+            "Upscaler GAN 4x → reencuadre al lado largo → enfoque sutil. Cambia `2048` por lo que pida "
+            "la tienda (1600 / 2400 / 3000).\n\n"
+            "Otros modelos que puedes dejar en `models/upscale_models/`: `4x-UltraSharp.safetensors`, "
+            "`4x_NMKD-Siax_200k.pth`.",
             title="Entrega",
         )
-        final = gan_finish(g, final_img.out(0), "estudio/final", largest=2048)
-        g.add("ImageCompare", [], {"image_a": prod.out(0), "image_b": final}, title="Original / final")
+        up_model = g.add("UpscaleModelLoader", [GAN_UPSCALER], title="Upscaler GAN 4x")
+        up = g.add("ImageUpscaleWithModel", [], {"upscale_model": up_model.out(0), "image": master.out(0)})
+        fit = g.add("ImageScaleToMaxDimension", ["lanczos", 2048], {"image": up.out(0)}, title="Lado largo 2048 px")
+        sharp = g.add("ImageSharpen", [1, 0.8, 0.28], {"image": fit.out(0)}, title="Enfoque final (sutil)")
+        g.add("SaveImage", ["estudio/final"], {"images": sharp.out(0)}, title="GUARDAR final")
+        g.add("ImageCompare", [], {"image_a": prod.out(0), "image_b": sharp.out(0)}, title="Original / final")
+
+    # --------------------------------------------------------------- 3 vistas
+    with g.group("3 VISTAS DEL PRODUCTO · apagado · Ctrl+M en GUARDAR 3 VISTAS", PURPLE):
+        note(
+            g,
+            "# Tres ángulos del mismo producto\n\n"
+            "Parte del **MASTER**, es decir de la foto ya rescatada, reiluminada y recortada, y genera "
+            "tres vistas nuevas con el mismo fondo y la misma luz. Se guardan juntas en "
+            "`output/estudio/vistas/`.\n\n"
+            "## Cómo se enciende\n"
+            "Selecciona el nodo **GUARDAR 3 VISTAS** y pulsa **Ctrl+M**. Mientras esté silenciado, todo "
+            "este bloque no se ejecuta y no te cuesta ni un segundo.\n\n"
+            "## Qué ángulos salen\n"
+            "1. Tres cuartos desde la izquierda.\n"
+            "2. Tres cuartos desde la derecha.\n"
+            "3. Cenital (flat lay, desde arriba).\n\n"
+            "Cada uno es un cuadro de texto editable: cambia el que quieras por *back view*, "
+            "*low angle hero shot*, *45 degrees from above*, lo que necesites.\n\n"
+            "## Lo que tienes que saber antes de usarlas\n"
+            "El modelo **no conoce las caras del producto que no se ven** en la foto original: las "
+            "inventa. En un bote cilíndrico o una caja sencilla el resultado suele colar; en la parte "
+            "trasera de una etiqueta con texto, casi nunca. Por eso los tres ángulos por defecto son "
+            "giros suaves (±35°) y un cenital, que es lo que menos se inventa.\n\n"
+            "Revisa siempre las tres antes de subirlas a la ficha, y si una falla cámbiale el ángulo o "
+            "corrígela con la categoría `retoque_zona_marcada`.",
+            title="LÉEME antes de activarlo",
+        )
+        vsrc = g.add(
+            "ImageScaleToTotalPixels", ["lanczos", 1.0, 16], {"image": master.out(0)}, title="MASTER a 1 MP"
+        )
+        vclip, vvae, vmodel = motor.clip, motor.vae, motor.model
+        vlat = g.add("VAEEncode", [], {"pixels": vsrc.out(0), "vae": vvae})
+        vneg = g.add(
+            "TextEncodeQwenImageEditPlus",
+            [NEGATIVO_COMUN],
+            {"clip": vclip, "vae": vvae, "image1": vsrc.out(0)},
+            title="Negativo (vistas)",
+        )
+        decoded = []
+        for i, texto in enumerate(VISTAS, start=1):
+            vpos = g.add(
+                "TextEncodeQwenImageEditPlus",
+                [texto],
+                {"clip": vclip, "vae": vvae, "image1": vsrc.out(0)},
+                title=f"VISTA {i}",
+            )
+            vks = g.add(
+                "KSampler",
+                [1000 + i, "fixed", 20, 4.0, "euler", "simple", 1.0],
+                {
+                    "model": vmodel,
+                    "positive": vpos.out(0),
+                    "negative": vneg.out(0),
+                    "latent_image": vlat.out(0),
+                    # mismos pasos y CFG que el motor principal: el interruptor ⚡ TURBO
+                    # también manda aquí
+                    "steps": motor.steps,
+                    "cfg": motor.cfg,
+                },
+                title=f"KSampler vista {i}",
+            )
+            decoded.append(g.add("VAEDecode", [], {"samples": vks.out(0), "vae": vvae}).out(0))
+        lote = g.add(
+            "BatchImagesNode",
+            [],
+            {"images.image0": decoded[0], "images.image1": decoded[1], "images.image2": decoded[2]},
+            title="Las 3 juntas",
+        )
+        vup = g.add("ImageUpscaleWithModel", [], {"upscale_model": up_model.out(0), "image": lote.out(0)})
+        vfit = g.add("ImageScaleToMaxDimension", ["lanczos", 2048], {"image": vup.out(0)}, title="Lado largo 2048 px")
+        g.add(
+            "SaveImage",
+            ["estudio/vistas/vista"],
+            {"images": vfit.out(0)},
+            title="GUARDAR 3 VISTAS  (Ctrl+M para activar)",
+            mode=MODE_NEVER,
+        )
 
     g.save(os.path.join(OUT, "10_estudio_producto.json"))
 

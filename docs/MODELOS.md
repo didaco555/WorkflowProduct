@@ -55,7 +55,8 @@ Se añade con un nodo `LoraLoaderModelOnly` extra antes del `KSampler`.
 
 ## 2 · FLUX.2 [klein] 9B destilado — motor alternativo de lifestyle
 
-Apache-2.0, 4 pasos. Va en los workflows `02` y `10`.
+Apache-2.0, 4 pasos. Va en el workflow `02`, como motor alternativo para lifestyle.
+El workflow `10` no lo usa, así que puedes saltarte esta descarga si sólo vas a usar ese.
 
 - `diffusion_models/` → [flux-2-klein-9b-fp8.safetensors](https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-fp8/resolve/main/flux-2-klein-9b-fp8.safetensors)
 - `text_encoders/` → [qwen_3_8b_fp8mixed.safetensors](https://huggingface.co/Comfy-Org/flux2-klein-9B/resolve/main/split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors)
@@ -91,16 +92,6 @@ otro modelo compatible (RMBG) en esa misma carpeta, aparece en el desplegable.
 
 Alternativas populares para producto (más “crujientes”): `4x-UltraSharp`, `4x_NMKD-Siax_200k`.
 Cualquier archivo que dejes en `upscale_models/` aparece en el desplegable del nodo.
-
-## 6 · GPT Image 2.5 (opcional, no se descarga nada)
-
-El motor C de `10_estudio_producto.json` es un **nodo de API**: no hay pesos que bajar, pero cada
-ejecución consume saldo de la API de Comfy y la imagen del cliente viaja a OpenAI. Está apagado por
-defecto (el desplegable `MOTOR` viene en `qwen_local`).
-
-Referencia de precio por imagen con `gpt-image-2.5`, según la tabla de precios que trae el propio
-nodo: `low` 1024² ≈ 0,008 $ · `medium` ≈ 0,019 $ · `high` ≈ 0,075 $ · `xhigh` ≈ 0,134 $ ·
-`max` 2048² ≈ 0,61 $. El nodo enseña el importe estimado antes de ejecutar.
 
 ---
 

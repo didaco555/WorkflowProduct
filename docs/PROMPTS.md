@@ -156,7 +156,41 @@ Ajustes útiles en ese workflow:
 
 ---
 
-## 4 · Ajustes numéricos de referencia
+## 4 · Las 3 vistas del producto
+
+El bloque de vistas de `10_estudio_producto.json` parte de la foto ya buena y le cambia sólo el
+ángulo. La plantilla es siempre la misma y lo único que cambias es la última línea:
+
+```
+Keep the exact same product: same shape, proportions, materials, colours, logo and label text.
+Keep the same background, the same lighting setup and the same framing and scale.
+Only the camera angle changes.
+
+<aquí el ángulo>
+```
+
+| Ángulo | Última línea |
+|---|---|
+| Tres cuartos izquierda *(por defecto)* | `Rotate the product to a three-quarter view seen from the left, about 35 degrees.` |
+| Tres cuartos derecha *(por defecto)* | `Rotate the product to a three-quarter view seen from the right, about 35 degrees.` |
+| Cenital / flat lay *(por defecto)* | `Move the camera above the product for a top-down flat-lay view, looking straight down.` |
+| Perfil | `Rotate the product to a perfect side profile view, 90 degrees.` |
+| Trasera | `Show the back of the product, rotated 180 degrees.` |
+| Contrapicado | `Lower the camera below the product for a heroic low angle shot looking slightly up.` |
+| Picado suave | `Raise the camera to about 45 degrees above the product, looking down at it.` |
+| Tumbado | `Lay the product down flat on the surface, seen from the front.` |
+
+**La limitación que hay que tener presente**: el modelo no ha visto las caras que no aparecen en
+la foto original, así que las inventa. Los giros suaves (±35°) y el cenital son los que menos se
+inventan. `Show the back` sobre un producto con texto en la etiqueta trasera va a producir texto
+falso casi seguro — úsalo sólo con productos lisos o cuando vayas a revisar a mano.
+
+Si una vista sale casi bien pero con un defecto puntual, no la repitas entera: pásala por la
+categoría `retoque_zona_marcada` y arregla sólo esa zona.
+
+---
+
+## 5 · Ajustes numéricos de referencia
 
 | Parámetro | Calidad | Turbo (LoRA Lightning) |
 |---|---|---|

@@ -6,19 +6,19 @@ el cliente** (a menudo mala) y sacar de ahí dos entregables:
 1. **Packshot de catálogo** — fondo limpio de estudio, luz y sombra natural.
 2. **Lifestyle** — el producto dentro de una escena (la crema en un baño de mármol, el vino en una terraza).
 
-Todo funciona con modelos **gratuitos y de pesos abiertos, en local**. GPT Image 2.5 aparece sólo
-como motor alternativo opcional dentro del workflow único, apagado por defecto.
+Todo funciona con modelos **gratuitos y de pesos abiertos, en local**. Cero APIs de pago, cero
+suscripciones: una vez descargados los modelos, cada foto te cuesta lo que tarde tu GPU.
 
 | Archivo | Para qué |
 |---|---|
-| **[`workflows/10_estudio_producto.json`](workflows/10_estudio_producto.json)** | **Todo en uno**: subes la foto, eliges el tipo en un desplegable y ejecutas |
+| **[`workflows/10_estudio_producto.json`](workflows/10_estudio_producto.json)** | **Todo en uno**: subes la foto, eliges la **categoría** en un desplegable y ejecutas. Incluye las **3 vistas** del producto |
 | [`workflows/00_rescate_foto_cliente.json`](workflows/00_rescate_foto_cliente.json) | Reconstruye una foto mala (móvil, ruido, JPEG, borrosa) con SeedVR2 |
 | [`workflows/01_packshot_catalogo.json`](workflows/01_packshot_catalogo.json) | Packshot de catálogo, con **4 niveles** encadenados |
 | [`workflows/02_lifestyle_escena.json`](workflows/02_lifestyle_escena.json) | Producto integrado en una escena, con **dos motores** a elegir |
 | [`workflows/03_retoque_zona.json`](workflows/03_retoque_zona.json) | “Rodear lo que no me gusta”: pintas una zona y sólo eso se regenera |
 
-Empieza por **`10_estudio_producto.json`** si quieres un único grafo para todo. Los otros cuatro son
-los mismos pasos por separado, más sencillos de leer y de modificar.
+Empieza por **`10_estudio_producto.json`**: es el que usarás a diario. Los otros cuatro son las
+mismas piezas por separado, más sencillas de leer y de modificar.
 
 Cada workflow lleva dentro sus propias notas (nodos `MarkdownNote`), así que se explica solo una
 vez abierto.
@@ -58,42 +58,66 @@ anterior a ese nodo: actualiza y vuelve a cargar el workflow.
 
 ## El workflow único: `10_estudio_producto.json`
 
-Un solo grafo, y **un solo mando**: el desplegable `TIPO DE FOTO`.
+Un solo grafo y **tres mandos**, todos juntos arriba del todo en el grupo *PANEL DE CONTROL*:
+
+| Mando | Qué hace |
+|---|---|
+| **▼ CATEGORÍA DE FOTO** | Elige qué foto quieres. Es el mando principal. |
+| **⚡ TURBO** | `true` = 4 pasos (rápido, para probar). `false` = 20 pasos (toma final). |
+| **RESCATE** | `true` si la foto del cliente viene mala (móvil, ruido, JPEG, borrosa). |
+
+### Las categorías
 
 ```
-▼ TIPO DE FOTO
-   packshot_blanco              packshot_degradado_gris
-   packshot_superficie_reflejo  packshot_fondo_color
-   lifestyle_bano_marmol        lifestyle_terraza_atardecer
-   lifestyle_cocina_nordica     lifestyle_hormigon_estudio
-   lifestyle_escritorio_madera  lifestyle_mesita_noche
-   lifestyle_exterior_natural   lifestyle_usar_referencia
-   retoque_zona_marcada
+▼ CATEGORÍA DE FOTO
+   packshot_fondo_blanco            lifestyle_bano_marmol
+   packshot_fondo_gris_degradado    lifestyle_cocina_nordica
+   packshot_fondo_color_pastel      lifestyle_mesa_terraza
+   packshot_superficie_reflejo      lifestyle_escritorio_madera
+   packshot_detalle_macro           lifestyle_mesita_noche
+                                    lifestyle_hormigon_minimal
+   retoque_zona_marcada             lifestyle_exterior_natural
+                                    lifestyle_con_foto_referencia
 ```
 
 Lo que eliges hace dos cosas a la vez:
 
 1. Un nodo `Extract Text from JSON` saca ese prompt del **catálogo** y lo enchufa al motor.
-2. El propio nombre reconfigura el grafo: si contiene `packshot` se activa el recorte con fondo
-   blanco puro; si contiene `retoque` se pasa a modo máscara y sólo se regenera lo que hayas
-   pintado en el MaskEditor.
+2. El propio nombre reconfigura el grafo: lo que empieza por `packshot` enciende el recorte con
+   fondo blanco puro 255,255,255; `retoque_zona_marcada` pasa a modo máscara y sólo regenera lo
+   que hayas pintado en el MaskEditor. No hay que tocar nada más.
 
-**Añadir tus propios tipos** son dos pasos: escribes `"mi_tipo": "tu prompt"` en el nodo CATÁLOGO
-y añades `mi_tipo` a la lista del desplegable (doble clic sobre él).
+**Añadir categorías tuyas** son dos pasos: escribes `"mi_categoria": "tu prompt"` en el nodo
+CATÁLOGO y añades `mi_categoria` a la lista del desplegable (doble clic sobre él).
 
-Además lleva un segundo desplegable, `MOTOR`, con tres opciones:
+> Si el desplegable no te aparece, tu ComfyUI es anterior al nodo `CustomCombo`: actualízalo.
+> Mientras tanto puedes borrar el enlace CATEGORÍA → PROMPT y escribir la categoría a mano en el
+> campo `key` de ese nodo.
 
-| Opción | Qué es | Coste |
-|---|---|---|
-| `qwen_local` | Qwen-Image-Edit 2511 en tu GPU | gratis |
-| `flux2_local` | FLUX.2 [klein] 9B en tu GPU | gratis |
-| `gpt_image_api` | GPT Image 2.5 de OpenAI, por la nube | se paga por imagen |
+### Las 3 vistas del producto
 
-Sólo se ejecuta el motor elegido: los interruptores son perezosos, así que los otros dos ni cargan
-su modelo ni facturan nada. El nodo de GPT Image enseña el precio estimado antes de ejecutar.
+Abajo del todo hay un bloque que coge el **MASTER** — la foto ya rescatada, reiluminada y
+recortada — y genera **tres ángulos nuevos** con el mismo fondo y la misma luz, que se guardan
+juntos en `output/estudio/vistas/`:
+
+1. Tres cuartos desde la izquierda.
+2. Tres cuartos desde la derecha.
+3. Cenital (flat lay).
+
+Cada ángulo es un cuadro de texto editable: cámbialo por *back view*, *low angle hero shot* o lo
+que necesites. Viene **apagado**; para encenderlo selecciona el nodo **GUARDAR 3 VISTAS** y pulsa
+**Ctrl+M**. Mientras esté silenciado, ese bloque entero no se ejecuta.
+
+**Lo que tienes que saber**: el modelo no conoce las caras del producto que no salen en la foto
+original, las inventa. En un bote cilíndrico o una caja sencilla suele colar; en la parte trasera
+de una etiqueta con texto, casi nunca. Por eso los tres ángulos por defecto son giros suaves
+(±35°) y un cenital, que es lo que menos se inventa. Revísalas siempre antes de subirlas.
+
+### Lo que hace solo
 
 Los dos cargadores secundarios (*referencia de escena* e *imagen a retocar*) vienen **en bypass**
-para que no tengas que subirles nada. Ctrl+B para activarlos cuando los necesites.
+para que no tengas que subirles nada; Ctrl+B para activarlos. Los interruptores son **perezosos**:
+la rama apagada ni se ejecuta ni carga su modelo en VRAM.
 
 ---
 
@@ -131,6 +155,9 @@ Además hay un interruptor **⚡ TURBO** que cambia entre LoRA Lightning (4 paso
 Los interruptores son **perezosos**: la rama apagada ni se ejecuta ni carga su modelo en VRAM.
 
 ### 2 · Lifestyle — dos motores
+
+El workflow único usa sólo Qwen-Image-Edit. Si quieres probar FLUX.2 [klein] como motor
+alternativo, está montado aquí:
 
 | | Qwen-Image-Edit 2511 | FLUX.2 [klein] 9B |
 |---|---|---|
