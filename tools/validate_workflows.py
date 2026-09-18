@@ -10,6 +10,7 @@ Comprobaciones estructurales:
   * cada enlace apunta a un nodo y a un socket que existen, y el socket lo referencia
   * cada salida declara exactamente los enlaces que salen de ella
   * las entradas obligatorias (no opcionales) están conectadas
+  * ninguna entrada obligatoria depende de un nodo en bypass o silenciado
   * `widgets_values` no excede el número de widgets del esquema
   * los tipos de origen y destino de cada enlace coinciden
 """
@@ -81,6 +82,25 @@ def validate_file(path: str) -> list[str]:
 
     if wf["last_link_id"] < max(seen_links, default=0):
         err("last_link_id menor que el id de enlace más alto")
+
+    # Un nodo en bypass (mode 4) sólo deja pasar una entrada del mismo tipo que su salida; si no
+    # la tiene, la salida desaparece. Uno silenciado (mode 2) nunca produce nada. Si lo que
+    # desaparece alimenta una entrada obligatoria, ComfyUI se niega a ejecutar el workflow.
+    optional_inputs = {
+        (t, i[0]) for t, sch in SCHEMAS.items() for i in sch["inputs"] if i[2]
+    }
+    for link in wf["links"]:
+        lid, src_id, src_slot, dst_id, dst_slot, ltype = link
+        src, dst = nodes.get(src_id), nodes.get(dst_id)
+        if not src or not dst or src.get("mode", 0) not in (2, 4):
+            continue
+        if (dst["type"], (dst.get("inputs") or [{}])[dst_slot].get("name")) in optional_inputs:
+            continue
+        if src.get("mode") == 4 and any(i.get("type") == ltype for i in (src.get("inputs") or [])):
+            continue  # el bypass puede dejar pasar una entrada del mismo tipo
+        estado = "silenciado" if src.get("mode") == 2 else "en bypass"
+        err(f"enlace {lid}: {src['type']} ({estado}) alimenta la entrada obligatoria "
+            f"'{(dst.get('inputs') or [{}])[dst_slot].get('name')}' de {dst['type']}")
 
     for n in wf["nodes"]:
         schema = SCHEMAS.get(n["type"])

@@ -856,6 +856,10 @@ def build_estudio():
             "## Las 3 vistas del producto\n"
             "Abajo del todo hay un bloque que genera **tres ángulos** del producto ya mejorado. Viene "
             "apagado; para activarlo selecciona el nodo **GUARDAR 3 VISTAS** y pulsa **Ctrl+M**.\n\n"
+            "## Los cargadores 2 y 3 se quedan en gris\n"
+            "Es correcto: están en bypass para que no tengas que subirles nada. Sólo les quitas el "
+            "bypass (Ctrl+B) si eliges `lifestyle_con_foto_referencia` o `retoque_zona_marcada`, y "
+            "entonces les subes la foto.\n\n"
             "## Si no ves el desplegable de categoría\n"
             "El nodo `CustomCombo` es reciente: actualiza ComfyUI. Mientras tanto puedes borrar el enlace "
             "que va de **CATEGORÍA** a **PROMPT elegido** y escribir la categoría a mano en el campo "
@@ -872,11 +876,17 @@ def build_estudio():
             g,
             "### Qué subir\n\n"
             "**1 · PRODUCTO** es la única obligatoria: la foto que te manda el cliente, tal cual.\n\n"
-            "Las otras dos vienen **en bypass** (en gris) para no tener que subirles nada. Quítaselo con "
-            "**Ctrl+B** sólo cuando las necesites:\n\n"
-            "- **2 · REFERENCIA DE ESCENA** → para la categoría `lifestyle_con_foto_referencia`.\n"
-            "- **3 · IMAGEN A RETOCAR** → para `retoque_zona_marcada`. Clic derecho sobre el nodo → "
-            "*Open in MaskEditor*, pinta encima de lo que no te gusta y guarda.",
+            "Las otras dos vienen **en bypass** (en gris) a propósito: así no tienes que subirles nada "
+            "y el grafo valida igual. **Déjalas en bypass** salvo que vayas a usarlas.\n\n"
+            "| Cargador | Actívalo (Ctrl+B) sólo para… |\n"
+            "|---|---|\n"
+            "| **2 · REFERENCIA DE ESCENA** | la categoría `lifestyle_con_foto_referencia` |\n"
+            "| **3 · IMAGEN A RETOCAR** | la categoría `retoque_zona_marcada` |\n\n"
+            "Al quitarles el bypass te pedirán un archivo (traen puesto un nombre de ejemplo que no "
+            "existe): pulsa **elige archivo para subir** y sube el tuyo. En el cargador 3, además, "
+            "clic derecho sobre el nodo → *Open in MaskEditor*, pinta encima de lo que no te gusta y "
+            "guarda.\n\n"
+            "Cuando termines de retocar, vuelve a ponerlos en bypass y sigues con el flujo normal.",
             title="Entradas",
         )
         prod = g.add("LoadImage", ["ejemplo_producto.png", "image"], title="1 · PRODUCTO (foto del cliente)")
@@ -967,7 +977,17 @@ def build_estudio():
         img_in = g.add(
             "ImageScaleToTotalPixels", ["lanczos", 1.0, 16], {"image": src.out(0)}, title="1 MP proporcional"
         )
-        grow = g.add("GrowMask", [16, True], {"mask": ret.out(1)}, title="Ampliar selección")
+        # El cargador 3 vive en bypass, así que su salida MASK no existe hasta que lo actives, y
+        # `GrowMask` exige una máscara sí o sí. Las entradas del conmutador son opcionales, de modo
+        # que el grafo valida igual; la máscara del producto (vacía si el archivo no lleva alfa)
+        # hace de relleno inofensivo mientras no estés retocando.
+        mask_src = g.add(
+            "ComfySwitchNode",
+            [False],
+            {"on_false": prod.out(1), "on_true": ret.out(1), "switch": es_retoque.out(0)},
+            title="Máscara (vacía / la que pintaste)",
+        )
+        grow = g.add("GrowMask", [16, True], {"mask": mask_src.out(0)}, title="Ampliar selección")
         m_soft = g.add("FeatherMask", [24] * 4, {"mask": grow.out(0)}, title="Suavizar borde")
         note(
             g,
@@ -975,7 +995,10 @@ def build_estudio():
             "Es la resolución de trabajo del modelo de edición, y al conservar la proporción la máscara "
             "que pintaste en el MaskEditor sigue cuadrando píxel a píxel con la imagen.\n\n"
             "La selección se amplía 16 px y se suaviza 24 px para que el empalme del retoque no se note. "
-            "Si se ve el parche, sube ambos valores.",
+            "Si se ve el parche, sube ambos valores.\n\n"
+            "Mientras la categoría no sea `retoque_zona_marcada`, la máscara no se usa para nada: el "
+            "conmutador coge la del producto (vacía) para que el grafo valide con el cargador 3 en "
+            "bypass.",
             title="Entrada y máscara",
         )
 

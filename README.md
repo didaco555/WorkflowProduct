@@ -113,11 +113,20 @@ original, las inventa. En un bote cilíndrico o una caja sencilla suele colar; e
 de una etiqueta con texto, casi nunca. Por eso los tres ángulos por defecto son giros suaves
 (±35°) y un cenital, que es lo que menos se inventa. Revísalas siempre antes de subirlas.
 
-### Lo que hace solo
+### Los cargadores 2 y 3 salen en gris, y está bien
 
-Los dos cargadores secundarios (*referencia de escena* e *imagen a retocar*) vienen **en bypass**
-para que no tengas que subirles nada; Ctrl+B para activarlos. Los interruptores son **perezosos**:
-la rama apagada ni se ejecuta ni carga su modelo en VRAM.
+Están **en bypass** a propósito: así no tienes que subirles ninguna foto y el grafo valida igual.
+Déjalos así salvo que vayas a usarlos:
+
+| Cargador | Quítale el bypass (Ctrl+B) sólo para… |
+|---|---|
+| **2 · REFERENCIA DE ESCENA** | la categoría `lifestyle_con_foto_referencia` |
+| **3 · IMAGEN A RETOCAR** | la categoría `retoque_zona_marcada` |
+
+Al activarlos te pedirán un archivo, porque traen puesto un nombre de ejemplo que no existe:
+pulsa *elige archivo para subir* y sube el tuyo. Cuando acabes, vuelve a ponerlos en bypass.
+
+Los interruptores son **perezosos**: la rama apagada ni se ejecuta ni carga su modelo en VRAM.
 
 ---
 
