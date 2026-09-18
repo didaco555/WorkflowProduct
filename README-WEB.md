@@ -25,7 +25,7 @@ textos. Cada uno aparece varias veces, así que reemplaza **todas** las aparicio
 | `TU_EMAIL@EJEMPLO.COM` | tu email |
 | `TU_CUENTA` | tu usuario de Instagram, sin la arroba |
 | `TU_ID_FORMSPREE` | el id que te da Formspree (ver punto 3) |
-| `https://TU-USUARIO.github.io/TU-REPO/` | la URL real de la web (ver punto 4) |
+| `https://didaco555.github.io/WorkflowProduct/` | ya está puesta; cámbiala sólo si publicas en otro repo o con dominio propio |
 
 Si no tienes Instagram, borra las dos líneas marcadas con
 `<!-- CAMBIAR o BORRAR si no tienes Instagram -->`.
@@ -83,21 +83,23 @@ funcionan desde el minuto uno.
 
 ## 4. Cómo lo publico en GitHub Pages
 
-1. Sube `index.html` y la carpeta `img/` al repositorio (ya están en esta rama).
+1. Sube `index.html` y la carpeta `img/` al repositorio (ya están en la rama
+   `claude/intelligent-allen-t6pn6t`).
 2. En GitHub, ve a **Settings → Pages**.
 3. En **Source** elige **Deploy from a branch**.
-4. En **Branch** elige la rama donde está el `index.html` y la carpeta **`/ (root)`**. Guarda.
-5. Espera un minuto y GitHub te enseña arriba la dirección:
-   `https://TU-USUARIO.github.io/TU-REPO/`.
-6. Copia esa dirección y pégala en `index.html` donde pone `https://TU-USUARIO.github.io/TU-REPO/`
-   (está en las etiquetas `canonical`, `og:url` y `og:image`, y en el comentario de arriba del archivo). Sin eso, la miniatura no aparece al
-   compartir el enlace por WhatsApp.
+4. En **Branch** elige la rama donde está el `index.html` (`claude/intelligent-allen-t6pn6t`) y la
+   carpeta **`/ (root)`**. Guarda.
+5. Espera un par de minutos y la web queda en
+   **`https://didaco555.github.io/WorkflowProduct/`**.
+6. Esa dirección ya está escrita dentro de `index.html` (`canonical`, `og:url` y `og:image`). Si
+   publicas en otro repositorio o con dominio propio, cámbiala ahí: sin eso, la miniatura no sale
+   al compartir el enlace por WhatsApp.
 
 Cada vez que hagas un cambio y lo subas al repositorio, la web se actualiza sola en un par de
 minutos. Si ves la versión antigua, recarga con Ctrl+F5.
 
 **¿Dominio propio?** En la misma pantalla de Pages, apartado *Custom domain*: escribe tu dominio
-y en tu proveedor apunta un registro `CNAME` a `TU-USUARIO.github.io`.
+y en tu proveedor apunta un registro `CNAME` a `didaco555.github.io`.
 
 ---
 
