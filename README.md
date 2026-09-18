@@ -1,19 +1,24 @@
 # WorkflowProduct — fotografía de producto con ComfyUI
 
-Cuatro workflows `.json` listos para arrastrar a ComfyUI, pensados para trabajar con **la foto que
-manda el cliente** (a menudo mala) y sacar de ahí dos entregables:
+Workflows `.json` listos para arrastrar a ComfyUI, pensados para trabajar con **la foto que manda
+el cliente** (a menudo mala) y sacar de ahí dos entregables:
 
 1. **Packshot de catálogo** — fondo limpio de estudio, luz y sombra natural.
 2. **Lifestyle** — el producto dentro de una escena (la crema en un baño de mármol, el vino en una terraza).
 
-Todo con modelos **gratuitos y de pesos abiertos**, ejecutados en local. Nada de APIs de pago.
+Todo funciona con modelos **gratuitos y de pesos abiertos, en local**. GPT Image 2.5 aparece sólo
+como motor alternativo opcional dentro del workflow único, apagado por defecto.
 
 | Archivo | Para qué |
 |---|---|
+| **[`workflows/10_estudio_producto.json`](workflows/10_estudio_producto.json)** | **Todo en uno**: subes la foto, eliges el tipo en un desplegable y ejecutas |
 | [`workflows/00_rescate_foto_cliente.json`](workflows/00_rescate_foto_cliente.json) | Reconstruye una foto mala (móvil, ruido, JPEG, borrosa) con SeedVR2 |
 | [`workflows/01_packshot_catalogo.json`](workflows/01_packshot_catalogo.json) | Packshot de catálogo, con **4 niveles** encadenados |
 | [`workflows/02_lifestyle_escena.json`](workflows/02_lifestyle_escena.json) | Producto integrado en una escena, con **dos motores** a elegir |
 | [`workflows/03_retoque_zona.json`](workflows/03_retoque_zona.json) | “Rodear lo que no me gusta”: pintas una zona y sólo eso se regenera |
+
+Empieza por **`10_estudio_producto.json`** si quieres un único grafo para todo. Los otros cuatro son
+los mismos pasos por separado, más sencillos de leer y de modificar.
 
 Cada workflow lleva dentro sus propias notas (nodos `MarkdownNote`), así que se explica solo una
 vez abierto.
@@ -33,7 +38,7 @@ vez abierto.
 
 La lista de descargas con enlaces y carpetas está en **[`docs/MODELOS.md`](docs/MODELOS.md)**.
 
-> **Sin nodos de terceros.** Los cuatro workflows usan únicamente nodos del núcleo de ComfyUI.
+> **Sin nodos de terceros.** Todos los workflows usan únicamente nodos del núcleo de ComfyUI.
 > No hace falta ComfyUI-Manager, ni BiRefNet de terceros, ni Impact Pack. Sólo mantén ComfyUI
 > actualizado (los nodos `RemoveBackground`, `SeedVR2*` y `Flux2Scheduler` son recientes).
 
@@ -51,7 +56,51 @@ anterior a ese nodo: actualiza y vuelve a cargar el workflow.
 
 ---
 
+## El workflow único: `10_estudio_producto.json`
+
+Un solo grafo, y **un solo mando**: el desplegable `TIPO DE FOTO`.
+
+```
+▼ TIPO DE FOTO
+   packshot_blanco              packshot_degradado_gris
+   packshot_superficie_reflejo  packshot_fondo_color
+   lifestyle_bano_marmol        lifestyle_terraza_atardecer
+   lifestyle_cocina_nordica     lifestyle_hormigon_estudio
+   lifestyle_escritorio_madera  lifestyle_mesita_noche
+   lifestyle_exterior_natural   lifestyle_usar_referencia
+   retoque_zona_marcada
+```
+
+Lo que eliges hace dos cosas a la vez:
+
+1. Un nodo `Extract Text from JSON` saca ese prompt del **catálogo** y lo enchufa al motor.
+2. El propio nombre reconfigura el grafo: si contiene `packshot` se activa el recorte con fondo
+   blanco puro; si contiene `retoque` se pasa a modo máscara y sólo se regenera lo que hayas
+   pintado en el MaskEditor.
+
+**Añadir tus propios tipos** son dos pasos: escribes `"mi_tipo": "tu prompt"` en el nodo CATÁLOGO
+y añades `mi_tipo` a la lista del desplegable (doble clic sobre él).
+
+Además lleva un segundo desplegable, `MOTOR`, con tres opciones:
+
+| Opción | Qué es | Coste |
+|---|---|---|
+| `qwen_local` | Qwen-Image-Edit 2511 en tu GPU | gratis |
+| `flux2_local` | FLUX.2 [klein] 9B en tu GPU | gratis |
+| `gpt_image_api` | GPT Image 2.5 de OpenAI, por la nube | se paga por imagen |
+
+Sólo se ejecuta el motor elegido: los interruptores son perezosos, así que los otros dos ni cargan
+su modelo ni facturan nada. El nodo de GPT Image enseña el precio estimado antes de ejecutar.
+
+Los dos cargadores secundarios (*referencia de escena* e *imagen a retocar*) vienen **en bypass**
+para que no tengas que subirles nada. Ctrl+B para activarlos cuando los necesites.
+
+---
+
 ## El flujo completo, de principio a fin
+
+Los cuatro workflows sueltos son las mismas piezas que van dentro de `10_estudio_producto.json`,
+por si prefieres tocarlas por separado:
 
 ```
 foto del cliente

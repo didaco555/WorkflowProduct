@@ -24,7 +24,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from comfy_graph import FRONTEND_ONLY, SCHEMAS  # noqa: E402
+from comfy_graph import FRONTEND_ONLY, SCHEMAS, VARIADIC_WIDGETS  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORKFLOWS = os.path.join(ROOT, "workflows")
@@ -92,7 +92,8 @@ def validate_file(path: str) -> list[str]:
                 err(f"nodo {n['id']} ({n['type']}): falta la entrada '{name}'")
             elif not optional and declared[name].get("link") is None:
                 err(f"nodo {n['id']} ({n['type']}): entrada obligatoria '{name}' sin conectar")
-        if len(n.get("widgets_values") or []) > len(schema["widgets"]):
+        if (n["type"] not in VARIADIC_WIDGETS
+                and len(n.get("widgets_values") or []) > len(schema["widgets"])):
             err(f"nodo {n['id']} ({n['type']}): {len(n['widgets_values'])} valores para "
                 f"{len(schema['widgets'])} widgets")
         for inp in n.get("inputs") or []:
@@ -113,11 +114,12 @@ def check_node_types_exist(comfyui: str) -> list[str]:
         p = os.path.join(comfyui, rel)
         if os.path.isfile(p):
             sources.append(open(p, encoding="utf-8", errors="ignore").read())
-    extras = os.path.join(comfyui, "comfy_extras")
-    if os.path.isdir(extras):
-        for f in os.listdir(extras):
-            if f.endswith(".py"):
-                sources.append(open(os.path.join(extras, f), encoding="utf-8", errors="ignore").read())
+    for sub in ("comfy_extras", "comfy_api_nodes"):
+        d = os.path.join(comfyui, sub)
+        if os.path.isdir(d):
+            for f in os.listdir(d):
+                if f.endswith(".py"):
+                    sources.append(open(os.path.join(d, f), encoding="utf-8", errors="ignore").read())
     blob = "\n".join(sources)
     known = set(re.findall(r'node_id\s*=\s*"([A-Za-z0-9_]+)"', blob))
     known |= set(re.findall(r'"([A-Za-z0-9_]+)"\s*:\s*[A-Za-z_][A-Za-z0-9_]*\s*,', blob))
