@@ -38,31 +38,50 @@ normal, no hay nada que compilar.
 
 ## 2. Cómo sustituyo las fotos
 
-Mete tus imágenes en `img/` **con el mismo nombre** que las de relleno y ya está, no hay que
-tocar el HTML:
+Mete tus imágenes en `img/` **con el mismo nombre** que las que ya hay y listo, no hay que tocar
+el HTML:
 
-| Archivo | Dónde sale |
-|---|---|
-| `antes-1.jpg` / `despues-1.jpg` | primer comparador (el grande) |
-| `antes-2.jpg` / `despues-2.jpg` | comparador de abajo a la izquierda |
-| `antes-3.jpg` / `despues-3.jpg` | comparador de abajo a la derecha |
-| `catalogo.jpg`, `ambiente.jpg`, `video.jpg` | sección “Qué hago” |
-| `og.jpg` | la miniatura que se ve al pasar el enlace por WhatsApp |
+| Archivo | Dónde sale | Tamaño actual |
+|---|---|---|
+| `antes-1.jpg` / `despues-1.jpg` | primer comparador (el grande) | 1000 × 1500 |
+| `antes-2.jpg` / `despues-2.jpg` | comparador de abajo a la izquierda | 1100 × 1320 |
+| `antes-3.jpg` / `despues-3.jpg` | comparador de abajo a la derecha | 1100 × 1320 |
+| `caso-original.jpg` | la foto de partida de la sección **Exposición** | 900 × 1200 |
+| `despues-1/2/3.jpg` | las tres piezas de la **Exposición** (se reutilizan) | — |
+| `catalogo.jpg`, `ambiente.jpg`, `video.jpg` | tarjetas de “Qué hago” | 900 × 1200 |
+| `og.jpg` | la miniatura al compartir el enlace por WhatsApp | 1200 × 630 |
 
 Tres reglas para que no se descuadre nada:
 
-1. **El "antes" y el "después" de cada pareja tienen que medir exactamente lo mismo.** Si no, el
+1. **El “antes” y el “después” de cada pareja tienen que medir exactamente lo mismo.** Si no, el
    deslizador enseña la foto movida.
-2. Usa **1200 × 900 px** (o cualquier medida con esa proporción 4:3) para los comparadores y las
-   tres de “Qué hago”, y **1200 × 630 px** para `og.jpg`.
+2. Respeta los tamaños de la tabla, o cambia también los atributos `width` y `height` del `<img>`
+   correspondiente: sirven para que el navegador reserve el hueco y la página no pegue saltos.
 3. Guarda en JPG de calidad media (unos 150–250 KB por imagen). Si subes fotos de 5 MB la web
    tardará en cargar en el móvil, que es por donde entra la mitad de la gente.
 
-Si cambias la proporción de las fotos, cambia también los atributos `width` y `height` de cada
-`<img>`: sirven para que el navegador reserve el hueco y la página no pegue saltos al cargar.
-
 Y cambia el texto `alt` de cada imagen por lo que se ve realmente en ella (“bote de crema sobre
 mármol…”). Es lo que lee Google y lo que oye quien navega con lector de pantalla.
+
+### Añadir más trabajos a la Exposición
+
+Dentro de `<section id="exposicion">` busca `<div class="galeria">`. Cada pieza es un bloque así:
+
+```html
+<figure class="obra">
+  <button type="button" class="lupa-btn" data-lupa="img/mi-foto.jpg" data-pie="Pie que sale al ampliar.">
+    <img src="img/mi-foto.jpg" width="1100" height="1320" loading="lazy" alt="Describe la imagen">
+  </button>
+  <figcaption>Título corto · para qué sirve.</figcaption>
+</figure>
+```
+
+Copia el bloque, cambia `data-lupa`, `src`, `alt` y los dos pies, y ya aparece en la galería con la
+lupa funcionando. Con más de tres piezas la rejilla sigue en tres columnas y va bajando de fila.
+
+**El aviso de abajo.** Mientras las imágenes sean pruebas tuyas y no encargos, deja la línea
+`<p class="aviso">`: dice que compraste el producto y que no es un trabajo para la marca. Si algún
+día son encargos reales con permiso del cliente, bórrala.
 
 ---
 

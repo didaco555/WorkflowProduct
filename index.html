@@ -259,6 +259,38 @@ footer a{color:var(--tinta-suave)}
 .flotante svg{width:30px;height:30px;fill:currentColor}
 @media(min-width:900px){.flotante{display:none}}
 
+
+/* ---- Exposición ---- */
+.caso{display:grid;gap:clamp(24px,3vw,40px)}
+@media(min-width:900px){.caso{grid-template-columns:minmax(180px,240px) 1fr;align-items:start}}
+.origen{margin:0}
+.origen img{border-radius:var(--radio);box-shadow:var(--sombra)}
+.origen figcaption{margin-top:12px;font-size:.9rem;color:var(--tinta-suave)}
+.galeria{display:grid;gap:clamp(18px,2.5vw,28px)}
+@media(min-width:640px){.galeria{grid-template-columns:repeat(3,1fr);align-items:start}}
+.obra{margin:0}
+.lupa-btn{
+  display:block;width:100%;padding:0;border:0;background:none;cursor:zoom-in;
+  border-radius:var(--radio);overflow:hidden;box-shadow:var(--sombra)
+}
+.lupa-btn img{width:100%;height:auto;display:block;transition:transform .35s ease}
+.lupa-btn:hover img{transform:scale(1.03)}
+.obra figcaption{margin-top:10px;font-size:.92rem;color:var(--tinta-suave)}
+.aviso{margin:30px 0 0;font-size:.87rem;color:var(--tinta-suave);max-width:70ch}
+
+/* ---- Lupa (imagen a pantalla completa) ---- */
+#lupa{border:0;padding:0;background:transparent;max-width:min(94vw,860px);max-height:94vh;overflow:visible}
+#lupa::backdrop{background:rgba(23,20,15,.9)}
+#lupa img{display:block;max-width:100%;max-height:80vh;width:auto;margin:0 auto;border-radius:10px}
+#lupa p{color:#fff;text-align:center;font-size:.9rem;margin:14px 0 0}
+#lupa .cerrar{
+  position:absolute;top:-46px;right:0;width:38px;height:38px;border-radius:50%;
+  border:0;background:rgba(255,255,255,.14);color:#fff;font-size:1.3rem;line-height:1;cursor:pointer
+}
+#lupa .cerrar:hover{background:rgba(255,255,255,.26)}
+/* con la lupa abierta escondemos la cabecera: su desenfoque se cuela por encima */
+.con-lupa header,.con-lupa .flotante{visibility:hidden}
+
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *{transition:none!important;animation:none!important}
@@ -276,6 +308,7 @@ footer a{color:var(--tinta-suave)}
     <nav class="nav-links" aria-label="Principal">
       <ul>
         <li><a href="#antes-despues">Antes y después</a></li>
+        <li><a href="#exposicion">Exposición</a></li>
         <li><a href="#que-hago">Qué hago</a></li>
         <li><a href="#packs">Precios</a></li>
         <li><a href="#faq">Preguntas</a></li>
@@ -308,14 +341,15 @@ footer a{color:var(--tinta-suave)}
 
 <!-- ============ 2. ANTES / DESPUÉS ============
      CAMBIAR: sustituye los archivos de la carpeta img/ por los tuyos
-     (mismo nombre y mismo tamaño en las dos fotos de cada pareja).
+     (mismo nombre y MISMO TAMAÑO en las dos fotos de cada pareja).
+     Ahora mismo las tres parejas salen de la misma foto de móvil.
      Cambia también el alt y el pie de cada imagen.
      ================================================ -->
 <section id="antes-despues">
   <div class="contenedor">
     <p class="etiqueta">Antes y después</p>
     <h2>Esto es lo que me mandas y esto es lo que recibes.</h2>
-    <p class="intro">Arrastra el círculo para comparar. A la izquierda, la foto original del cliente. A la derecha, lo que se publica.</p>
+    <p class="intro">Arrastra el círculo para comparar. A la izquierda, la foto de partida hecha con el móvil. A la derecha, la imagen terminada.</p>
 
     <div class="comparadores" style="margin-top:36px">
 
@@ -323,11 +357,11 @@ footer a{color:var(--tinta-suave)}
         <div class="ba" data-ba>
           <span class="ba-tag izq">Antes</span>
           <span class="ba-tag der">Después</span>
-          <img src="img/despues-1.jpg" width="1200" height="900" alt="Bote de cosmética sobre fondo neutro con luz de estudio, listo para la ficha de producto">
-          <img class="antes" src="img/antes-1.jpg" width="1200" height="900" alt="El mismo bote fotografiado con el móvil sobre una encimera, con sombra dura y fondo con trastos">
-          <button class="ba-mango" type="button" role="slider" aria-label="Comparar antes y después: cosmética" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="50% de la foto original"></button>
+          <img src="img/despues-1.jpg" width="1000" height="1500" alt="Botella de cerveza sobre fondo blanco con luz de estudio, lista para la ficha de producto">
+          <img class="antes" src="img/antes-1.jpg" width="1000" height="1500" alt="La misma botella sujetada con la mano en un salón, de noche y con luz de bombilla">
+          <button class="ba-mango" type="button" role="slider" aria-label="Comparar antes y después: foto de catálogo" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="50% de la foto original"></button>
         </div>
-        <figcaption>Cosmética · foto de móvil sobre la encimera → packshot de catálogo.</figcaption>
+        <figcaption>Foto de móvil en el salón → packshot de catálogo con fondo limpio.</figcaption>
       </figure>
 
       <div class="pareja">
@@ -335,26 +369,68 @@ footer a{color:var(--tinta-suave)}
           <div class="ba" data-ba>
             <span class="ba-tag izq">Antes</span>
             <span class="ba-tag der">Después</span>
-            <img src="img/despues-2.jpg" width="1200" height="900" loading="lazy" alt="Producto de alimentación colocado en una escena de cocina con luz natural">
-            <img class="antes" src="img/antes-2.jpg" width="1200" height="900" loading="lazy" alt="El mismo producto de alimentación fotografiado de cualquier manera con el móvil">
-            <button class="ba-mango" type="button" role="slider" aria-label="Comparar antes y después: alimentación" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="50% de la foto original"></button>
+            <img src="img/despues-2.jpg" width="1100" height="1320" loading="lazy" alt="La botella y un vaso servido sobre una mesa de madera, con la ciudad al atardecer al fondo">
+            <img class="antes" src="img/antes-2.jpg" width="1100" height="1320" loading="lazy" alt="La misma botella sujetada con la mano en un salón, de noche">
+            <button class="ba-mango" type="button" role="slider" aria-label="Comparar antes y después: foto de ambiente" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="50% de la foto original"></button>
           </div>
-          <figcaption>Alimentación · foto suelta → foto de ambiente en una cocina.</figcaption>
+          <figcaption>La misma foto → escena de ambiente con la mesa puesta.</figcaption>
         </figure>
 
         <figure class="pieza" style="margin:0">
           <div class="ba" data-ba>
             <span class="ba-tag izq">Antes</span>
             <span class="ba-tag der">Después</span>
-            <img src="img/despues-3.jpg" width="1200" height="900" loading="lazy" alt="Pieza de decoración sobre fondo limpio con sombra suave, lista para marketplace">
-            <img class="antes" src="img/antes-3.jpg" width="1200" height="900" loading="lazy" alt="La misma pieza de decoración fotografiada en casa con poca luz">
-            <button class="ba-mango" type="button" role="slider" aria-label="Comparar antes y después: decoración" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="50% de la foto original"></button>
+            <img src="img/despues-3.jpg" width="1100" height="1320" loading="lazy" alt="Creatividad vertical de anuncio con la botella, el vaso servido y un titular sobre la imagen">
+            <img class="antes" src="img/antes-3.jpg" width="1100" height="1320" loading="lazy" alt="La misma botella sujetada con la mano en un salón, de noche">
+            <button class="ba-mango" type="button" role="slider" aria-label="Comparar antes y después: creatividad para anuncios" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="50% de la foto original"></button>
           </div>
-          <figcaption>Decoración · foto con poca luz → imagen lista para Amazon.</figcaption>
+          <figcaption>La misma foto → creatividad vertical para anuncios y stories.</figcaption>
         </figure>
       </div>
 
     </div>
+  </div>
+</section>
+
+<!-- ============ 2 bis. EXPOSICIÓN (caso real) ============
+     CAMBIAR: cuando tengas más trabajos, duplica un <figure class="obra">
+     dentro de .galeria y cambia la imagen, el alt y el pie.
+     ======================================================== -->
+<section id="exposicion">
+  <div class="contenedor">
+    <p class="etiqueta">Exposición</p>
+    <h2>Una sola foto de móvil, tres piezas distintas.</h2>
+    <p class="intro">Ni estudio, ni segunda sesión, ni pedirle nada más al cliente. Toca cualquier imagen para verla grande.</p>
+
+    <div class="caso" style="margin-top:36px">
+      <figure class="origen">
+        <img src="img/caso-original.jpg" width="900" height="1200" loading="lazy" alt="Foto original hecha con el móvil: la botella en la mano, en un salón y con luz de bombilla">
+        <figcaption><strong>El punto de partida.</strong> Una foto con el móvil, de noche, con la mano en medio y reflejos por todas partes.</figcaption>
+      </figure>
+      <div class="galeria">
+        <figure class="obra">
+          <button type="button" class="lupa-btn" data-lupa="img/despues-1.jpg" data-pie="Foto de catálogo: fondo neutro y luz de estudio.">
+            <img src="img/despues-1.jpg" width="1000" height="1500" loading="lazy" alt="Foto de catálogo de la botella sobre fondo neutro con luz de estudio">
+          </button>
+          <figcaption>Catálogo · para la ficha de producto y marketplaces.</figcaption>
+        </figure>
+        <figure class="obra">
+          <button type="button" class="lupa-btn" data-lupa="img/despues-2.jpg" data-pie="Foto de ambiente: la mesa puesta al atardecer.">
+            <img src="img/despues-2.jpg" width="1100" height="1320" loading="lazy" alt="Foto de ambiente con la botella y el vaso servido sobre una mesa de madera al atardecer">
+          </button>
+          <figcaption>Ambiente · para la web y para Instagram.</figcaption>
+        </figure>
+        <figure class="obra">
+          <button type="button" class="lupa-btn" data-lupa="img/despues-3.jpg" data-pie="Creatividad vertical lista para anuncios y stories.">
+            <img src="img/despues-3.jpg" width="1100" height="1320" loading="lazy" alt="Creatividad vertical para anuncios con la botella, el vaso y un titular">
+          </button>
+          <figcaption>Creatividad · para anuncios y stories.</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <!-- CAMBIAR: deja esta línea mientras los trabajos sean pruebas tuyas y no encargos -->
+    <p class="aviso">Prueba propia: compré el producto, lo fotografié con el móvil y generé estas imágenes. No es un encargo de la marca.</p>
   </div>
 </section>
 
@@ -366,17 +442,17 @@ footer a{color:var(--tinta-suave)}
 
     <div class="rejilla-3" style="margin-top:36px">
       <article class="servicio">
-        <img src="img/catalogo.jpg" width="1200" height="900" loading="lazy" alt="Ejemplo de foto de catálogo: producto sobre fondo blanco con luz de estudio">
+        <img src="img/catalogo.jpg" width="900" height="1200" loading="lazy" alt="Ejemplo de foto de catálogo: la botella sobre fondo neutro con luz de estudio">
         <h3>Foto de catálogo</h3>
         <p>Fondo blanco o neutro, luz de estudio. Lista para tu tienda y para marketplaces.</p>
       </article>
       <article class="servicio">
-        <img src="img/ambiente.jpg" width="1200" height="900" loading="lazy" alt="Ejemplo de foto de ambiente: producto colocado en una escena de casa">
+        <img src="img/ambiente.jpg" width="900" height="1200" loading="lazy" alt="Ejemplo de foto de ambiente: la botella y un vaso servido sobre una mesa de madera">
         <h3>Foto de ambiente</h3>
         <p>Tu producto colocado en una escena real: una cocina, un baño, una mesa de terraza. Sin hacer una sesión de fotos.</p>
       </article>
       <article class="servicio">
-        <img src="img/video.jpg" width="1200" height="900" loading="lazy" alt="Ejemplo de fotograma de un vídeo corto de producto para redes">
+        <img src="img/video.jpg" width="900" height="1200" loading="lazy" alt="Fotograma de ejemplo para vídeo corto: la botella y el vaso servido con salpicaduras de agua">
         <h3>Vídeo corto</h3>
         <p>Clips de 5 a 10 segundos hechos a partir de las fotos, para reels y anuncios.</p>
       </article>
@@ -583,6 +659,13 @@ footer a{color:var(--tinta-suave)}
   </div>
 </footer>
 
+<!-- Lupa: se abre al tocar una imagen de la exposición -->
+<dialog id="lupa" aria-label="Imagen ampliada">
+  <button type="button" class="cerrar" aria-label="Cerrar">&times;</button>
+  <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="">
+  <p></p>
+</dialog>
+
 <!-- Botón flotante de WhatsApp, sólo se ve en móvil -->
 <a class="flotante" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20te%20mando%20una%20foto%20de%20mi%20producto%20para%20la%20muestra%20gratis." aria-label="Escríbeme por WhatsApp">
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.97L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.85 9.85 0 0 0 12.04 2m0 1.67c2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.25 8.24-1.48 0-2.93-.4-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24m-2.6 3.98c-.16 0-.42.06-.64.3-.22.24-.85.83-.85 2.02s.87 2.34.99 2.5c.12.16 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.43-.59 1.63-1.15.2-.56.2-1.04.14-1.15-.06-.1-.22-.16-.46-.28-.24-.12-1.43-.71-1.66-.79-.22-.08-.38-.12-.54.12-.16.24-.62.79-.76.95-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.93-1.19-.71-.64-1.2-1.42-1.34-1.66-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.31-.74-1.79-.19-.46-.39-.4-.54-.41h-.46Z"/></svg>
@@ -649,6 +732,30 @@ footer a{color:var(--tinta-suave)}
 
     poner(50);
   });
+
+  /* Lupa de la exposición: abre la imagen grande sin salir de la página */
+  var lupa = document.getElementById('lupa');
+  if (lupa) {
+    var lupaImg = lupa.querySelector('img');
+    var lupaPie = lupa.querySelector('p');
+    Array.prototype.forEach.call(document.querySelectorAll('.lupa-btn'), function (boton) {
+      boton.addEventListener('click', function () {
+        var origen = boton.querySelector('img');
+        if (!lupa.showModal) { window.open(boton.getAttribute('data-lupa'), '_blank'); return; }
+        lupaImg.src = boton.getAttribute('data-lupa');
+        lupaImg.alt = origen ? origen.alt : '';
+        lupaPie.textContent = boton.getAttribute('data-pie') || '';
+        lupa.showModal();
+        document.documentElement.classList.add('con-lupa');
+      });
+    });
+    lupa.addEventListener('click', function (e) {
+      if (e.target === lupa || e.target.classList.contains('cerrar')) lupa.close();
+    });
+    lupa.addEventListener('close', function () {
+      document.documentElement.classList.remove('con-lupa');
+    });
+  }
 
   /* Año del pie, para no tener que tocarlo cada enero */
   var anio = document.getElementById('anio');
