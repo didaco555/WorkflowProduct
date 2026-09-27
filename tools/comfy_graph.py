@@ -461,6 +461,66 @@ SCHEMAS: dict[str, dict] = {
         "outputs": [("FLOAT", "FLOAT"), ("INT", "INT"), ("BOOL", "BOOLEAN")],
     },
 
+    # ---- profundidad: Depth Anything 3 (comfy_extras/nodes_depth_anything_3.py) -----------------
+    "LoadDA3Model": {
+        "inputs": [],
+        "widgets": [("model_name", "COMBO"), ("weight_dtype", "COMBO")],
+        "outputs": [("DA3_MODEL", "DA3_MODEL")],
+    },
+    "DA3Inference": {
+        "inputs": [("da3_model", "DA3_MODEL", False), ("image", "IMAGE", False)],
+        "widgets": [("resolution", "INT"), ("resize_method", "COMBO"), ("mode", "COMBO")],
+        "outputs": [("da3_geometry", "DA3_GEOMETRY")],
+    },
+    "DA3Render": {
+        "inputs": [("da3_geometry", "DA3_GEOMETRY", False)],
+        "widgets": [("output", "COMBO"), ("normalization", "COMBO"), ("apply_sky_clip", "BOOLEAN")],
+        "outputs": [("IMAGE", "IMAGE")],
+    },
+
+    # ---- parallax 2.5D: ComfyUI-Depthflow-Nodes (paquete de terceros, ver NODE_PACKS) ----------
+    "Depthflow": {
+        "inputs": [
+            ("image", "IMAGE", False),
+            ("depth_map", "IMAGE", False),
+            ("motion", "DEPTHFLOW_MOTION", False),
+            ("effects", "DEPTHFLOW_EFFECTS", True),
+        ],
+        "widgets": [
+            ("animation_speed", "FLOAT"), ("input_fps", "FLOAT"), ("output_fps", "FLOAT"),
+            ("num_frames", "INT"), ("quality", "INT"), ("ssaa", "FLOAT"), ("invert", "FLOAT"),
+            ("tiling_mode", "COMBO"), ("edge_fix", "INT"),
+        ],
+        "outputs": [("IMAGE", "IMAGE")],
+    },
+    "DepthflowMotionPresetZoom": {
+        "inputs": [("feature", "FEATURE", True)],
+        "widgets": [("strength", "FLOAT"), ("feature_threshold", "FLOAT"), ("feature_param", "COMBO"), ("feature_mode", "COMBO"), ("intensity", "FLOAT"), ("reverse", "BOOLEAN"), ("smooth", "BOOLEAN"), ("phase", "FLOAT"), ("loop", "BOOLEAN")],
+        "outputs": [("DEPTHFLOW_MOTION", "DEPTHFLOW_MOTION")],
+    },
+    "DepthflowMotionPresetHorizontal": {
+        "inputs": [("feature", "FEATURE", True)],
+        "widgets": [("strength", "FLOAT"), ("feature_threshold", "FLOAT"), ("feature_param", "COMBO"), ("feature_mode", "COMBO"), ("intensity", "FLOAT"), ("reverse", "BOOLEAN"), ("loop", "BOOLEAN"), ("smooth", "BOOLEAN"), ("phase", "FLOAT"), ("steady_value", "FLOAT")],
+        "outputs": [("DEPTHFLOW_MOTION", "DEPTHFLOW_MOTION")],
+    },
+    "DepthflowMotionPresetVertical": {
+        "inputs": [("feature", "FEATURE", True)],
+        "widgets": [("strength", "FLOAT"), ("feature_threshold", "FLOAT"), ("feature_param", "COMBO"), ("feature_mode", "COMBO"), ("intensity", "FLOAT"), ("reverse", "BOOLEAN"), ("loop", "BOOLEAN"), ("smooth", "BOOLEAN"), ("phase", "FLOAT"), ("steady_value", "FLOAT")],
+        "outputs": [("DEPTHFLOW_MOTION", "DEPTHFLOW_MOTION")],
+    },
+    "DepthflowMotionPresetOrbital": {
+        "inputs": [("feature", "FEATURE", True)],
+        "widgets": [("strength", "FLOAT"), ("feature_threshold", "FLOAT"), ("feature_param", "COMBO"), ("feature_mode", "COMBO"), ("intensity", "FLOAT"), ("reverse", "BOOLEAN"), ("depth", "FLOAT")],
+        "outputs": [("DEPTHFLOW_MOTION", "DEPTHFLOW_MOTION")],
+    },
+    "DepthflowMotionPresetCircle": {
+        "inputs": [("feature", "FEATURE", True)],
+        "widgets": [("strength", "FLOAT"), ("feature_threshold", "FLOAT"), ("feature_param", "COMBO"), ("feature_mode", "COMBO"), ("intensity", "FLOAT"), ("reverse", "BOOLEAN"), ("smooth", "BOOLEAN"), ("phase_x", "FLOAT"), ("phase_y", "FLOAT"),
+                    ("phase_z", "FLOAT"), ("amplitude_x", "FLOAT"), ("amplitude_y", "FLOAT"),
+                    ("amplitude_z", "FLOAT"), ("static_value", "FLOAT")],
+        "outputs": [("DEPTHFLOW_MOTION", "DEPTHFLOW_MOTION")],
+    },
+
     # ---- texto ----------------------------------------------------------------------------------
     "StringConcatenate": {
         "inputs": [],
@@ -512,6 +572,20 @@ SCHEMAS: dict[str, dict] = {
         "outputs": [("BOOLEAN", "BOOLEAN")],
     },
 
+}
+
+# Nodos de paquetes de terceros -> (id en el registro de ComfyUI, versión). El `cnr_id` hace que
+# ComfyUI-Manager ofrezca instalar el paquete si falta.
+NODE_PACKS = {
+    t: ("comfyui-depthflow-nodes", "1.2.3")
+    for t in (
+        "Depthflow",
+        "DepthflowMotionPresetZoom",
+        "DepthflowMotionPresetHorizontal",
+        "DepthflowMotionPresetVertical",
+        "DepthflowMotionPresetOrbital",
+        "DepthflowMotionPresetCircle",
+    )
 }
 
 # Nodos cuyo número de widgets lo define el usuario en el frontend.
@@ -708,6 +782,8 @@ class Graph:
             }
             if n.type in FRONTEND_ONLY:
                 data["properties"] = {}
+            elif n.type in NODE_PACKS:
+                data["properties"]["cnr_id"], data["properties"]["ver"] = NODE_PACKS[n.type]
             if n.title:
                 data["title"] = n.title
             if n.color:

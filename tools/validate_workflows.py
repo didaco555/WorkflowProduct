@@ -25,7 +25,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from comfy_graph import FRONTEND_ONLY, SCHEMAS, VARIADIC_WIDGETS  # noqa: E402
+from comfy_graph import FRONTEND_ONLY, NODE_PACKS, SCHEMAS, VARIADIC_WIDGETS  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORKFLOWS = os.path.join(ROOT, "workflows")
@@ -165,8 +165,8 @@ def check_node_types_exist(comfyui: str) -> list[str]:
     known |= set(re.findall(r'"([A-Za-z0-9_]+)"\s*:\s*[A-Za-z_][A-Za-z0-9_]*\s*,', blob))
     missing = []
     for t in sorted(SCHEMAS):
-        if t in FRONTEND_ONLY:
-            continue
+        if t in FRONTEND_ONLY or t in NODE_PACKS:
+            continue  # los de paquetes de terceros no están en el núcleo
         if t not in known:
             missing.append(f"tipo de nodo no encontrado en el código de ComfyUI: {t}")
     return missing

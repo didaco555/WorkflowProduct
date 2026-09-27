@@ -16,7 +16,8 @@ suscripciones: una vez descargados los modelos, cada foto te cuesta lo que tarde
 | [`workflows/01_packshot_catalogo.json`](workflows/01_packshot_catalogo.json) | Packshot de catálogo, con **4 niveles** encadenados |
 | [`workflows/02_lifestyle_escena.json`](workflows/02_lifestyle_escena.json) | Producto integrado en una escena, con **dos motores** a elegir |
 | [`workflows/03_retoque_zona.json`](workflows/03_retoque_zona.json) | “Rodear lo que no me gusta”: pintas una zona y sólo eso se regenera |
-| **[`workflows/21_video_tour_ltx25.json`](workflows/21_video_tour_ltx25.json)** | **Vídeo tour** para pisos turísticos: una foto → un plano de 5 s con movimiento de cámara (**LTX-2.5**, el recomendado) |
+| **[`workflows/25_video_tour_parallax.json`](workflows/25_video_tour_parallax.json)** | **Vídeo tour 2.5D sin IA generativa**: la cámara recorre la foto usando su profundidad (Depth Anything 3 + DepthFlow). No puede inventar nada |
+| **[`workflows/21_video_tour_ltx25.json`](workflows/21_video_tour_ltx25.json)** | Vídeo tour con IA: una foto → un plano de 5 s con movimiento de cámara (**LTX-2.5**) |
 | [`workflows/22_video_transicion_ltx25.json`](workflows/22_video_transicion_ltx25.json) | Vídeo de una foto a otra del mismo espacio (LTX-2.5) |
 | [`workflows/20_video_tour_inmobiliario.json`](workflows/20_video_tour_inmobiliario.json) | Vídeo tour con **Wan 2.2** (alternativa): foto → plano o foto → foto, con SeedVR2 a 1080p y FILM a 32 fps |
 | [`workflows/23_video_tour_minimax_h3.json`](workflows/23_video_tour_minimax_h3.json) | Vídeo tour con **MiniMax H3** (el mejor en calidad; su licencia excluye la UE). Plano anclado por los dos extremos a la foto real |

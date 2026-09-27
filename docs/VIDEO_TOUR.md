@@ -4,7 +4,8 @@ Workflows:
 
 | Archivo | Motor | Para qué |
 |---|---|---|
-| **[`21_video_tour_ltx25.json`](../workflows/21_video_tour_ltx25.json)** | **LTX-2.5** | **foto → plano**. El recomendado. |
+| **[`25_video_tour_parallax.json`](../workflows/25_video_tour_parallax.json)** | **Depth Anything 3 + DepthFlow** | **foto → recorrido 2.5D sin IA generativa**: no puede inventar nada. El recomendado para enseñar el piso tal cual. |
+| [`21_video_tour_ltx25.json`](../workflows/21_video_tour_ltx25.json) | LTX-2.5 | foto → plano con IA (más "vida", pero puede inventar) |
 | **[`22_video_transicion_ltx25.json`](../workflows/22_video_transicion_ltx25.json)** | **LTX-2.5** | **foto → foto** del mismo espacio |
 | [`20_video_tour_inmobiliario.json`](../workflows/20_video_tour_inmobiliario.json) | Wan 2.2 14B | las dos cosas en un grafo (FINAL opcional), con SeedVR2 y FILM |
 | [`23_video_tour_minimax_h3.json`](../workflows/23_video_tour_minimax_h3.json) | MiniMax H3 | foto → plano, FINAL opcional. **Licencia: excluye la UE** |
@@ -42,6 +43,26 @@ uno sale fiel al piso y se repite sin tocar los demás.
 
 El último frame es una imagen suelta: no sabe hacia dónde iba la cámara. Por eso hay que repetir el
 mismo movimiento en el prompt; si no, puede cambiar de dirección.
+
+## Recorrido 2.5D: la cámara se mueve por la foto (workflow 25)
+
+Es lo más parecido a "una persona explorando el sitio" **sin inventar nada**:
+
+1. **Depth Anything 3** calcula a qué distancia está cada píxel de la foto.
+2. **DepthFlow** mueve una cámara virtual por esa profundidad: lo cercano se desplaza más que lo
+   lejano (paralaje), igual que cuando caminas por una habitación.
+
+Como sólo se mueven píxeles de la foto, no puede aparecer ningún objeto, pared o ventana nueva.
+
+**El límite honesto:** la foto no sabe qué hay detrás del sofá. Si la cámara se mueve mucho, esos
+huecos se ven (se rellenan estirando el borde). Con INTENSIDAD 0.3–0.6 no se notan, y es justo el
+tipo de movimiento de los vídeos inmobiliarios. Un "paseo" de verdad hasta otra habitación es
+imposible sin inventar: para eso está el corte en el montaje.
+
+| Qué necesitas | Workflow |
+|---|---|
+| Enseñar el piso **exactamente como es**, movimiento suave con profundidad | **25 (2.5D)** |
+| Más "vida" (luz que cambia, cortinas), aceptando revisar cada plano por si inventa | 21 LTX-2.5 · 24/23 H3 con anclaje doble |
 
 ## Anclaje doble: el plano empieza y termina en tu foto (workflows 23 y 24)
 

@@ -50,6 +50,7 @@ WAN_LORA_LOW = "wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors"
 WAN_CLIP = "umt5_xxl_fp8_e4m3fn_scaled.safetensors"
 WAN_VAE = "wan_2.1_vae.safetensors"
 FILM_INTERP = "film_net_fp16.safetensors"
+DA3_MODEL = "depth_anything_3_mono_large.safetensors"
 GAN_UPSCALER = "RealESRGAN_x4plus.safetensors"
 
 BLUE, GREEN, PURPLE, ORANGE, RED, GREY = "#3f789e", "#2d7d46", "#6b3f9e", "#9e6b3f", "#9e3f3f", "#444"
@@ -2000,6 +2001,136 @@ def build_h3_tour():
                 n["widgets_values"] = ["16:9 (Widescreen)", 0.98, 32]
         inj.guardar(salida)
 
+# ======================================================================================
+# Vídeo tour 2.5D (parallax): profundidad con Depth Anything 3 + cámara con DepthFlow
+# ======================================================================================
+# Sin IA generativa: Depth Anything 3 calcula a qué distancia está cada píxel y DepthFlow mueve
+# una cámara virtual por esa profundidad. Sólo se desplazan los píxeles de la foto (lo cercano se
+# mueve más que lo lejano), así que no puede aparecer nada que no esté en ella.
+PARALLAX_MOVIMIENTOS = [
+    "avance",
+    "retroceso",
+    "lateral_izquierda",
+    "lateral_derecha",
+    "subida",
+    "bajada",
+    "orbita_suave",
+    "fijo_con_vida",
+]
+_FLEX = [1.0, 0.0, "intensity", "relative"]  # strength, feature_threshold, feature_param, feature_mode
+
+
+def build_parallax_tour():
+    g = Graph("25-parallax")
+
+    with g.group("PANEL DE CONTROL · lo único que tocas", ORANGE):
+        note(
+            g,
+            "# Vídeo tour 2.5D · la cámara recorre tu foto\n\n"
+            "**Nada de IA generativa.** Depth Anything 3 calcula la profundidad de la foto y DepthFlow mueve "
+            "una cámara virtual por ella: lo cercano se desplaza más que lo lejano, como si alguien "
+            "caminara por la habitación. **Sólo se mueven píxeles de tu foto**: no aparece nada que no exista.\n\n"
+            "## Los mandos\n"
+            "| Mando | Qué hace |\n"
+            "|---|---|\n"
+            "| **▼ MOVIMIENTO** | avance, retroceso, lateral, subida/bajada, órbita suave, fijo con vida |\n"
+            "| **INTENSIDAD** | 0.5 = recorrido suave de inmobiliaria. 0.3 = muy sutil. Más de 0.8 empieza a estirar bordes |\n"
+            "| **FRAMES** | 150 = 5 s a 30 fps |\n"
+            "| **ANCHO / ALTO** | 1920×1080 horizontal. La foto se recorta al centro para llenarlo |\n"
+            "| **INVERTIR PROFUNDIDAD** | ponlo a 1 si ves que el fondo se acerca en vez del primer plano |\n\n"
+            "## El límite honesto\n"
+            "Una foto no tiene lo que hay **detrás** de los muebles. Cuanto más se mueve la cámara, más se "
+            "notan esos huecos (se rellenan estirando el borde, no inventando). Con INTENSIDAD 0.3–0.6 no se "
+            "ven: es el movimiento que usan los vídeos de inmobiliaria.\n\n"
+            "Si el lateral o la subida van al revés de lo que esperas, elige el contrario "
+            "(`lateral_izquierda` ↔ `lateral_derecha`, `subida` ↔ `bajada`).\n\n"
+            "**Necesita el paquete *ComfyUI-Depthflow-Nodes*** (ComfyUI Manager → Install Missing Custom Nodes).",
+            title="LÉEME PRIMERO",
+        )
+        movimiento = combo(g, PARALLAX_MOVIMIENTOS, "avance", title="▼ MOVIMIENTO")
+        intensidad = g.add("PrimitiveFloat", [0.5], title="INTENSIDAD", color=ORANGE)
+        frames = g.add("PrimitiveInt", [150, "fixed"], title="FRAMES (150 = 5 s)", color=ORANGE)
+        ancho = g.add("PrimitiveInt", [1920, "fixed"], title="ANCHO", color=ORANGE)
+        alto = g.add("PrimitiveInt", [1080, "fixed"], title="ALTO", color=ORANGE)
+        invertir = g.add("PrimitiveFloat", [0.0], title="INVERTIR PROFUNDIDAD (0 / 1)", color=ORANGE)
+
+    with g.group("FOTO", BLUE):
+        foto = g.add("LoadImage", ["foto_inicio.png", "image"], title="FOTO del piso")
+        encuadre = g.add(
+            "ImageScale",
+            ["lanczos", 1920, 1080, "center"],
+            {"image": foto.out(0), "width": ancho.out(0), "height": alto.out(0)},
+            title="Recorte al formato del vídeo",
+        )
+
+    with g.group("PROFUNDIDAD · Depth Anything 3 (nodos nativos)", GREEN):
+        da3 = g.add("LoadDA3Model", [DA3_MODEL, "default"], title="Modelo · Depth Anything 3")
+        geo = g.add(
+            "DA3Inference",
+            [1008, "upper_bound_resize", "mono"],
+            {"da3_model": da3.out(0), "image": encuadre.out(0)},
+            title="Calcular profundidad",
+        )
+        prof = g.add("DA3Render", ["depth", "v2_style", True], {"da3_geometry": geo.out(0)}, title="Mapa de profundidad")
+        prof_hd = g.add(
+            "ImageScale",
+            ["bilinear", 1920, 1080, "disabled"],
+            {"image": prof.out(0), "width": ancho.out(0), "height": alto.out(0)},
+            title="Profundidad al tamaño del vídeo",
+        )
+        g.add("PreviewImage", [], {"images": prof_hd.out(0)}, title="Vista previa · profundidad (claro = cerca)")
+
+    with g.group("MOVIMIENTO DE CÁMARA · DepthFlow", PURPLE):
+        def preset(tipo, extra, titulo, reverse=False):
+            return g.add(
+                tipo, _FLEX + [0.5, reverse] + extra, {"intensity": intensidad.out(0)}, title=titulo
+            ).out(0)
+
+        # Un solo sentido (loop = false) y suavizado: empieza y termina despacio
+        m = {
+            "avance": preset("DepthflowMotionPresetZoom", [True, 0.0, False], "avance"),
+            "retroceso": preset("DepthflowMotionPresetZoom", [True, 0.0, False], "retroceso", reverse=True),
+            "izquierda": preset("DepthflowMotionPresetHorizontal", [False, True, 0.0, 0.3], "lateral izquierda", reverse=True),
+            "derecha": preset("DepthflowMotionPresetHorizontal", [False, True, 0.0, 0.3], "lateral derecha"),
+            "subida": preset("DepthflowMotionPresetVertical", [False, True, 0.0, 0.3], "subida"),
+            "bajada": preset("DepthflowMotionPresetVertical", [False, True, 0.0, 0.3], "bajada", reverse=True),
+            "orbita": preset("DepthflowMotionPresetOrbital", [0.5], "órbita suave"),
+            "fijo": preset(
+                "DepthflowMotionPresetCircle",
+                [True, 0.0, 0.0, 0.0, 0.3, 0.3, 0.0, 0.3],
+                "fijo con vida (respiración mínima)",
+            ),
+        }
+        elegido = m["avance"]
+        for clave in ("retroceso", "izquierda", "derecha", "subida", "bajada", "orbita", "fijo"):
+            es = g.add("StringContains", ["", clave, True], {"string": movimiento.out(0)}, title=f"¿{clave}?")
+            elegido = g.add(
+                "ComfySwitchNode",
+                [False],
+                {"on_false": elegido, "on_true": m[clave], "switch": es.out(0)},
+                title=f"→ {clave}",
+                match_type="DEPTHFLOW_MOTION",
+            ).out(0)
+
+    with g.group("RENDER Y GUARDADO", GREEN):
+        render = g.add(
+            "Depthflow",
+            [1.0, 30.0, 30.0, 150, 90, 1.0, 0.0, "mirror", 5],
+            {
+                "image": encuadre.out(0),
+                "depth_map": prof_hd.out(0),
+                "motion": elegido,
+                "num_frames": frames.out(0),
+                "invert": invertir.out(0),
+            },
+            title="DepthFlow · render 2.5D",
+        )
+        video = g.add("CreateVideo", [30.0], {"images": render.out(0)})
+        g.add("SaveVideo", ["tour/plano_parallax", "auto", "auto"], {"video": video.out(0)}, title="GUARDAR PLANO")
+
+    g.save(os.path.join(OUT, "25_video_tour_parallax.json"))
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     build_rescue()
@@ -2010,6 +2141,7 @@ def main():
     build_video_tour()
     build_ltx_tour()
     build_h3_tour()
+    build_parallax_tour()
     for f in sorted(os.listdir(OUT)):
         print("escrito:", os.path.join("workflows", f))
 

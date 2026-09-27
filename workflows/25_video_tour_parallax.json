@@ -1,0 +1,2406 @@
+{
+  "id": "24b419ce-338e-5cf4-80b2-87a961a85a19",
+  "revision": 0,
+  "last_node_id": 39,
+  "last_link_id": 53,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "MarkdownNote",
+      "pos": [
+        60.0,
+        110.0
+      ],
+      "size": [
+        420,
+        300
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {},
+      "widgets_values": [
+        "# Vídeo tour 2.5D · la cámara recorre tu foto\n\n**Nada de IA generativa.** Depth Anything 3 calcula la profundidad de la foto y DepthFlow mueve una cámara virtual por ella: lo cercano se desplaza más que lo lejano, como si alguien caminara por la habitación. **Sólo se mueven píxeles de tu foto**: no aparece nada que no exista.\n\n## Los mandos\n| Mando | Qué hace |\n|---|---|\n| **▼ MOVIMIENTO** | avance, retroceso, lateral, subida/bajada, órbita suave, fijo con vida |\n| **INTENSIDAD** | 0.5 = recorrido suave de inmobiliaria. 0.3 = muy sutil. Más de 0.8 empieza a estirar bordes |\n| **FRAMES** | 150 = 5 s a 30 fps |\n| **ANCHO / ALTO** | 1920×1080 horizontal. La foto se recorta al centro para llenarlo |\n| **INVERTIR PROFUNDIDAD** | ponlo a 1 si ves que el fondo se acerca en vez del primer plano |\n\n## El límite honesto\nUna foto no tiene lo que hay **detrás** de los muebles. Cuanto más se mueve la cámara, más se notan esos huecos (se rellenan estirando el borde, no inventando). Con INTENSIDAD 0.3–0.6 no se ven: es el movimiento que usan los vídeos de inmobiliaria.\n\nSi el lateral o la subida van al revés de lo que esperas, elige el contrario (`lateral_izquierda` ↔ `lateral_derecha`, `subida` ↔ `bajada`).\n\n**Necesita el paquete *ComfyUI-Depthflow-Nodes*** (ComfyUI Manager → Install Missing Custom Nodes)."
+      ],
+      "title": "LÉEME PRIMERO"
+    },
+    {
+      "id": 2,
+      "type": "CustomCombo",
+      "pos": [
+        450.0,
+        110.0
+      ],
+      "size": [
+        300,
+        294
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "slot_index": 0,
+          "links": [
+            19,
+            23,
+            27,
+            31,
+            35,
+            39,
+            43
+          ]
+        },
+        {
+          "name": "INDEX",
+          "type": "INT",
+          "slot_index": 1,
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CustomCombo"
+      },
+      "widgets_values": [
+        "avance",
+        0,
+        "avance",
+        "retroceso",
+        "lateral_izquierda",
+        "lateral_derecha",
+        "subida",
+        "bajada",
+        "orbita_suave",
+        "fijo_con_vida",
+        ""
+      ],
+      "title": "▼ MOVIMIENTO",
+      "color": "#9e6b3f",
+      "bgcolor": "#9e6b3f"
+    },
+    {
+      "id": 3,
+      "type": "PrimitiveFloat",
+      "pos": [
+        840.0,
+        110.0
+      ],
+      "size": [
+        340,
+        90.0
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "slot_index": 0,
+          "links": [
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PrimitiveFloat"
+      },
+      "widgets_values": [
+        0.5
+      ],
+      "title": "INTENSIDAD",
+      "color": "#9e6b3f",
+      "bgcolor": "#9e6b3f"
+    },
+    {
+      "id": 4,
+      "type": "PrimitiveInt",
+      "pos": [
+        1230.0,
+        110.0
+      ],
+      "size": [
+        340,
+        116.0
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "INT",
+          "type": "INT",
+          "slot_index": 0,
+          "links": [
+            50
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PrimitiveInt"
+      },
+      "widgets_values": [
+        150,
+        "fixed"
+      ],
+      "title": "FRAMES (150 = 5 s)",
+      "color": "#9e6b3f",
+      "bgcolor": "#9e6b3f"
+    },
+    {
+      "id": 5,
+      "type": "PrimitiveInt",
+      "pos": [
+        1620.0,
+        110.0
+      ],
+      "size": [
+        340,
+        116.0
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "INT",
+          "type": "INT",
+          "slot_index": 0,
+          "links": [
+            2,
+            8
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PrimitiveInt"
+      },
+      "widgets_values": [
+        1920,
+        "fixed"
+      ],
+      "title": "ANCHO",
+      "color": "#9e6b3f",
+      "bgcolor": "#9e6b3f"
+    },
+    {
+      "id": 6,
+      "type": "PrimitiveInt",
+      "pos": [
+        2010.0,
+        110.0
+      ],
+      "size": [
+        340,
+        116.0
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "INT",
+          "type": "INT",
+          "slot_index": 0,
+          "links": [
+            3,
+            9
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PrimitiveInt"
+      },
+      "widgets_values": [
+        1080,
+        "fixed"
+      ],
+      "title": "ALTO",
+      "color": "#9e6b3f",
+      "bgcolor": "#9e6b3f"
+    },
+    {
+      "id": 7,
+      "type": "PrimitiveFloat",
+      "pos": [
+        2400.0,
+        110.0
+      ],
+      "size": [
+        340,
+        90.0
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "slot_index": 0,
+          "links": [
+            51
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PrimitiveFloat"
+      },
+      "widgets_values": [
+        0.0
+      ],
+      "title": "INVERTIR PROFUNDIDAD (0 / 1)",
+      "color": "#9e6b3f",
+      "bgcolor": "#9e6b3f"
+    },
+    {
+      "id": 8,
+      "type": "LoadImage",
+      "pos": [
+        60.0,
+        550.0
+      ],
+      "size": [
+        340,
+        356.0
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [
+            1
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "slot_index": 1,
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "foto_inicio.png",
+        "image"
+      ],
+      "title": "FOTO del piso"
+    },
+    {
+      "id": 9,
+      "type": "ImageScale",
+      "pos": [
+        450.0,
+        550.0
+      ],
+      "size": [
+        340,
+        182.0
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 1
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": 2
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [
+            5,
+            47
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ImageScale"
+      },
+      "widgets_values": [
+        "lanczos",
+        1920,
+        1080,
+        "center"
+      ],
+      "title": "Recorte al formato del vídeo"
+    },
+    {
+      "id": 10,
+      "type": "LoadDA3Model",
+      "pos": [
+        60.0,
+        1046.0
+      ],
+      "size": [
+        340,
+        116.0
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "DA3_MODEL",
+          "type": "DA3_MODEL",
+          "slot_index": 0,
+          "links": [
+            4
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadDA3Model"
+      },
+      "widgets_values": [
+        "depth_anything_3_mono_large.safetensors",
+        "default"
+      ],
+      "title": "Modelo · Depth Anything 3"
+    },
+    {
+      "id": 11,
+      "type": "DA3Inference",
+      "pos": [
+        450.0,
+        1046.0
+      ],
+      "size": [
+        340,
+        186.0
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "da3_model",
+          "type": "DA3_MODEL",
+          "link": 4
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 5
+        }
+      ],
+      "outputs": [
+        {
+          "name": "da3_geometry",
+          "type": "DA3_GEOMETRY",
+          "slot_index": 0,
+          "links": [
+            6
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DA3Inference"
+      },
+      "widgets_values": [
+        1008,
+        "upper_bound_resize",
+        "mono"
+      ],
+      "title": "Calcular profundidad"
+    },
+    {
+      "id": 12,
+      "type": "DA3Render",
+      "pos": [
+        840.0,
+        1046.0
+      ],
+      "size": [
+        340,
+        164.0
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "da3_geometry",
+          "type": "DA3_GEOMETRY",
+          "link": 6
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [
+            7
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DA3Render"
+      },
+      "widgets_values": [
+        "depth",
+        "v2_style",
+        true
+      ],
+      "title": "Mapa de profundidad"
+    },
+    {
+      "id": 13,
+      "type": "ImageScale",
+      "pos": [
+        1230.0,
+        1046.0
+      ],
+      "size": [
+        340,
+        182.0
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 7
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": 8
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": 9
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [
+            10,
+            48
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ImageScale"
+      },
+      "widgets_values": [
+        "bilinear",
+        1920,
+        1080,
+        "disabled"
+      ],
+      "title": "Profundidad al tamaño del vídeo"
+    },
+    {
+      "id": 14,
+      "type": "PreviewImage",
+      "pos": [
+        1620.0,
+        1046.0
+      ],
+      "size": [
+        340,
+        306.0
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 10
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": [],
+      "title": "Vista previa · profundidad (claro = cerca)"
+    },
+    {
+      "id": 15,
+      "type": "DepthflowMotionPresetZoom",
+      "pos": [
+        60.0,
+        1492.0
+      ],
+      "size": [
+        340,
+        316.0
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "feature",
+          "type": "FEATURE",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "intensity",
+          "type": "FLOAT",
+          "widget": {
+            "name": "intensity"
+          },
+          "link": 11
+        }
+      ],
+      "outputs": [
+        {
+          "name": "DEPTHFLOW_MOTION",
+          "type": "DEPTHFLOW_MOTION",
+          "slot_index": 0,
+          "links": [
+            20
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DepthflowMotionPresetZoom",
+        "cnr_id": "comfyui-depthflow-nodes",
+        "ver": "1.2.3"
+      },
+      "widgets_values": [
+        1.0,
+        0.0,
+        "intensity",
+        "relative",
+        0.5,
+        false,
+        true,
+        0.0,
+        false
+      ],
+      "title": "avance"
+    },
+    {
+      "id": 16,
+      "type": "DepthflowMotionPresetZoom",
+      "pos": [
+        450.0,
+        1492.0
+      ],
+      "size": [
+        340,
+        316.0
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "feature",
+          "type": "FEATURE",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "intensity",
+          "type": "FLOAT",
+          "widget": {
+            "name": "intensity"
+          },
+          "link": 12
+        }
+      ],
+      "outputs": [
+        {
+          "name": "DEPTHFLOW_MOTION",
+          "type": "DEPTHFLOW_MOTION",
+          "slot_index": 0,
+          "links": [
+            21
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DepthflowMotionPresetZoom",
+        "cnr_id": "comfyui-depthflow-nodes",
+        "ver": "1.2.3"
+      },
+      "widgets_values": [
+        1.0,
+        0.0,
+        "intensity",
+        "relative",
+        0.5,
+        true,
+        true,
+        0.0,
+        false
+      ],
+      "title": "retroceso"
+    },
+    {
+      "id": 17,
+      "type": "DepthflowMotionPresetHorizontal",
+      "pos": [
+        840.0,
+        1492.0
+      ],
+      "size": [
+        340,
+        342.0
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "feature",
+          "type": "FEATURE",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "intensity",
+          "type": "FLOAT",
+          "widget": {
+            "name": "intensity"
+          },
+          "link": 13
+        }
+      ],
+      "outputs": [
+        {
+          "name": "DEPTHFLOW_MOTION",
+          "type": "DEPTHFLOW_MOTION",
+          "slot_index": 0,
+          "links": [
+            25
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DepthflowMotionPresetHorizontal",
+        "cnr_id": "comfyui-depthflow-nodes",
+        "ver": "1.2.3"
+      },
+      "widgets_values": [
+        1.0,
+        0.0,
+        "intensity",
+        "relative",
+        0.5,
+        true,
+        false,
+        true,
+        0.0,
+        0.3
+      ],
+      "title": "lateral izquierda"
+    },
+    {
+      "id": 18,
+      "type": "DepthflowMotionPresetHorizontal",
+      "pos": [
+        1230.0,
+        1492.0
+      ],
+      "size": [
+        340,
+        342.0
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "feature",
+          "type": "FEATURE",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "intensity",
+          "type": "FLOAT",
+          "widget": {
+            "name": "intensity"
+          },
+          "link": 14
+        }
+      ],
+      "outputs": [
+        {
+          "name": "DEPTHFLOW_MOTION",
+          "type": "DEPTHFLOW_MOTION",
+          "slot_index": 0,
+          "links": [
+            29
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DepthflowMotionPresetHorizontal",
+        "cnr_id": "comfyui-depthflow-nodes",
+        "ver": "1.2.3"
+      },
+      "widgets_values": [
+        1.0,
+        0.0,
+        "intensity",
+        "relative",
+        0.5,
+        false,
+        false,
+        true,
+        0.0,
+        0.3
+      ],
+      "title": "lateral derecha"
+    },
+    {
+      "id": 19,
+      "type": "DepthflowMotionPresetVertical",
+      "pos": [
+        1620.0,
+        1492.0
+      ],
+      "size": [
+        340,
+        342.0
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "feature",
+          "type": "FEATURE",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "intensity",
+          "type": "FLOAT",
+          "widget": {
+            "name": "intensity"
+          },
+          "link": 15
+        }
+      ],
+      "outputs": [
+        {
+          "name": "DEPTHFLOW_MOTION",
+          "type": "DEPTHFLOW_MOTION",
+          "slot_index": 0,
+          "links": [
+            33
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DepthflowMotionPresetVertical",
+        "cnr_id": "comfyui-depthflow-nodes",
+        "ver": "1.2.3"
+      },
+      "widgets_values": [
+        1.0,
+        0.0,
+        "intensity",
+        "relative",
+        0.5,
+        false,
+        false,
+        true,
+        0.0,
+        0.3
+      ],
+      "title": "subida"
+    },
+    {
+      "id": 20,
+      "type": "DepthflowMotionPresetVertical",
+      "pos": [
+        2010.0,
+        1492.0
+      ],
+      "size": [
+        340,
+        342.0
+      ],
+      "flags": {},
+      "order": 19,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "feature",
+          "type": "FEATURE",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "intensity",
+          "type": "FLOAT",
+          "widget": {
+            "name": "intensity"
+          },
+          "link": 16
+        }
+      ],
+      "outputs": [
+        {
+          "name": "DEPTHFLOW_MOTION",
+          "type": "DEPTHFLOW_MOTION",
+          "slot_index": 0,
+          "links": [
+            37
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DepthflowMotionPresetVertical",
+        "cnr_id": "comfyui-depthflow-nodes",
+        "ver": "1.2.3"
+      },
+      "widgets_values": [
+        1.0,
+        0.0,
+        "intensity",
+        "relative",
+        0.5,
+        true,
+        false,
+        true,
+        0.0,
+        0.3
+      ],
+      "title": "bajada"
+    },
+    {
+      "id": 21,
+      "type": "DepthflowMotionPresetOrbital",
+      "pos": [
+        2400.0,
+        1492.0
+      ],
+      "size": [
+        340,
+        264.0
+      ],
+      "flags": {},
+      "order": 20,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "feature",
+          "type": "FEATURE",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "intensity",
+          "type": "FLOAT",
+          "widget": {
+            "name": "intensity"
+          },
+          "link": 17
+        }
+      ],
+      "outputs": [
+        {
+          "name": "DEPTHFLOW_MOTION",
+          "type": "DEPTHFLOW_MOTION",
+          "slot_index": 0,
+          "links": [
+            41
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DepthflowMotionPresetOrbital",
+        "cnr_id": "comfyui-depthflow-nodes",
+        "ver": "1.2.3"
+      },
+      "widgets_values": [
+        1.0,
+        0.0,
+        "intensity",
+        "relative",
+        0.5,
+        false,
+        0.5
+      ],
+      "title": "órbita suave"
+    },
+    {
+      "id": 22,
+      "type": "DepthflowMotionPresetCircle",
+      "pos": [
+        60.0,
+        1864.0
+      ],
+      "size": [
+        340,
+        446.0
+      ],
+      "flags": {},
+      "order": 21,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "feature",
+          "type": "FEATURE",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "intensity",
+          "type": "FLOAT",
+          "widget": {
+            "name": "intensity"
+          },
+          "link": 18
+        }
+      ],
+      "outputs": [
+        {
+          "name": "DEPTHFLOW_MOTION",
+          "type": "DEPTHFLOW_MOTION",
+          "slot_index": 0,
+          "links": [
+            45
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DepthflowMotionPresetCircle",
+        "cnr_id": "comfyui-depthflow-nodes",
+        "ver": "1.2.3"
+      },
+      "widgets_values": [
+        1.0,
+        0.0,
+        "intensity",
+        "relative",
+        0.5,
+        false,
+        true,
+        0.0,
+        0.0,
+        0.0,
+        0.3,
+        0.3,
+        0.0,
+        0.3
+      ],
+      "title": "fijo con vida (respiración mínima)"
+    },
+    {
+      "id": 23,
+      "type": "StringContains",
+      "pos": [
+        450.0,
+        1864.0
+      ],
+      "size": [
+        340,
+        138.0
+      ],
+      "flags": {},
+      "order": 22,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "string",
+          "type": "STRING",
+          "widget": {
+            "name": "string"
+          },
+          "link": 19
+        }
+      ],
+      "outputs": [
+        {
+          "name": "contains",
+          "type": "BOOLEAN",
+          "slot_index": 0,
+          "links": [
+            22
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "StringContains"
+      },
+      "widgets_values": [
+        "",
+        "retroceso",
+        true
+      ],
+      "title": "¿retroceso?"
+    },
+    {
+      "id": 24,
+      "type": "ComfySwitchNode",
+      "pos": [
+        840.0,
+        1864.0
+      ],
+      "size": [
+        340,
+        130.0
+      ],
+      "flags": {},
+      "order": 23,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "on_false",
+          "type": "DEPTHFLOW_MOTION",
+          "link": 20,
+          "shape": 7
+        },
+        {
+          "name": "on_true",
+          "type": "DEPTHFLOW_MOTION",
+          "link": 21,
+          "shape": 7
+        },
+        {
+          "name": "switch",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "switch"
+          },
+          "link": 22
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "DEPTHFLOW_MOTION",
+          "slot_index": 0,
+          "links": [
+            24
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfySwitchNode"
+      },
+      "widgets_values": [
+        false
+      ],
+      "title": "→ retroceso"
+    },
+    {
+      "id": 25,
+      "type": "StringContains",
+      "pos": [
+        1230.0,
+        1864.0
+      ],
+      "size": [
+        340,
+        138.0
+      ],
+      "flags": {},
+      "order": 24,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "string",
+          "type": "STRING",
+          "widget": {
+            "name": "string"
+          },
+          "link": 23
+        }
+      ],
+      "outputs": [
+        {
+          "name": "contains",
+          "type": "BOOLEAN",
+          "slot_index": 0,
+          "links": [
+            26
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "StringContains"
+      },
+      "widgets_values": [
+        "",
+        "izquierda",
+        true
+      ],
+      "title": "¿izquierda?"
+    },
+    {
+      "id": 26,
+      "type": "ComfySwitchNode",
+      "pos": [
+        1620.0,
+        1864.0
+      ],
+      "size": [
+        340,
+        130.0
+      ],
+      "flags": {},
+      "order": 25,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "on_false",
+          "type": "DEPTHFLOW_MOTION",
+          "link": 24,
+          "shape": 7
+        },
+        {
+          "name": "on_true",
+          "type": "DEPTHFLOW_MOTION",
+          "link": 25,
+          "shape": 7
+        },
+        {
+          "name": "switch",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "switch"
+          },
+          "link": 26
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "DEPTHFLOW_MOTION",
+          "slot_index": 0,
+          "links": [
+            28
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfySwitchNode"
+      },
+      "widgets_values": [
+        false
+      ],
+      "title": "→ izquierda"
+    },
+    {
+      "id": 27,
+      "type": "StringContains",
+      "pos": [
+        2010.0,
+        1864.0
+      ],
+      "size": [
+        340,
+        138.0
+      ],
+      "flags": {},
+      "order": 26,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "string",
+          "type": "STRING",
+          "widget": {
+            "name": "string"
+          },
+          "link": 27
+        }
+      ],
+      "outputs": [
+        {
+          "name": "contains",
+          "type": "BOOLEAN",
+          "slot_index": 0,
+          "links": [
+            30
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "StringContains"
+      },
+      "widgets_values": [
+        "",
+        "derecha",
+        true
+      ],
+      "title": "¿derecha?"
+    },
+    {
+      "id": 28,
+      "type": "ComfySwitchNode",
+      "pos": [
+        2400.0,
+        1864.0
+      ],
+      "size": [
+        340,
+        130.0
+      ],
+      "flags": {},
+      "order": 27,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "on_false",
+          "type": "DEPTHFLOW_MOTION",
+          "link": 28,
+          "shape": 7
+        },
+        {
+          "name": "on_true",
+          "type": "DEPTHFLOW_MOTION",
+          "link": 29,
+          "shape": 7
+        },
+        {
+          "name": "switch",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "switch"
+          },
+          "link": 30
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "DEPTHFLOW_MOTION",
+          "slot_index": 0,
+          "links": [
+            32
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfySwitchNode"
+      },
+      "widgets_values": [
+        false
+      ],
+      "title": "→ derecha"
+    },
+    {
+      "id": 29,
+      "type": "StringContains",
+      "pos": [
+        60.0,
+        2340.0
+      ],
+      "size": [
+        340,
+        138.0
+      ],
+      "flags": {},
+      "order": 28,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "string",
+          "type": "STRING",
+          "widget": {
+            "name": "string"
+          },
+          "link": 31
+        }
+      ],
+      "outputs": [
+        {
+          "name": "contains",
+          "type": "BOOLEAN",
+          "slot_index": 0,
+          "links": [
+            34
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "StringContains"
+      },
+      "widgets_values": [
+        "",
+        "subida",
+        true
+      ],
+      "title": "¿subida?"
+    },
+    {
+      "id": 30,
+      "type": "ComfySwitchNode",
+      "pos": [
+        450.0,
+        2340.0
+      ],
+      "size": [
+        340,
+        130.0
+      ],
+      "flags": {},
+      "order": 29,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "on_false",
+          "type": "DEPTHFLOW_MOTION",
+          "link": 32,
+          "shape": 7
+        },
+        {
+          "name": "on_true",
+          "type": "DEPTHFLOW_MOTION",
+          "link": 33,
+          "shape": 7
+        },
+        {
+          "name": "switch",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "switch"
+          },
+          "link": 34
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "DEPTHFLOW_MOTION",
+          "slot_index": 0,
+          "links": [
+            36
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfySwitchNode"
+      },
+      "widgets_values": [
+        false
+      ],
+      "title": "→ subida"
+    },
+    {
+      "id": 31,
+      "type": "StringContains",
+      "pos": [
+        840.0,
+        2340.0
+      ],
+      "size": [
+        340,
+        138.0
+      ],
+      "flags": {},
+      "order": 30,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "string",
+          "type": "STRING",
+          "widget": {
+            "name": "string"
+          },
+          "link": 35
+        }
+      ],
+      "outputs": [
+        {
+          "name": "contains",
+          "type": "BOOLEAN",
+          "slot_index": 0,
+          "links": [
+            38
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "StringContains"
+      },
+      "widgets_values": [
+        "",
+        "bajada",
+        true
+      ],
+      "title": "¿bajada?"
+    },
+    {
+      "id": 32,
+      "type": "ComfySwitchNode",
+      "pos": [
+        1230.0,
+        2340.0
+      ],
+      "size": [
+        340,
+        130.0
+      ],
+      "flags": {},
+      "order": 31,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "on_false",
+          "type": "DEPTHFLOW_MOTION",
+          "link": 36,
+          "shape": 7
+        },
+        {
+          "name": "on_true",
+          "type": "DEPTHFLOW_MOTION",
+          "link": 37,
+          "shape": 7
+        },
+        {
+          "name": "switch",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "switch"
+          },
+          "link": 38
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "DEPTHFLOW_MOTION",
+          "slot_index": 0,
+          "links": [
+            40
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfySwitchNode"
+      },
+      "widgets_values": [
+        false
+      ],
+      "title": "→ bajada"
+    },
+    {
+      "id": 33,
+      "type": "StringContains",
+      "pos": [
+        1620.0,
+        2340.0
+      ],
+      "size": [
+        340,
+        138.0
+      ],
+      "flags": {},
+      "order": 32,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "string",
+          "type": "STRING",
+          "widget": {
+            "name": "string"
+          },
+          "link": 39
+        }
+      ],
+      "outputs": [
+        {
+          "name": "contains",
+          "type": "BOOLEAN",
+          "slot_index": 0,
+          "links": [
+            42
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "StringContains"
+      },
+      "widgets_values": [
+        "",
+        "orbita",
+        true
+      ],
+      "title": "¿orbita?"
+    },
+    {
+      "id": 34,
+      "type": "ComfySwitchNode",
+      "pos": [
+        2010.0,
+        2340.0
+      ],
+      "size": [
+        340,
+        130.0
+      ],
+      "flags": {},
+      "order": 33,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "on_false",
+          "type": "DEPTHFLOW_MOTION",
+          "link": 40,
+          "shape": 7
+        },
+        {
+          "name": "on_true",
+          "type": "DEPTHFLOW_MOTION",
+          "link": 41,
+          "shape": 7
+        },
+        {
+          "name": "switch",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "switch"
+          },
+          "link": 42
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "DEPTHFLOW_MOTION",
+          "slot_index": 0,
+          "links": [
+            44
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfySwitchNode"
+      },
+      "widgets_values": [
+        false
+      ],
+      "title": "→ orbita"
+    },
+    {
+      "id": 35,
+      "type": "StringContains",
+      "pos": [
+        2400.0,
+        2340.0
+      ],
+      "size": [
+        340,
+        138.0
+      ],
+      "flags": {},
+      "order": 34,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "string",
+          "type": "STRING",
+          "widget": {
+            "name": "string"
+          },
+          "link": 43
+        }
+      ],
+      "outputs": [
+        {
+          "name": "contains",
+          "type": "BOOLEAN",
+          "slot_index": 0,
+          "links": [
+            46
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "StringContains"
+      },
+      "widgets_values": [
+        "",
+        "fijo",
+        true
+      ],
+      "title": "¿fijo?"
+    },
+    {
+      "id": 36,
+      "type": "ComfySwitchNode",
+      "pos": [
+        60.0,
+        2508.0
+      ],
+      "size": [
+        340,
+        130.0
+      ],
+      "flags": {},
+      "order": 35,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "on_false",
+          "type": "DEPTHFLOW_MOTION",
+          "link": 44,
+          "shape": 7
+        },
+        {
+          "name": "on_true",
+          "type": "DEPTHFLOW_MOTION",
+          "link": 45,
+          "shape": 7
+        },
+        {
+          "name": "switch",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "switch"
+          },
+          "link": 46
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "DEPTHFLOW_MOTION",
+          "slot_index": 0,
+          "links": [
+            49
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfySwitchNode"
+      },
+      "widgets_values": [
+        false
+      ],
+      "title": "→ fijo"
+    },
+    {
+      "id": 37,
+      "type": "Depthflow",
+      "pos": [
+        60.0,
+        2778.0
+      ],
+      "size": [
+        340,
+        378.0
+      ],
+      "flags": {},
+      "order": 36,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 47
+        },
+        {
+          "name": "depth_map",
+          "type": "IMAGE",
+          "link": 48
+        },
+        {
+          "name": "motion",
+          "type": "DEPTHFLOW_MOTION",
+          "link": 49
+        },
+        {
+          "name": "effects",
+          "type": "DEPTHFLOW_EFFECTS",
+          "link": null,
+          "shape": 7
+        },
+        {
+          "name": "num_frames",
+          "type": "INT",
+          "widget": {
+            "name": "num_frames"
+          },
+          "link": 50
+        },
+        {
+          "name": "invert",
+          "type": "FLOAT",
+          "widget": {
+            "name": "invert"
+          },
+          "link": 51
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [
+            52
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Depthflow",
+        "cnr_id": "comfyui-depthflow-nodes",
+        "ver": "1.2.3"
+      },
+      "widgets_values": [
+        1.0,
+        30.0,
+        30.0,
+        150,
+        90,
+        1.0,
+        0.0,
+        "mirror",
+        5
+      ],
+      "title": "DepthFlow · render 2.5D"
+    },
+    {
+      "id": 38,
+      "type": "CreateVideo",
+      "pos": [
+        450.0,
+        2778.0
+      ],
+      "size": [
+        340,
+        134.0
+      ],
+      "flags": {},
+      "order": 37,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 52
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": null,
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "VIDEO",
+          "type": "VIDEO",
+          "slot_index": 0,
+          "links": [
+            53
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CreateVideo"
+      },
+      "widgets_values": [
+        30.0
+      ]
+    },
+    {
+      "id": 39,
+      "type": "SaveVideo",
+      "pos": [
+        840.0,
+        2778.0
+      ],
+      "size": [
+        340,
+        190.0
+      ],
+      "flags": {},
+      "order": 38,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 53
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "slot_index": 0,
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "tour/plano_parallax",
+        "auto",
+        "auto"
+      ],
+      "title": "GUARDAR PLANO"
+    }
+  ],
+  "links": [
+    [
+      1,
+      8,
+      0,
+      9,
+      0,
+      "IMAGE"
+    ],
+    [
+      2,
+      5,
+      0,
+      9,
+      1,
+      "INT"
+    ],
+    [
+      3,
+      6,
+      0,
+      9,
+      2,
+      "INT"
+    ],
+    [
+      4,
+      10,
+      0,
+      11,
+      0,
+      "DA3_MODEL"
+    ],
+    [
+      5,
+      9,
+      0,
+      11,
+      1,
+      "IMAGE"
+    ],
+    [
+      6,
+      11,
+      0,
+      12,
+      0,
+      "DA3_GEOMETRY"
+    ],
+    [
+      7,
+      12,
+      0,
+      13,
+      0,
+      "IMAGE"
+    ],
+    [
+      8,
+      5,
+      0,
+      13,
+      1,
+      "INT"
+    ],
+    [
+      9,
+      6,
+      0,
+      13,
+      2,
+      "INT"
+    ],
+    [
+      10,
+      13,
+      0,
+      14,
+      0,
+      "IMAGE"
+    ],
+    [
+      11,
+      3,
+      0,
+      15,
+      1,
+      "FLOAT"
+    ],
+    [
+      12,
+      3,
+      0,
+      16,
+      1,
+      "FLOAT"
+    ],
+    [
+      13,
+      3,
+      0,
+      17,
+      1,
+      "FLOAT"
+    ],
+    [
+      14,
+      3,
+      0,
+      18,
+      1,
+      "FLOAT"
+    ],
+    [
+      15,
+      3,
+      0,
+      19,
+      1,
+      "FLOAT"
+    ],
+    [
+      16,
+      3,
+      0,
+      20,
+      1,
+      "FLOAT"
+    ],
+    [
+      17,
+      3,
+      0,
+      21,
+      1,
+      "FLOAT"
+    ],
+    [
+      18,
+      3,
+      0,
+      22,
+      1,
+      "FLOAT"
+    ],
+    [
+      19,
+      2,
+      0,
+      23,
+      0,
+      "STRING"
+    ],
+    [
+      20,
+      15,
+      0,
+      24,
+      0,
+      "DEPTHFLOW_MOTION"
+    ],
+    [
+      21,
+      16,
+      0,
+      24,
+      1,
+      "DEPTHFLOW_MOTION"
+    ],
+    [
+      22,
+      23,
+      0,
+      24,
+      2,
+      "BOOLEAN"
+    ],
+    [
+      23,
+      2,
+      0,
+      25,
+      0,
+      "STRING"
+    ],
+    [
+      24,
+      24,
+      0,
+      26,
+      0,
+      "DEPTHFLOW_MOTION"
+    ],
+    [
+      25,
+      17,
+      0,
+      26,
+      1,
+      "DEPTHFLOW_MOTION"
+    ],
+    [
+      26,
+      25,
+      0,
+      26,
+      2,
+      "BOOLEAN"
+    ],
+    [
+      27,
+      2,
+      0,
+      27,
+      0,
+      "STRING"
+    ],
+    [
+      28,
+      26,
+      0,
+      28,
+      0,
+      "DEPTHFLOW_MOTION"
+    ],
+    [
+      29,
+      18,
+      0,
+      28,
+      1,
+      "DEPTHFLOW_MOTION"
+    ],
+    [
+      30,
+      27,
+      0,
+      28,
+      2,
+      "BOOLEAN"
+    ],
+    [
+      31,
+      2,
+      0,
+      29,
+      0,
+      "STRING"
+    ],
+    [
+      32,
+      28,
+      0,
+      30,
+      0,
+      "DEPTHFLOW_MOTION"
+    ],
+    [
+      33,
+      19,
+      0,
+      30,
+      1,
+      "DEPTHFLOW_MOTION"
+    ],
+    [
+      34,
+      29,
+      0,
+      30,
+      2,
+      "BOOLEAN"
+    ],
+    [
+      35,
+      2,
+      0,
+      31,
+      0,
+      "STRING"
+    ],
+    [
+      36,
+      30,
+      0,
+      32,
+      0,
+      "DEPTHFLOW_MOTION"
+    ],
+    [
+      37,
+      20,
+      0,
+      32,
+      1,
+      "DEPTHFLOW_MOTION"
+    ],
+    [
+      38,
+      31,
+      0,
+      32,
+      2,
+      "BOOLEAN"
+    ],
+    [
+      39,
+      2,
+      0,
+      33,
+      0,
+      "STRING"
+    ],
+    [
+      40,
+      32,
+      0,
+      34,
+      0,
+      "DEPTHFLOW_MOTION"
+    ],
+    [
+      41,
+      21,
+      0,
+      34,
+      1,
+      "DEPTHFLOW_MOTION"
+    ],
+    [
+      42,
+      33,
+      0,
+      34,
+      2,
+      "BOOLEAN"
+    ],
+    [
+      43,
+      2,
+      0,
+      35,
+      0,
+      "STRING"
+    ],
+    [
+      44,
+      34,
+      0,
+      36,
+      0,
+      "DEPTHFLOW_MOTION"
+    ],
+    [
+      45,
+      22,
+      0,
+      36,
+      1,
+      "DEPTHFLOW_MOTION"
+    ],
+    [
+      46,
+      35,
+      0,
+      36,
+      2,
+      "BOOLEAN"
+    ],
+    [
+      47,
+      9,
+      0,
+      37,
+      0,
+      "IMAGE"
+    ],
+    [
+      48,
+      13,
+      0,
+      37,
+      1,
+      "IMAGE"
+    ],
+    [
+      49,
+      36,
+      0,
+      37,
+      2,
+      "DEPTHFLOW_MOTION"
+    ],
+    [
+      50,
+      4,
+      0,
+      37,
+      4,
+      "INT"
+    ],
+    [
+      51,
+      7,
+      0,
+      37,
+      5,
+      "FLOAT"
+    ],
+    [
+      52,
+      37,
+      0,
+      38,
+      0,
+      "IMAGE"
+    ],
+    [
+      53,
+      38,
+      0,
+      39,
+      0,
+      "VIDEO"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "PANEL DE CONTROL · lo único que tocas",
+      "bounding": [
+        40.0,
+        60.0,
+        2720.0,
+        370.0
+      ],
+      "color": "#9e6b3f",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "FOTO",
+      "bounding": [
+        40.0,
+        500.0,
+        770.0,
+        426.0
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 3,
+      "title": "PROFUNDIDAD · Depth Anything 3 (nodos nativos)",
+      "bounding": [
+        40.0,
+        996.0,
+        1940.0,
+        376.0
+      ],
+      "color": "#2d7d46",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 4,
+      "title": "MOVIMIENTO DE CÁMARA · DepthFlow",
+      "bounding": [
+        40.0,
+        1442.0,
+        2720.0,
+        1216.0
+      ],
+      "color": "#6b3f9e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 5,
+      "title": "RENDER Y GUARDADO",
+      "bounding": [
+        40.0,
+        2728.0,
+        1160.0,
+        448.0
+      ],
+      "color": "#2d7d46",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.55,
+      "offset": [
+        0,
+        0
+      ]
+    }
+  },
+  "version": 0.4
+}
