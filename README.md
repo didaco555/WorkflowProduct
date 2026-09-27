@@ -18,6 +18,7 @@ suscripciones: una vez descargados los modelos, cada foto te cuesta lo que tarde
 | [`workflows/03_retoque_zona.json`](workflows/03_retoque_zona.json) | “Rodear lo que no me gusta”: pintas una zona y sólo eso se regenera |
 | **[`workflows/25_video_tour_parallax.json`](workflows/25_video_tour_parallax.json)** | **Vídeo tour 2.5D sin IA generativa**: la cámara recorre la foto usando su profundidad (Depth Anything 3 + DepthFlow). No puede inventar nada |
 | **[`workflows/26_video_tour_h3_guiado.json`](workflows/26_video_tour_h3_guiado.json)** | **2.5D + FastH3**: el recorrido 2.5D fija 5 fotogramas reales y FastH3 genera el vídeo pasando por ellos (licencia de H3: excluye la UE) |
+| **[`workflows/27_video_tour_h3_avance.json`](workflows/27_video_tour_h3_avance.json)** | **Avanzar hasta el fondo de la habitación** con FastH3: empieza en la foto y acaba en el fondo de la misma foto, reconstruido con SeedVR2 (licencia de H3: excluye la UE) |
 | **[`workflows/21_video_tour_ltx25.json`](workflows/21_video_tour_ltx25.json)** | Vídeo tour con IA: una foto → un plano de 5 s con movimiento de cámara (**LTX-2.5**) |
 | [`workflows/22_video_transicion_ltx25.json`](workflows/22_video_transicion_ltx25.json) | Vídeo de una foto a otra del mismo espacio (LTX-2.5) |
 | [`workflows/20_video_tour_inmobiliario.json`](workflows/20_video_tour_inmobiliario.json) | Vídeo tour con **Wan 2.2** (alternativa): foto → plano o foto → foto, con SeedVR2 a 1080p y FILM a 32 fps |

@@ -2185,6 +2185,66 @@ def _catalogo_h3_guiado() -> dict:
     return {k: head + v + tail for k, v in H3_GUIADO_MOV.items()}
 
 
+def _motor_fasth3(g: Graph, first, last, prompt, w, h, length, semilla, *, guias=(), titulo: str):
+    """FastH3 desplegado nodo a nodo, igual que la plantilla oficial, con anclas opcionales.
+
+    `guias` = [(frame_por_defecto, puerto_frame_idx, puerto_imagen, porcentaje)]. Devuelve (frames, audio).
+    """
+    with g.group(titulo, PURPLE):
+        unet = g.add("UNETLoader", [FASTH3_UNET, "default"], title="Modelo · FastH3 8 pasos")
+        clip = g.add("CLIPLoader", [H3_CLIP, "minimax", "default"], title="Text encoder · Qwen3-VL")
+        vae = g.add("VAELoader", [H3_VAE], title="VAE vídeo · H3")
+        avae = g.add("VAELoader", [H3_AUDIO_VAE], title="VAE audio · H3")
+        shift = g.add("MiniMaxH3SigmaShift", [10.0, 3.0], {"model": unet.out(0)})
+        attn = g.add("ModelAttentionBackend", ["comfy kitchen attention"], {"model": shift.out(0)})
+        sparse = g.add(
+            "BlockSparseAttention",
+            ["vsa", 10, 0.2, 1, "", 12288, 256, "exact_kv_and_rows", False],
+            {"model": attn.out(0)},
+        )
+        i2v = g.add(
+            "MiniMaxH3ImageToVideo",
+            ["", 1344, 768, H3_FRAMES],
+            {
+                "clip": clip.out(0),
+                "vae": vae.out(0),
+                "first_frame": first,
+                "last_frame": last,
+                "prompt": prompt,
+                "width": w,
+                "height": h,
+                "length": length,
+            },
+            title="H3 · primer y último frame",
+        )
+        pos = i2v.out(0)
+        for k, i, img, q in guias:
+            pos = g.add(
+                "MiniMaxH3AddGuide",
+                [k],
+                {"positive": pos, "vae": vae.out(0), "latent": i2v.out(1), "image": img, "frame_idx": i},
+                title=f"Ancla al {q} % (Ctrl+B = más libertad)",
+            ).out(0)
+        guider = g.add("BasicGuider", [], {"model": sparse.out(0), "conditioning": pos})
+        sched = g.add("BasicScheduler", ["simple", 8, 1.0], {"model": sparse.out(0)})
+        sampler = g.add("KSamplerSelect", ["res_multistep"])
+        noise = g.add("RandomNoise", [1, "fixed"], {"noise_seed": semilla})
+        out = g.add(
+            "SamplerCustomAdvanced",
+            [],
+            {
+                "noise": noise.out(0),
+                "guider": guider.out(0),
+                "sampler": sampler.out(0),
+                "sigmas": sched.out(0),
+                "latent_image": i2v.out(1),
+            },
+        )
+        frames_h3 = g.add("VAEDecode", [], {"samples": out.out(0), "vae": vae.out(0)})
+        audio = g.add("VAEDecodeAudio", [], {"samples": out.out(0), "vae": avae.out(0)})
+    return frames_h3, audio
+
+
 def build_h3_guiado():
     g = Graph("26-h3-guiado")
 
@@ -2263,64 +2323,168 @@ def build_h3_guiado():
             title="PROMPT ✅ final",
         )
 
-    with g.group("MOTOR · FastVideo FastH3 8 pasos (como la plantilla oficial) + anclas", PURPLE):
-        unet = g.add("UNETLoader", [FASTH3_UNET, "default"], title="Modelo · FastH3 8 pasos")
-        clip = g.add("CLIPLoader", [H3_CLIP, "minimax", "default"], title="Text encoder · Qwen3-VL")
-        vae = g.add("VAELoader", [H3_VAE], title="VAE vídeo · H3")
-        avae = g.add("VAELoader", [H3_AUDIO_VAE], title="VAE audio · H3")
-        shift = g.add("MiniMaxH3SigmaShift", [10.0, 3.0], {"model": unet.out(0)})
-        attn = g.add("ModelAttentionBackend", ["comfy kitchen attention"], {"model": shift.out(0)})
-        sparse = g.add(
-            "BlockSparseAttention",
-            ["vsa", 10, 0.2, 1, "", 12288, 256, "exact_kv_and_rows", False],
-            {"model": attn.out(0)},
-        )
-        i2v = g.add(
-            "MiniMaxH3ImageToVideo",
-            ["", 1344, 768, H3_FRAMES],
-            {
-                "clip": clip.out(0),
-                "vae": vae.out(0),
-                "first_frame": primero.out(0),
-                "last_frame": ultimo.out(0),
-                "prompt": prompt.out(0),
-                "width": w.out(0),
-                "height": h.out(0),
-                "length": mandos[2].out(0),
-            },
-            title="H3 · inicio y final del recorrido",
-        )
-        pos = i2v.out(0)
-        for k, i, nodo, q in zip(H3_ANCLAS, idx, medios, (25, 50, 75)):
-            pos = g.add(
-                "MiniMaxH3AddGuide",
-                [k],
-                {"positive": pos, "vae": vae.out(0), "latent": i2v.out(1), "image": nodo.out(0), "frame_idx": i},
-                title=f"Ancla al {q} % (Ctrl+B = más libertad)",
-            ).out(0)
-        guider = g.add("BasicGuider", [], {"model": sparse.out(0), "conditioning": pos})
-        sched = g.add("BasicScheduler", ["simple", 8, 1.0], {"model": sparse.out(0)})
-        sampler = g.add("KSamplerSelect", ["res_multistep"])
-        noise = g.add("RandomNoise", [1, "fixed"], {"noise_seed": semilla.out(0)})
-        out = g.add(
-            "SamplerCustomAdvanced",
-            [],
-            {
-                "noise": noise.out(0),
-                "guider": guider.out(0),
-                "sampler": sampler.out(0),
-                "sigmas": sched.out(0),
-                "latent_image": i2v.out(1),
-            },
-        )
-        frames_h3 = g.add("VAEDecode", [], {"samples": out.out(0), "vae": vae.out(0)})
-        audio = g.add("VAEDecodeAudio", [], {"samples": out.out(0), "vae": avae.out(0)})
+    frames_h3, audio = _motor_fasth3(
+        g,
+        primero.out(0),
+        ultimo.out(0),
+        prompt.out(0),
+        w.out(0),
+        h.out(0),
+        mandos[2].out(0),
+        semilla.out(0),
+        guias=[(k, i, nodo.out(0), q) for k, i, nodo, q in zip(H3_ANCLAS, idx, medios, (25, 50, 75))],
+        titulo="MOTOR · FastVideo FastH3 8 pasos (como la plantilla oficial) + anclas",
+    )
 
     with g.group("GUARDADO", GREEN):
         video = g.add("CreateVideo", [24.0], {"images": frames_h3.out(0), "audio": audio.out(0)})
         g.add("SaveVideo", ["tour/plano_h3_guiado", "auto", "auto"], {"video": video.out(0)}, title="GUARDAR PLANO H3")
 
     g.save(os.path.join(OUT, "26_video_tour_h3_guiado.json"))
+
+# ======================================================================================
+# Vídeo tour con FastH3: avance profundo hasta el fondo de la habitación
+# ======================================================================================
+# Inicio = la foto entera. Final = el fondo de la MISMA foto visto de cerca (recorte de ZOOM x en el
+# punto DESTINO), reconstruido con SeedVR2 para que tenga detalle real. FastH3 hace el viaje entre
+# las dos como una persona que camina hasta el fondo.
+H3_AVANCE_PROMPT = (
+    "One single continuous camera shot of a real room, no cuts, no scene changes. "
+    "The video opens exactly on <Picture 1> and ends exactly on <Picture 2>. "
+    "The camera walks steadily forward through the room, all the way to the far side, as if a person were "
+    "slowly exploring it with a gimbal; the space opens up around the camera with natural parallax as it "
+    "passes the furniture. <Picture 2> is the far part of the same room, seen up close. "
+    "Keep the room exactly as it is: same walls, floor, ceiling, windows, doors, furniture and decoration. "
+    "Nothing appears, disappears or changes shape. Do not add people, text or new objects. "
+    "Smooth constant walking speed, natural light, photorealistic. "
+    "Audio: quiet natural room ambience only, no music, no voices."
+)
+
+
+def build_h3_avance():
+    g = Graph("27-h3-avance")
+
+    with g.group("PANEL DE CONTROL · lo único que tocas", ORANGE):
+        note(
+            g,
+            "# Vídeo tour · avanzar hasta el fondo de la habitación (FastH3)\n\n"
+            "1. **Inicio** = tu foto entera.\n"
+            "2. **Final** = el fondo de la habitación **de tu misma foto**, visto de cerca: un recorte de "
+            "**ZOOM** aumentos alrededor del punto **DESTINO**. Como ese recorte es pequeño, **SeedVR2** lo "
+            "reconstruye para recuperar detalle real.\n"
+            "3. **FastH3** hace el viaje entre las dos como una persona caminando: el principio y el final son "
+            "tu foto; el trayecto lo recrea con lo que hay en ella.\n\n"
+            "## Los mandos\n"
+            "| Mando | Qué hace |\n"
+            "|---|---|\n"
+            "| **ZOOM** | cuánto avanza. 2 = media habitación · 2.5 = hasta el fondo · 3–4 = pegado a la pared del fondo |\n"
+            "| **DESTINO X / Y** | a dónde camina (0 = izquierda/arriba, 1 = derecha/abajo). 0.5 / 0.5 = el centro |\n"
+            "| **ESTANCIA** | una frase en inglés con lo que se ve |\n"
+            "| **FRAMES** | 158 = 6,6 s. H3 sólo acepta 17k+5: 124 (5 s), 141, 158, 175 (7,3 s)… Más avance → más frames |\n"
+            "| **SEMILLA** | cambia el resultado manteniendo el inicio y el final |\n"
+            "| **SeedVR2 en el final** | `true` reconstruye el recorte del fondo. `false` sólo lo amplía (más borroso) |\n\n"
+            "**Mira las dos vistas previas** (grupo ENCUADRES) antes de generar: la de FINAL es exactamente donde "
+            "acabará la cámara. Si no es el fondo de la habitación, mueve DESTINO.\n\n"
+            "**El límite honesto:** al avanzar, la cámara pasa junto a muebles y ve algún lado que la foto no "
+            "enseña. Eso lo completa H3 con lo que ve en la foto. El principio y el final son siempre reales.\n\n"
+            "**Licencia:** la de MiniMax H3 excluye la UE, Reino Unido, Corea y EE. UU. Úsalo bajo tu "
+            "responsabilidad.",
+            title="LÉEME PRIMERO",
+        )
+        zoom = g.add("PrimitiveFloat", [2.5], title="ZOOM (hasta dónde avanza)", color=ORANGE)
+        dest_x = g.add("PrimitiveFloat", [0.5], title="DESTINO X (0 izq · 1 der)", color=ORANGE)
+        dest_y = g.add("PrimitiveFloat", [0.5], title="DESTINO Y (0 arriba · 1 abajo)", color=ORANGE)
+        estancia = g.add(
+            "PrimitiveStringMultiline",
+            ["The room is a bright living room with a grey sofa, a wooden coffee table and a large window at the back."],
+            title="ESTANCIA (qué se ve, en inglés)",
+            color=ORANGE,
+        )
+        n_frames = g.add("PrimitiveInt", [158, "fixed"], title="FRAMES (158 = 6,6 s)", color=ORANGE)
+        w = g.add("PrimitiveInt", [1344, "fixed"], title="ANCHO", color=ORANGE)
+        h = g.add("PrimitiveInt", [768, "fixed"], title="ALTO", color=ORANGE)
+        semilla = g.add("PrimitiveInt", [1, "randomize"], title="SEMILLA", color=ORANGE)
+        mejorar = g.add("PrimitiveBoolean", [True], title="SeedVR2 en el final", color=ORANGE)
+
+    with g.group("ENCUADRES · inicio y final salen de tu foto", BLUE):
+        foto = g.add("LoadImage", ["foto_inicio.png", "image"], title="FOTO del piso")
+        inicio = g.add(
+            "ImageScale",
+            ["lanczos", 1344, 768, "center"],
+            {"image": foto.out(0), "width": w.out(0), "height": h.out(0)},
+            title="INICIO · la foto entera",
+        )
+        g.add("PreviewImage", [], {"images": inicio.out(0)}, title="Vista previa · INICIO")
+        tam = g.add("GetImageSize", [], {"image": foto.out(0)}, title="Tamaño de la foto")
+        # a = ancho, b = alto, c = ZOOM, d = DESTINO X, e = DESTINO Y
+        ancho_rec = "min(a, b * 16 / 9) / max(1.0, c)"
+        exprs = {
+            "width": f"floor({ancho_rec})",
+            "height": f"floor({ancho_rec} * 9 / 16)",
+            "x": f"floor(max(0, min(a - {ancho_rec}, d * a - {ancho_rec} / 2)))",
+            "y": f"floor(max(0, min(b - {ancho_rec} * 9 / 16, e * b - {ancho_rec} * 9 / 32)))",
+        }
+        vals = {}
+        for campo, e in exprs.items():
+            vals[campo] = g.add(
+                "ComfyMathExpression",
+                [e],
+                {
+                    "values.a": tam.out(0),
+                    "values.b": tam.out(1),
+                    "values.c": zoom.out(0),
+                    "values.d": dest_x.out(0),
+                    "values.e": dest_y.out(0),
+                },
+                title=f"FINAL · {campo}",
+            ).out(1)
+        recorte = g.add("ImageCrop", [1280, 720, 0, 0], dict(vals, image=foto.out(0)), title="Recorte del fondo")
+        ampliado = g.add(
+            "ImageScale",
+            ["lanczos", 1344, 768, "disabled"],
+            {"image": recorte.out(0), "width": w.out(0), "height": h.out(0)},
+            title="Fondo ampliado al tamaño del vídeo",
+        )
+
+    with g.group("RECONSTRUCCIÓN DEL FONDO · SeedVR2 (sólo si «SeedVR2 en el final» = true)", GREEN):
+        reconstruido = seedvr2_rescue(g, ampliado.out(0), scale=1.0)
+        final = g.add(
+            "ComfySwitchNode",
+            [False],
+            {"on_false": ampliado.out(0), "on_true": reconstruido, "switch": mejorar.out(0)},
+            title="FINAL: ampliado / reconstruido",
+        )
+        g.add("PreviewImage", [], {"images": final.out(0)}, title="Vista previa · FINAL (donde acaba la cámara)")
+
+    with g.group("PROMPT", GREY):
+        base = g.add("PrimitiveStringMultiline", [H3_AVANCE_PROMPT], title="PROMPT base (avance hasta el fondo)")
+        prompt = g.add(
+            "StringConcatenate",
+            ["", "", "\n\n"],
+            {"string_a": base.out(0), "string_b": estancia.out(0)},
+            title="PROMPT ✅ final",
+        )
+
+    frames_h3, audio = _motor_fasth3(
+        g,
+        inicio.out(0),
+        final.out(0),
+        prompt.out(0),
+        w.out(0),
+        h.out(0),
+        n_frames.out(0),
+        semilla.out(0),
+        titulo="MOTOR · FastVideo FastH3 8 pasos (como la plantilla oficial)",
+    )
+
+    with g.group("GUARDADO", GREEN):
+        video = g.add("CreateVideo", [24.0], {"images": frames_h3.out(0), "audio": audio.out(0)})
+        g.add("SaveVideo", ["tour/avance_h3", "auto", "auto"], {"video": video.out(0)}, title="GUARDAR PLANO")
+        ultimo = g.add("ImageFromBatch", [-1, 1], {"image": frames_h3.out(0)}, title="Último frame")
+        g.add("SaveImage", ["tour/ultimo_frame"], {"images": ultimo.out(0)}, title="GUARDAR ÚLTIMO FRAME")
+
+    g.save(os.path.join(OUT, "27_video_tour_h3_avance.json"))
+
 
 def main():
     os.makedirs(OUT, exist_ok=True)
@@ -2334,6 +2498,7 @@ def main():
     build_h3_tour()
     build_parallax_tour()
     build_h3_guiado()
+    build_h3_avance()
     for f in sorted(os.listdir(OUT)):
         print("escrito:", os.path.join("workflows", f))
 

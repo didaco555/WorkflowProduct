@@ -6,6 +6,7 @@ Workflows:
 |---|---|---|
 | **[`25_video_tour_parallax.json`](../workflows/25_video_tour_parallax.json)** | **Depth Anything 3 + DepthFlow** | **foto → recorrido 2.5D sin IA generativa**: no puede inventar nada. El recomendado para enseñar el piso tal cual. |
 | **[`26_video_tour_h3_guiado.json`](../workflows/26_video_tour_h3_guiado.json)** | **2.5D + FastH3** | el recorrido 2.5D da 5 anclas reales y FastH3 genera el vídeo pasando por ellas: realismo de H3 sin salirse de la foto. **Licencia de H3: excluye la UE** |
+| **[`27_video_tour_h3_avance.json`](../workflows/27_video_tour_h3_avance.json)** | **FastH3 + SeedVR2** | **avanzar hasta el fondo de la habitación**: inicio = la foto, final = el fondo de la misma foto reconstruido con SeedVR2; H3 hace el viaje. **Licencia de H3: excluye la UE** |
 | [`21_video_tour_ltx25.json`](../workflows/21_video_tour_ltx25.json) | LTX-2.5 | foto → plano con IA (más "vida", pero puede inventar) |
 | **[`22_video_transicion_ltx25.json`](../workflows/22_video_transicion_ltx25.json)** | **LTX-2.5** | **foto → foto** del mismo espacio |
 | [`20_video_tour_inmobiliario.json`](../workflows/20_video_tour_inmobiliario.json) | Wan 2.2 14B | las dos cosas en un grafo (FINAL opcional), con SeedVR2 y FILM |
@@ -76,6 +77,23 @@ puestas, H3 casi no puede salirse del recorrido.
 | Enseñar el piso **exactamente como es**, movimiento suave con profundidad | **25 (2.5D)** |
 | Lo mismo con el acabado de H3, pegado a la foto | **26 (2.5D + H3)** |
 | Más "vida" (luz que cambia, cortinas), aceptando revisar cada plano por si inventa | 21 LTX-2.5 · 24/23 H3 con anclaje doble |
+
+## Avanzar hasta el fondo de la habitación (workflow 27)
+
+El 2.5D (25, 26) sólo aguanta desplazamientos cortos: si se fuerza, se estira. Para que la cámara
+**atraviese la habitación** hace falta que el modelo recree el trayecto, pero sin soltarle la
+mano:
+
+1. **Inicio** = la foto entera.
+2. **Final** = el fondo de la habitación **de la misma foto**, visto de cerca: un recorte de ZOOM
+   aumentos alrededor del punto DESTINO. Si ese recorte tiene menos resolución que el vídeo,
+   **SeedVR2** lo reconstruye (recupera detalle real, no inventa objetos).
+3. **FastH3** camina de una a otra.
+
+El principio y el final son siempre tu foto. Lo que H3 completa es lo que se ve de lado al pasar
+junto a los muebles. Para avances largos, **pide al cliente la foto original en alta resolución**
+(la del anuncio suele venir comprimida): con 4000 px de ancho, el fondo a 2,5x sigue teniendo más
+resolución que el vídeo.
 
 ## Anclaje doble: el plano empieza y termina en tu foto (workflows 23 y 24)
 
