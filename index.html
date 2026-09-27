@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <!-- ============================================================
+     PORTADA: vídeo tour con IA para pisos turísticos.
+     La web de fotos de producto está en producto.html.
+
      CAMBIAR AQUÍ (lo mínimo para tener la web en marcha):
        1. [TU NOMBRE O MARCA]  -> tu nombre o el de tu marca
        2. 34XXXXXXXXX          -> tu WhatsApp con prefijo y sin espacios (ej. 34612345678)
@@ -15,10 +18,11 @@
        7. La URL de la web ya está puesta (https://didaco555.github.io/WorkflowProduct/):
           cámbiala sólo si publicas en otro repositorio o con dominio propio.
      Búscalo y reemplázalo con "buscar y reemplazar" del editor: aparece varias veces.
+     Los mismos datos están también en producto.html.
      ============================================================ -->
 
-<title>Fotos de producto con IA para ecommerce | [TU NOMBRE O MARCA]</title>
-<meta name="description" content="Fotografía de producto para ecommerce sin montar un estudio. Me mandas las fotos que ya tienes y te devuelvo de 10 a 30 imágenes de catálogo y de ambiente, generadas con IA y rematadas en Photoshop. Desde 199 €.">
+<title>Vídeo tour con IA para pisos turísticos y Airbnb | [TU NOMBRE O MARCA]</title>
+<meta name="description" content="Convierto las fotos de tu piso turístico en un vídeo tour para Instagram, tu web y WhatsApp. Sin grabar nada, en 72 horas y desde 69 €. Para anfitriones de Airbnb, gestores y casas rurales.">
 <meta name="author" content="[TU NOMBRE O MARCA]">
 <meta name="theme-color" content="#faf9f6">
 <link rel="canonical" href="https://didaco555.github.io/WorkflowProduct/">
@@ -27,23 +31,22 @@
 <meta property="og:type" content="website">
 <meta property="og:locale" content="es_ES">
 <meta property="og:site_name" content="[TU NOMBRE O MARCA]">
-<meta property="og:title" content="Fotos de producto listas para vender, sin montar un estudio">
-<meta property="og:description" content="Me mandas las fotos que ya tienes y te devuelvo de 10 a 30 imágenes para tu web, tu Instagram y tus anuncios. En 5 días. Desde 199 €.">
+<meta property="og:title" content="Tu piso turístico en vídeo, sin grabar nada">
+<meta property="og:description" content="Me mandas las fotos de tu anuncio y en 72 horas te devuelvo un vídeo tour listo para Instagram, tu web y WhatsApp. Desde 69 €.">
 <meta property="og:url" content="https://didaco555.github.io/WorkflowProduct/">
-<!-- CAMBIAR: img/og.jpg (1200x630). La URL tiene que ser absoluta o WhatsApp no la lee. -->
-<meta property="og:image" content="https://didaco555.github.io/WorkflowProduct/img/og.jpg">
+<!-- CAMBIAR: img/pisos/og.jpg (1200x630). La URL tiene que ser absoluta o WhatsApp no la lee. -->
+<meta property="og:image" content="https://didaco555.github.io/WorkflowProduct/img/pisos/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Fotos de producto listas para vender">
+<meta property="og:image:alt" content="Tu piso turístico en vídeo, sin grabar nada">
 <meta name="twitter:card" content="summary_large_image">
 
-<!-- Icono: es un SVG en línea, no pide ningún archivo extra. CAMBIAR la letra si quieres. -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23c4562f'/><text x='32' y='45' font-size='36' font-family='sans-serif' fill='%23fff' text-anchor='middle'>F</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23c4562f'/><path d='M24 18v28l22-14z' fill='%23fff'/></svg>">
 
 <style>
 /* ============================================================
-   DISEÑO. Todo el color y el ritmo salen de estas variables:
-   cambia --acento y cambia la web entera.
+   DISEÑO. Mismo estilo que producto.html: cambia --acento
+   y cambia la web entera.
    ============================================================ */
 :root{
   --fondo:#faf9f6;
@@ -51,21 +54,18 @@
   --tinta:#17140f;
   --tinta-suave:#5b554c;
   --linea:#e2ded4;
-  --acento:#c4562f;          /* CAMBIAR: color de acento (botones, detalles) */
+  --acento:#c4562f;          /* CAMBIAR: color de acento */
   --acento-oscuro:#a9461f;
   --blanco:#fff;
   --radio:14px;
   --ancho:1120px;
-  --sombra:0 1px 2px rgba(23,20,15,.05), 0 12px 32px rgba(23,20,15,.06);
+  --sombra:0 1px 2px rgba(23,20,15,.05), 0 12px 32px rgba(23,20,15,.07);
   --fuente:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 }
 *,*::before,*::after{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:84px;-webkit-text-size-adjust:100%}
-body{
-  margin:0;background:var(--fondo);color:var(--tinta);font-family:var(--fuente);
-  font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;
-}
-img{max-width:100%;height:auto;display:block}
+body{margin:0;background:var(--fondo);color:var(--tinta);font-family:var(--fuente);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+img,video{max-width:100%;height:auto;display:block}
 a{color:inherit}
 h1,h2,h3{line-height:1.15;letter-spacing:-.02em;margin:0 0 .5em;font-weight:700}
 h1{font-size:clamp(2.1rem,6vw,3.6rem)}
@@ -77,23 +77,14 @@ p{margin:0 0 1em}
 .contenedor{width:100%;max-width:var(--ancho);margin:0 auto;padding:0 20px}
 section{padding:clamp(56px,9vw,112px) 0;border-top:1px solid var(--linea)}
 section:first-of-type{border-top:0}
-.centro{text-align:center}
 .intro{max-width:620px;color:var(--tinta-suave);font-size:1.05rem}
-.centro .intro{margin-left:auto;margin-right:auto}
-.etiqueta{
-  display:inline-block;font-size:.78rem;font-weight:700;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--acento);margin:0 0 14px
-}
+.etiqueta{display:inline-block;font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--acento);margin:0 0 14px}
 .salta{position:absolute;left:-9999px}
 .salta:focus{left:12px;top:12px;z-index:100;background:var(--tinta);color:#fff;padding:10px 16px;border-radius:8px}
+.icono{display:none}
 
 /* ---- Botones ---- */
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:9px;
-  padding:15px 24px;border-radius:999px;border:1.5px solid transparent;
-  font:inherit;font-weight:600;text-decoration:none;cursor:pointer;
-  transition:transform .12s ease, background-color .15s ease, border-color .15s ease;
-}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:15px 24px;border-radius:999px;border:1.5px solid transparent;font:inherit;font-weight:600;text-decoration:none;cursor:pointer;transition:transform .12s ease,background-color .15s ease,border-color .15s ease}
 .btn:hover{transform:translateY(-1px)}
 .btn-1{background:var(--acento);color:#fff}
 .btn-1:hover{background:var(--acento-oscuro)}
@@ -104,144 +95,118 @@ section:first-of-type{border-top:0}
 .btn svg{width:20px;height:20px;flex:none;fill:currentColor}
 
 /* ---- Cabecera ---- */
-header{
-  position:sticky;top:0;z-index:40;background:rgba(250,249,246,.9);
-  backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--linea)
-}
+header{position:sticky;top:0;z-index:40;background:rgba(250,249,246,.92);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--linea)}
 .barra{display:flex;align-items:center;justify-content:space-between;gap:18px;height:64px}
 .marca{font-weight:700;letter-spacing:-.02em;text-decoration:none;font-size:1.05rem}
 .marca span{color:var(--acento)}
-nav ul{display:flex;gap:26px;list-style:none;margin:0;padding:0}
+nav ul{display:flex;gap:24px;list-style:none;margin:0;padding:0}
 nav a{text-decoration:none;color:var(--tinta-suave);font-size:.95rem}
 nav a:hover{color:var(--tinta)}
+nav .secundario a{color:var(--acento)}
 .nav-links,.header-cta{display:none}
-@media(min-width:900px){.nav-links{display:block}.header-cta{display:inline-flex}}
+@media(min-width:960px){.nav-links{display:block}.header-cta{display:inline-flex}}
 
 /* ---- Hero ---- */
-.hero{padding:clamp(48px,8vw,96px) 0 clamp(40px,6vw,72px)}
-.hero h1{max-width:16ch}
-.hero .sub{font-size:clamp(1.05rem,2.3vw,1.3rem);color:var(--tinta-suave);max-width:46ch;margin-bottom:28px}
+.hero{padding:clamp(40px,7vw,88px) 0 clamp(48px,7vw,88px)}
+.hero-rejilla{display:grid;gap:44px;align-items:center}
+@media(min-width:900px){.hero-rejilla{grid-template-columns:1.15fr .85fr}}
+.hero h1{max-width:15ch}
+.hero .sub{font-size:clamp(1.05rem,2.3vw,1.3rem);color:var(--tinta-suave);max-width:44ch;margin-bottom:28px}
 .hero-botones{display:flex;flex-wrap:wrap;gap:12px}
-.hero-pie{margin:26px 0 0;font-size:.92rem;color:var(--tinta-suave)}
+.hero-pie{margin:24px 0 0;font-size:.92rem;color:var(--tinta-suave)}
 
-/* ---- Antes / después ---- */
-.comparadores{display:grid;gap:clamp(28px,4vw,44px)}
-.pieza figcaption{margin-top:12px;font-size:.93rem;color:var(--tinta-suave)}
-@media(min-width:860px){
-  .pareja{display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,4vw,44px)}
+/* Teléfono con el reel */
+.movil{
+  position:relative;width:min(290px,72vw);margin:0 auto;aspect-ratio:9/16;
+  border:10px solid var(--tinta);border-radius:38px;overflow:hidden;background:#000;
+  box-shadow:0 30px 60px rgba(23,20,15,.22)
 }
-.ba{
-  --pos:50;position:relative;overflow:hidden;border-radius:var(--radio);
-  background:var(--fondo-2);box-shadow:var(--sombra);
-  touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:ew-resize;
-}
-.ba img{width:100%;display:block;pointer-events:none;-webkit-user-drag:none}
-.ba .antes{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;clip-path:inset(0 calc(100% - var(--pos)*1%) 0 0)}
-.ba-tag{
-  position:absolute;top:12px;z-index:2;background:rgba(23,20,15,.72);color:#fff;
-  font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-  padding:6px 10px;border-radius:999px;pointer-events:none
-}
-.ba-tag.izq{left:12px}
-.ba-tag.der{right:12px}
-.ba-mango{
-  position:absolute;top:0;bottom:0;left:calc(var(--pos)*1%);width:44px;transform:translateX(-50%);
-  background:none;border:0;padding:0;cursor:ew-resize;z-index:3;touch-action:pan-y
-}
-.ba-mango::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 0 1px rgba(23,20,15,.18)}
-.ba-mango::after{
-  content:"";position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px 0 0 -22px;
-  border-radius:50%;background:#fff;box-shadow:0 2px 10px rgba(23,20,15,.28);
-  background-image:
-    linear-gradient(currentColor,currentColor),
-    linear-gradient(currentColor,currentColor);
-  background-size:2px 12px,2px 12px;background-position:calc(50% - 5px) 50%,calc(50% + 5px) 50%;
-  background-repeat:no-repeat;color:var(--tinta)
-}
+.movil video{width:100%;height:100%;object-fit:cover}
+.movil::before{content:"";position:absolute;top:8px;left:50%;width:72px;height:18px;margin-left:-36px;border-radius:999px;background:var(--tinta);z-index:2}
+.movil-pie{text-align:center;font-size:.85rem;color:var(--tinta-suave);margin:14px 0 0}
 
-/* ---- Tarjetas (qué hago) ---- */
-.rejilla-3{display:grid;gap:clamp(22px,3vw,34px)}
-@media(min-width:820px){.rejilla-3{grid-template-columns:repeat(3,1fr)}}
-.servicio img{border-radius:var(--radio);box-shadow:var(--sombra);margin-bottom:18px}
-.servicio h3{margin-bottom:.35em}
-.servicio p{color:var(--tinta-suave);margin:0;font-size:.98rem}
+/* ---- De fotos a vídeo ---- */
+.demo{display:grid;gap:clamp(26px,4vw,40px);margin-top:36px}
+.fotos-cliente{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;list-style:none;margin:0;padding:0}
+@media(min-width:700px){.fotos-cliente{grid-template-columns:repeat(5,1fr)}}
+.fotos-cliente img{border-radius:10px;aspect-ratio:3/2;object-fit:cover;width:100%}
+.flecha{display:flex;align-items:center;gap:12px;font-size:.92rem;color:var(--tinta-suave);margin:0}
+.flecha::before{content:"";width:34px;height:2px;background:var(--acento)}
+.video-grande{border-radius:var(--radio);overflow:hidden;box-shadow:var(--sombra);background:#000}
+.video-grande video{width:100%;aspect-ratio:16/9;object-fit:cover}
+.pie-suave{font-size:.93rem;color:var(--tinta-suave);margin:12px 0 0}
+
+/* ---- Rejillas de texto ---- */
+.rejilla-2{display:grid;gap:26px 44px;list-style:none;margin:36px 0 0;padding:0}
+@media(min-width:760px){.rejilla-2{grid-template-columns:1fr 1fr}}
+.rejilla-2 h3{margin-bottom:.3em}
+.rejilla-2 p{color:var(--tinta-suave);margin:0;font-size:.98rem}
+.gris{background:var(--fondo-2)}
+
+/* ---- Dónde lo usas ---- */
+.usos{display:grid;gap:16px;list-style:none;margin:36px 0 0;padding:0}
+@media(min-width:640px){.usos{grid-template-columns:1fr 1fr}}
+@media(min-width:960px){.usos{grid-template-columns:repeat(4,1fr)}}
+.usos li{background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio);padding:22px}
+.usos h3{font-size:1rem;margin-bottom:.35em}
+.usos p{margin:0;font-size:.94rem;color:var(--tinta-suave)}
+.nota{margin:26px 0 0;padding:18px 20px;border-left:3px solid var(--acento);background:var(--blanco);border-radius:0 10px 10px 0;font-size:.95rem;max-width:760px}
+.nota p{margin:0}
 
 /* ---- Packs ---- */
-.packs{display:grid;gap:22px;align-items:start}
+.packs{display:grid;gap:22px;align-items:start;margin-top:40px}
 @media(min-width:900px){.packs{grid-template-columns:repeat(3,1fr)}}
-.pack{
-  background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio);
-  padding:30px 26px;display:flex;flex-direction:column;height:100%
-}
+.pack{background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio);padding:30px 26px;display:flex;flex-direction:column;height:100%}
 .pack.destacado{border-color:var(--acento);box-shadow:var(--sombra);position:relative}
 @media(min-width:900px){.pack.destacado{transform:translateY(-10px)}}
-.pack .cinta{
-  position:absolute;top:-13px;left:26px;background:var(--acento);color:#fff;
-  font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-  padding:5px 12px;border-radius:999px
-}
+.pack .cinta{position:absolute;top:-13px;left:26px;background:var(--acento);color:#fff;font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:5px 12px;border-radius:999px}
 .pack h3{font-size:.82rem;letter-spacing:.16em;text-transform:uppercase;color:var(--tinta-suave)}
 .precio{font-size:2.4rem;font-weight:700;letter-spacing:-.03em;margin:4px 0 18px}
 .precio small{font-size:1rem;font-weight:500;color:var(--tinta-suave)}
 .pack ul{list-style:none;margin:0 0 22px;padding:0;display:grid;gap:10px}
 .pack li{position:relative;padding-left:26px;font-size:.97rem}
-.pack li::before{
-  content:"";position:absolute;left:0;top:.45em;width:14px;height:8px;
-  border-left:2px solid var(--acento);border-bottom:2px solid var(--acento);
-  transform:rotate(-45deg)
-}
-.pack .nota{font-size:.93rem;color:var(--tinta-suave);margin:0 0 22px}
+.pack li::before{content:"";position:absolute;left:0;top:.45em;width:14px;height:8px;border-left:2px solid var(--acento);border-bottom:2px solid var(--acento);transform:rotate(-45deg)}
+.pack .nota-pack{font-size:.93rem;color:var(--tinta-suave);margin:0 0 22px}
 .pack .btn{margin-top:auto;width:100%}
-.packs-pie{margin:26px 0 0;font-size:.95rem;color:var(--tinta-suave)}
+.extras{margin:30px 0 0;padding:20px 22px;border:1px dashed var(--linea);border-radius:var(--radio);font-size:.95rem}
+.extras strong{display:block;margin-bottom:6px}
+.extras ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px 26px;color:var(--tinta-suave)}
+.packs-pie{margin:22px 0 0;font-size:.95rem;color:var(--tinta-suave)}
 
 /* ---- Pasos ---- */
-.pasos{counter-reset:paso;display:grid;gap:clamp(24px,3vw,36px);list-style:none;margin:0;padding:0}
+.pasos{counter-reset:paso;display:grid;gap:clamp(24px,3vw,36px);list-style:none;margin:36px 0 0;padding:0}
 @media(min-width:820px){.pasos{grid-template-columns:repeat(3,1fr)}}
 .pasos li{counter-increment:paso}
-.pasos li::before{
-  content:counter(paso);display:flex;align-items:center;justify-content:center;
-  width:42px;height:42px;border-radius:50%;background:var(--acento);color:#fff;
-  font-weight:700;margin-bottom:14px
-}
+.pasos li::before{content:counter(paso);display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;background:var(--acento);color:#fff;font-weight:700;margin-bottom:14px}
 .pasos h3{margin-bottom:.3em}
 .pasos p{color:var(--tinta-suave);margin:0;font-size:.98rem}
 
-/* ---- Por qué conmigo ---- */
-.porque{background:var(--fondo-2)}
-.razones{display:grid;gap:26px;list-style:none;margin:0;padding:0}
-@media(min-width:760px){.razones{grid-template-columns:1fr 1fr}}
-.razones h3{margin-bottom:.3em}
-.razones p{color:var(--tinta-suave);margin:0;font-size:.98rem}
-
 /* ---- FAQ ---- */
-.faq{max-width:760px}
+.faq{max-width:760px;margin-top:32px}
 .faq details{border-bottom:1px solid var(--linea)}
-.faq summary{
-  cursor:pointer;list-style:none;padding:20px 40px 20px 0;position:relative;
-  font-weight:600;font-size:1.05rem
-}
+.faq summary{cursor:pointer;list-style:none;padding:20px 40px 20px 0;position:relative;font-weight:600;font-size:1.05rem}
 .faq summary::-webkit-details-marker{display:none}
-.faq summary::after{
-  content:"";position:absolute;right:8px;top:50%;width:11px;height:11px;margin-top:-8px;
-  border-right:2px solid var(--tinta-suave);border-bottom:2px solid var(--tinta-suave);
-  transform:rotate(45deg);transition:transform .2s ease
-}
+.faq summary::after{content:"";position:absolute;right:8px;top:50%;width:11px;height:11px;margin-top:-8px;border-right:2px solid var(--tinta-suave);border-bottom:2px solid var(--tinta-suave);transform:rotate(45deg);transition:transform .2s ease}
 .faq details[open] summary::after{transform:rotate(-135deg);margin-top:-3px}
 .faq p{color:var(--tinta-suave);margin:0 0 20px;max-width:65ch}
 
+/* ---- Otra categoría: fotos de producto ---- */
+.otra{display:grid;gap:28px;align-items:center;background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio);padding:clamp(22px,4vw,40px)}
+@media(min-width:760px){.otra{grid-template-columns:220px 1fr}}
+.otra img{border-radius:10px;width:100%;max-width:220px}
+.otra h2{font-size:clamp(1.3rem,3vw,1.7rem)}
+.otra p{color:var(--tinta-suave)}
+
 /* ---- Contacto ---- */
-.contacto-cols{display:grid;gap:clamp(32px,5vw,64px)}
+.contacto-cols{display:grid;gap:clamp(32px,5vw,64px);margin-top:40px}
 @media(min-width:880px){.contacto-cols{grid-template-columns:1fr 1fr;align-items:start}}
 .dato{margin:0 0 10px;font-size:1.02rem}
-.dato a{color:var(--tinta)}
 form{background:var(--blanco);border:1px solid var(--linea);border-radius:var(--radio);padding:26px}
 label{display:block;font-weight:600;font-size:.92rem;margin:0 0 6px}
-input,textarea{
-  width:100%;font:inherit;color:inherit;background:var(--fondo);
-  border:1px solid var(--linea);border-radius:10px;padding:13px 14px;margin-bottom:16px
-}
-textarea{min-height:110px;resize:vertical}
-input:focus,textarea:focus{border-color:var(--acento);outline:none}
+label small{font-weight:400;color:var(--tinta-suave)}
+input,textarea,select{width:100%;font:inherit;color:inherit;background:var(--fondo);border:1px solid var(--linea);border-radius:10px;padding:13px 14px;margin-bottom:16px}
+textarea{min-height:100px;resize:vertical}
+input:focus,textarea:focus,select:focus{border-color:var(--acento);outline:none}
 form .btn{width:100%}
 .form-nota{font-size:.86rem;color:var(--tinta-suave);margin:14px 0 0;text-align:center}
 
@@ -251,45 +216,9 @@ footer a{color:var(--tinta-suave)}
 .pie{display:flex;flex-wrap:wrap;gap:10px 24px;justify-content:space-between}
 
 /* ---- Botón flotante de WhatsApp (sólo móvil) ---- */
-.flotante{
-  position:fixed;right:16px;bottom:16px;z-index:50;width:58px;height:58px;border-radius:50%;
-  background:#25d366;color:#fff;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 6px 20px rgba(23,20,15,.28);text-decoration:none
-}
+.flotante{position:fixed;right:16px;bottom:16px;z-index:50;width:58px;height:58px;border-radius:50%;background:#25d366;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(23,20,15,.28)}
 .flotante svg{width:30px;height:30px;fill:currentColor}
-@media(min-width:900px){.flotante{display:none}}
-
-
-/* ---- Exposición ---- */
-.caso{display:grid;gap:clamp(24px,3vw,40px)}
-@media(min-width:900px){.caso{grid-template-columns:minmax(180px,240px) 1fr;align-items:start}}
-.origen{margin:0}
-.origen img{border-radius:var(--radio);box-shadow:var(--sombra)}
-.origen figcaption{margin-top:12px;font-size:.9rem;color:var(--tinta-suave)}
-.galeria{display:grid;gap:clamp(18px,2.5vw,28px)}
-@media(min-width:640px){.galeria{grid-template-columns:repeat(3,1fr);align-items:start}}
-.obra{margin:0}
-.lupa-btn{
-  display:block;width:100%;padding:0;border:0;background:none;cursor:zoom-in;
-  border-radius:var(--radio);overflow:hidden;box-shadow:var(--sombra)
-}
-.lupa-btn img{width:100%;height:auto;display:block;transition:transform .35s ease}
-.lupa-btn:hover img{transform:scale(1.03)}
-.obra figcaption{margin-top:10px;font-size:.92rem;color:var(--tinta-suave)}
-.aviso{margin:30px 0 0;font-size:.87rem;color:var(--tinta-suave);max-width:70ch}
-
-/* ---- Lupa (imagen a pantalla completa) ---- */
-#lupa{border:0;padding:0;background:transparent;max-width:min(94vw,860px);max-height:94vh;overflow:visible}
-#lupa::backdrop{background:rgba(23,20,15,.9)}
-#lupa img{display:block;max-width:100%;max-height:80vh;width:auto;margin:0 auto;border-radius:10px}
-#lupa p{color:#fff;text-align:center;font-size:.9rem;margin:14px 0 0}
-#lupa .cerrar{
-  position:absolute;top:-46px;right:0;width:38px;height:38px;border-radius:50%;
-  border:0;background:rgba(255,255,255,.14);color:#fff;font-size:1.3rem;line-height:1;cursor:pointer
-}
-#lupa .cerrar:hover{background:rgba(255,255,255,.26)}
-/* con la lupa abierta escondemos la cabecera: su desenfoque se cuela por encima */
-.con-lupa header,.con-lupa .flotante{visibility:hidden}
+@media(min-width:960px){.flotante{display:none}}
 
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
@@ -299,6 +228,9 @@ footer a{color:var(--tinta-suave)}
 </head>
 
 <body>
+<!-- Icono de WhatsApp, se define una vez y se reutiliza con <use> -->
+<svg class="icono" aria-hidden="true"><symbol id="i-wa" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.97L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.85 9.85 0 0 0 12.04 2m0 1.67c2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.25 8.24-1.48 0-2.93-.4-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24m-2.6 3.98c-.16 0-.42.06-.64.3-.22.24-.85.83-.85 2.02s.87 2.34.99 2.5c.12.16 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.43-.59 1.63-1.15.2-.56.2-1.04.14-1.15-.06-.1-.22-.16-.46-.28-.24-.12-1.43-.71-1.66-.79-.22-.08-.38-.12-.54.12-.16.24-.62.79-.76.95-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.93-1.19-.71-.64-1.2-1.42-1.34-1.66-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.31-.74-1.79-.19-.46-.39-.4-.54-.41h-.46Z"/></symbol></svg>
+
 <a class="salta" href="#contenido">Saltar al contenido</a>
 
 <header>
@@ -307,16 +239,15 @@ footer a{color:var(--tinta-suave)}
     <a class="marca" href="#inicio">[TU NOMBRE O MARCA]<span>.</span></a>
     <nav class="nav-links" aria-label="Principal">
       <ul>
-        <li><a href="#antes-despues">Antes y después</a></li>
-        <li><a href="#exposicion">Exposición</a></li>
-        <li><a href="#que-hago">Qué hago</a></li>
+        <li><a href="#demo">Ejemplo</a></li>
         <li><a href="#packs">Precios</a></li>
+        <li><a href="#como-funciona">Cómo funciona</a></li>
         <li><a href="#faq">Preguntas</a></li>
         <li><a href="#contacto">Contacto</a></li>
+        <li class="secundario"><a href="producto.html">Fotos de producto</a></li>
       </ul>
     </nav>
-    <!-- CAMBIAR: número de WhatsApp (aquí y en todos los enlaces wa.me de la página) -->
-    <a class="btn btn-1 header-cta" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20quiero%20la%20muestra%20gratis%20de%20una%20foto%20de%20producto.">Escríbeme</a>
+    <a class="btn btn-1 header-cta" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20quiero%20el%20clip%20gratis%20de%20mi%20piso.">Escríbeme</a>
   </div>
 </header>
 
@@ -324,293 +255,298 @@ footer a{color:var(--tinta-suave)}
 
 <!-- ============ 1. HERO ============ -->
 <section id="inicio" class="hero">
-  <div class="contenedor">
-    <p class="etiqueta">Fotografía de producto con IA</p>
-    <h1>Fotos de producto listas para vender, sin montar un estudio.</h1>
-    <p class="sub">Me mandas las fotos que ya tienes y te devuelvo entre 10 y 30 imágenes listas para tu web, tu Instagram y tus anuncios, en 5 días.</p>
-    <div class="hero-botones">
-      <a class="btn btn-1 btn-grande" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20te%20mando%20una%20foto%20de%20mi%20producto%20para%20la%20muestra%20gratis.">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.97L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.85 9.85 0 0 0 12.04 2m0 1.67c2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.25 8.24-1.48 0-2.93-.4-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24m-2.6 3.98c-.16 0-.42.06-.64.3-.22.24-.85.83-.85 2.02s.87 2.34.99 2.5c.12.16 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.43-.59 1.63-1.15.2-.56.2-1.04.14-1.15-.06-.1-.22-.16-.46-.28-.24-.12-1.43-.71-1.66-.79-.22-.08-.38-.12-.54.12-.16.24-.62.79-.76.95-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.93-1.19-.71-.64-1.2-1.42-1.34-1.66-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.31-.74-1.79-.19-.46-.39-.4-.54-.41h-.46Z"/></svg>
-        Mándame una foto y te la devuelvo gratis
-      </a>
-      <a class="btn btn-2 btn-grande" href="#packs">Ver precios</a>
+  <div class="contenedor hero-rejilla">
+    <div>
+      <p class="etiqueta">Vídeo tour para alquiler turístico</p>
+      <h1>Tu piso turístico en vídeo, sin grabar nada.</h1>
+      <p class="sub">Me mandas las fotos de tu anuncio y en 72 horas te devuelvo un vídeo tour listo para Instagram, tu web y WhatsApp.</p>
+      <div class="hero-botones">
+        <a class="btn btn-1 btn-grande" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20te%20mando%205%20fotos%20de%20mi%20piso%20para%20el%20clip%20gratis.">
+          <svg aria-hidden="true"><use href="#i-wa"/></svg>
+          Mándame 5 fotos y te hago un clip gratis
+        </a>
+        <a class="btn btn-2 btn-grande" href="#packs">Ver precios</a>
+      </div>
+      <!-- CAMBIAR: precio de entrada si cambias los packs -->
+      <p class="hero-pie">Desde 69 €. Para anfitriones de Airbnb, gestores de pisos turísticos y casas rurales de toda España.</p>
     </div>
-    <p class="hero-pie">Desde 199 €. Estoy en Solsona (Lleida) y trabajo con marcas de toda España.</p>
+
+    <!-- CAMBIAR: video/reel-vertical.mp4 (9:16) y su portada img/pisos/poster-reel.jpg -->
+    <div>
+      <div class="movil">
+        <video id="reel" src="video/reel-vertical.mp4" poster="img/pisos/poster-reel.jpg" width="720" height="1280"
+               autoplay muted loop playsinline preload="metadata"
+               aria-label="Ejemplo de reel vertical de un piso turístico, hecho a partir de fotos"></video>
+      </div>
+      <p class="movil-pie">Reel vertical para Instagram y TikTok</p>
+    </div>
   </div>
 </section>
 
-<!-- ============ 2. ANTES / DESPUÉS ============
-     CAMBIAR: sustituye los archivos de la carpeta img/ por los tuyos
-     (mismo nombre y MISMO TAMAÑO en las dos fotos de cada pareja).
-     Ahora mismo las tres parejas salen de la misma foto de móvil.
-     Cambia también el alt y el pie de cada imagen.
+<!-- ============ 2. DE FOTOS A VÍDEO ============
+     CAMBIAR: img/pisos/foto-1.jpg ... foto-5.jpg (fotos originales del piso)
+     y video/tour-horizontal.mp4 + img/pisos/poster-tour.jpg (el resultado).
      ================================================ -->
-<section id="antes-despues">
+<section id="demo">
   <div class="contenedor">
-    <p class="etiqueta">Antes y después</p>
+    <p class="etiqueta">De fotos a vídeo</p>
     <h2>Esto es lo que me mandas y esto es lo que recibes.</h2>
-    <p class="intro">Arrastra el círculo para comparar. A la izquierda, la foto de partida hecha con el móvil. A la derecha, la imagen terminada.</p>
+    <p class="intro">Las fotos que ya tienes, aunque sean las de tu anuncio. Con ellas monto un recorrido como si entraras por la puerta.</p>
 
-    <div class="comparadores" style="margin-top:36px">
+    <div class="demo">
+      <div>
+        <ul class="fotos-cliente" aria-label="Fotos originales del piso">
+          <li><img src="img/pisos/foto-1.jpg" width="900" height="600" loading="lazy" alt="Foto original del salón"></li>
+          <li><img src="img/pisos/foto-2.jpg" width="900" height="600" loading="lazy" alt="Foto original de la cocina"></li>
+          <li><img src="img/pisos/foto-3.jpg" width="900" height="600" loading="lazy" alt="Foto original del dormitorio"></li>
+          <li><img src="img/pisos/foto-4.jpg" width="900" height="600" loading="lazy" alt="Foto original del baño"></li>
+          <li><img src="img/pisos/foto-5.jpg" width="900" height="600" loading="lazy" alt="Foto original de la terraza"></li>
+        </ul>
+        <p class="pie-suave">Las 5 fotos de partida.</p>
+      </div>
 
-      <figure class="pieza" style="margin:0">
-        <div class="ba" data-ba>
-          <span class="ba-tag izq">Antes</span>
-          <span class="ba-tag der">Después</span>
-          <img src="img/despues-1.jpg" width="1000" height="1500" alt="Botella de cerveza sobre fondo blanco con luz de estudio, lista para la ficha de producto">
-          <img class="antes" src="img/antes-1.jpg" width="1000" height="1500" alt="La misma botella sujetada con la mano en un salón, de noche y con luz de bombilla">
-          <button class="ba-mango" type="button" role="slider" aria-label="Comparar antes y después: foto de catálogo" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="50% de la foto original"></button>
+      <p class="flecha">Se convierten en esto</p>
+
+      <figure style="margin:0">
+        <div class="video-grande">
+          <video src="video/tour-horizontal.mp4" poster="img/pisos/poster-tour.jpg" width="1280" height="720"
+                 controls playsinline preload="none"
+                 aria-label="Ejemplo de vídeo tour horizontal de un piso turístico, hecho a partir de las cinco fotos"></video>
         </div>
-        <figcaption>Foto de móvil en el salón → packshot de catálogo con fondo limpio.</figcaption>
+        <figcaption class="pie-suave">Vídeo tour en horizontal para tu web, Google y WhatsApp. Dale al play.</figcaption>
       </figure>
-
-      <div class="pareja">
-        <figure class="pieza" style="margin:0">
-          <div class="ba" data-ba>
-            <span class="ba-tag izq">Antes</span>
-            <span class="ba-tag der">Después</span>
-            <img src="img/despues-2.jpg" width="1100" height="1320" loading="lazy" alt="La botella y un vaso servido sobre una mesa de madera, con la ciudad al atardecer al fondo">
-            <img class="antes" src="img/antes-2.jpg" width="1100" height="1320" loading="lazy" alt="La misma botella sujetada con la mano en un salón, de noche">
-            <button class="ba-mango" type="button" role="slider" aria-label="Comparar antes y después: foto de ambiente" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="50% de la foto original"></button>
-          </div>
-          <figcaption>La misma foto → escena de ambiente con la mesa puesta.</figcaption>
-        </figure>
-
-        <figure class="pieza" style="margin:0">
-          <div class="ba" data-ba>
-            <span class="ba-tag izq">Antes</span>
-            <span class="ba-tag der">Después</span>
-            <img src="img/despues-3.jpg" width="1100" height="1320" loading="lazy" alt="Creatividad vertical de anuncio con la botella, el vaso servido y un titular sobre la imagen">
-            <img class="antes" src="img/antes-3.jpg" width="1100" height="1320" loading="lazy" alt="La misma botella sujetada con la mano en un salón, de noche">
-            <button class="ba-mango" type="button" role="slider" aria-label="Comparar antes y después: creatividad para anuncios" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="50% de la foto original"></button>
-          </div>
-          <figcaption>La misma foto → creatividad vertical para anuncios y stories.</figcaption>
-        </figure>
-      </div>
-
     </div>
   </div>
 </section>
 
-<!-- ============ 2 bis. EXPOSICIÓN (caso real) ============
-     CAMBIAR: cuando tengas más trabajos, duplica un <figure class="obra">
-     dentro de .galeria y cambia la imagen, el alt y el pie.
-     ======================================================== -->
-<section id="exposicion">
+<!-- ============ 3. QUÉ GANAS ============ -->
+<section id="que-ganas" class="gris">
   <div class="contenedor">
-    <p class="etiqueta">Exposición</p>
-    <h2>Una sola foto de móvil, tres piezas distintas.</h2>
-    <p class="intro">Ni estudio, ni segunda sesión, ni pedirle nada más al cliente. Toca cualquier imagen para verla grande.</p>
-
-    <div class="caso" style="margin-top:36px">
-      <figure class="origen">
-        <img src="img/caso-original.jpg" width="900" height="1200" loading="lazy" alt="Foto original hecha con el móvil: la botella en la mano, en un salón y con luz de bombilla">
-        <figcaption><strong>El punto de partida.</strong> Una foto con el móvil, de noche, con la mano en medio y reflejos por todas partes.</figcaption>
-      </figure>
-      <div class="galeria">
-        <figure class="obra">
-          <button type="button" class="lupa-btn" data-lupa="img/despues-1.jpg" data-pie="Foto de catálogo: fondo neutro y luz de estudio.">
-            <img src="img/despues-1.jpg" width="1000" height="1500" loading="lazy" alt="Foto de catálogo de la botella sobre fondo neutro con luz de estudio">
-          </button>
-          <figcaption>Catálogo · para la ficha de producto y marketplaces.</figcaption>
-        </figure>
-        <figure class="obra">
-          <button type="button" class="lupa-btn" data-lupa="img/despues-2.jpg" data-pie="Foto de ambiente: la mesa puesta al atardecer.">
-            <img src="img/despues-2.jpg" width="1100" height="1320" loading="lazy" alt="Foto de ambiente con la botella y el vaso servido sobre una mesa de madera al atardecer">
-          </button>
-          <figcaption>Ambiente · para la web y para Instagram.</figcaption>
-        </figure>
-        <figure class="obra">
-          <button type="button" class="lupa-btn" data-lupa="img/despues-3.jpg" data-pie="Creatividad vertical lista para anuncios y stories.">
-            <img src="img/despues-3.jpg" width="1100" height="1320" loading="lazy" alt="Creatividad vertical para anuncios con la botella, el vaso y un titular">
-          </button>
-          <figcaption>Creatividad · para anuncios y stories.</figcaption>
-        </figure>
-      </div>
-    </div>
-
-    <!-- CAMBIAR: deja esta línea mientras los trabajos sean pruebas tuyas y no encargos -->
-    <p class="aviso">Prueba propia: compré el producto, lo fotografié con el móvil y generé estas imágenes. No es un encargo de la marca.</p>
-  </div>
-</section>
-
-<!-- ============ 3. QUÉ HAGO ============ -->
-<section id="que-hago">
-  <div class="contenedor">
-    <p class="etiqueta">Qué hago</p>
-    <h2>Tres cosas, y las tres bien.</h2>
-
-    <div class="rejilla-3" style="margin-top:36px">
-      <article class="servicio">
-        <img src="img/catalogo.jpg" width="900" height="1200" loading="lazy" alt="Ejemplo de foto de catálogo: la botella sobre fondo neutro con luz de estudio">
-        <h3>Foto de catálogo</h3>
-        <p>Fondo blanco o neutro, luz de estudio. Lista para tu tienda y para marketplaces.</p>
-      </article>
-      <article class="servicio">
-        <img src="img/ambiente.jpg" width="900" height="1200" loading="lazy" alt="Ejemplo de foto de ambiente: la botella y un vaso servido sobre una mesa de madera">
-        <h3>Foto de ambiente</h3>
-        <p>Tu producto colocado en una escena real: una cocina, un baño, una mesa de terraza. Sin hacer una sesión de fotos.</p>
-      </article>
-      <article class="servicio">
-        <img src="img/video.jpg" width="900" height="1200" loading="lazy" alt="Fotograma de ejemplo para vídeo corto: la botella y el vaso servido con salpicaduras de agua">
-        <h3>Vídeo corto</h3>
-        <p>Clips de 5 a 10 segundos hechos a partir de las fotos, para reels y anuncios.</p>
-      </article>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 4. PACKS ============
-     CAMBIAR: precios, lo que incluye cada pack y los plazos.
-     ================================= -->
-<section id="packs">
-  <div class="contenedor">
-    <p class="etiqueta">Packs</p>
-    <h2>Precios claros, sin presupuestos raros.</h2>
-    <p class="intro">IVA no incluido. Pagas la mitad al empezar y la otra mitad al recibir las imágenes.</p>
-
-    <div class="packs" style="margin-top:40px">
-
-      <article class="pack">
-        <h3>Prueba</h3>
-        <p class="precio">199 <small>€</small></p>
-        <ul>
-          <li>1 producto</li>
-          <li>10 imágenes (catálogo + ambiente)</li>
-          <li>1 ronda de cambios</li>
-          <li>Entrega en 5 días</li>
-        </ul>
-        <p class="nota">Para ver cómo trabajo sin comprometerte a nada.</p>
-        <a class="btn btn-2" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20me%20interesa%20el%20pack%20PRUEBA%20de%20199%20%E2%82%AC.">Quiero el pack Prueba</a>
-      </article>
-
-      <article class="pack destacado">
-        <span class="cinta">El que más se pide</span>
-        <h3>Catálogo</h3>
-        <p class="precio">490 <small>€</small></p>
-        <ul>
-          <li>3 productos</li>
-          <li>30 imágenes</li>
-          <li>Adaptadas a web, Instagram y anuncios (1:1, 4:5, 9:16)</li>
-          <li>2 rondas de cambios</li>
-          <li>Entrega en 7 días</li>
-        </ul>
-        <a class="btn btn-1" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20me%20interesa%20el%20pack%20CAT%C3%81LOGO%20de%20490%20%E2%82%AC.">Quiero el pack Catálogo</a>
-      </article>
-
-      <article class="pack">
-        <h3>Marca</h3>
-        <p class="precio">890 <small>€/mes</small></p>
-        <ul>
-          <li>Hasta 10 productos al mes</li>
-          <li>Fotos y 2 vídeos cortos</li>
-          <li>Cambios ilimitados</li>
-          <li>Entregas cada semana</li>
-        </ul>
-        <p class="nota">Para marcas que sacan producto nuevo de forma continua.</p>
-        <a class="btn btn-2" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20me%20interesa%20el%20pack%20MARCA%20de%20890%20%E2%82%AC%2Fmes.">Quiero el pack Marca</a>
-      </article>
-
-    </div>
-    <p class="packs-pie">¿Tienes un catálogo grande o algo distinto? <a href="#contacto">Escríbeme y lo ajustamos.</a></p>
-  </div>
-</section>
-
-<!-- ============ 5. CÓMO FUNCIONA ============ -->
-<section id="como-funciona">
-  <div class="contenedor">
-    <p class="etiqueta">Cómo funciona</p>
-    <h2>Tres pasos y ya está.</h2>
-    <ol class="pasos" style="margin-top:36px">
+    <p class="etiqueta">Qué gana tu piso con un vídeo</p>
+    <h2>Las fotos enseñan el piso. El vídeo hace que alguien se imagine dentro.</h2>
+    <ul class="rejilla-2">
       <li>
-        <h3>Me mandas tus fotos</h3>
-        <p>Las que ya tienes, aunque sean del móvil. Por WhatsApp o por email.</p>
+        <h3>Destacas entre anuncios que parecen iguales</h3>
+        <p>En Instagram y TikTok un alojamiento se descubre en vídeo, no en una galería de fotos. Un recorrido de 30 segundos para el dedo; una foto suelta, no.</p>
       </li>
       <li>
-        <h3>Acordamos el estilo</h3>
-        <p>Te enseño una primera muestra antes de seguir, para que veas por dónde va.</p>
+        <h3>El huésped entiende el piso antes de llegar</h3>
+        <p>Ve cómo se pasa del salón a la cocina y qué hay en la terraza. Menos preguntas por mensaje y menos «no era como en las fotos».</p>
       </li>
       <li>
-        <h3>Recibes las imágenes</h3>
-        <p>Todas en 5 días, en los tamaños que necesitas y listas para subir.</p>
-      </li>
-    </ol>
-  </div>
-</section>
-
-<!-- ============ 6. POR QUÉ CONMIGO ============ -->
-<section id="por-que" class="porque">
-  <div class="contenedor">
-    <p class="etiqueta">Por qué conmigo</p>
-    <h2>Lo que no hacen las herramientas automáticas.</h2>
-    <ul class="razones" style="margin-top:36px">
-      <li>
-        <h3>Tu producto sale idéntico al real</h3>
-        <p>Misma forma, mismo color, misma etiqueta, mismo logo. No se reinventa nada: ahí es justo donde fallan las herramientas automáticas.</p>
+        <h3>Reservas directas, sin comisión de plataforma</h3>
+        <p>Un vídeo en tus redes o en tu web lleva a gente a escribirte a ti. Cada reserva directa es una reserva que no pasa por la comisión.</p>
       </li>
       <li>
-        <h3>Cada imagen pasa por Photoshop</h3>
-        <p>No te entrego lo que escupe la IA. Repaso y remato una por una antes de mandártelas.</p>
-      </li>
-      <li>
-        <h3>Hablas directamente conmigo</h3>
-        <p>Persona real, sin agencia de por medio ni gestor de cuentas. Me escribes y te contesto yo.</p>
-      </li>
-      <li>
-        <h3>Si no te convence, no pagas</h3>
-        <p>Si la primera entrega no te sirve, no me pagas. Así de simple.</p>
+        <h3>Contenido para meses sin volver a grabar</h3>
+        <p>Del mismo tour salen el vídeo largo y los cortes en vertical para ir publicando. Y si cambias la decoración, me mandas fotos nuevas.</p>
       </li>
     </ul>
   </div>
 </section>
 
-<!-- ============ 7. PREGUNTAS FRECUENTES ============ -->
+<!-- ============ 4. DÓNDE LO USAS ============ -->
+<section id="donde">
+  <div class="contenedor">
+    <p class="etiqueta">Dónde lo usas</p>
+    <h2>Un vídeo, cuatro sitios donde trabaja por ti.</h2>
+    <ul class="usos">
+      <li><h3>Instagram y TikTok</h3><p>El reel vertical, para la cuenta del alojamiento o para promocionarlo con anuncios.</p></li>
+      <li><h3>Tu web y Google</h3><p>El tour horizontal en tu web de reservas y en tu ficha de Google.</p></li>
+      <li><h3>WhatsApp y email</h3><p>Se lo mandas a quien te pregunta por fechas. Lo ve en el móvil y decide antes.</p></li>
+      <li><h3>Portales que admiten vídeo</h3><p>Como Vrbo o los portales de alquiler de temporada que dejan subir un vídeo al anuncio.</p></li>
+    </ul>
+    <div class="nota">
+      <p><strong>Ojo con Airbnb:</strong> en la mayoría de anuncios Airbnb no deja subir vídeo, sólo fotos. Por eso el vídeo trabaja fuera: donde la gente descubre tu piso antes de ir a reservarlo. Prefiero decírtelo ahora a que lo descubras después.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. PACKS ============
+     CAMBIAR: precios, lo que incluye cada pack, los extras y los plazos.
+     ================================= -->
+<section id="packs">
+  <div class="contenedor">
+    <p class="etiqueta">Packs</p>
+    <h2>Precios claros. Cuesta lo que una o dos noches de reserva.</h2>
+    <p class="intro">Precios sin IVA. Pagas cuando lo ves: te enseño el vídeo con marca de agua y, si te convence, te lo mando limpio.</p>
+
+    <div class="packs">
+      <article class="pack">
+        <h3>Reel</h3>
+        <p class="precio">69 <small>€</small></p>
+        <ul>
+          <li>Hasta 12 fotos</li>
+          <li>1 vídeo vertical de 20 a 30 s (9:16)</li>
+          <li>Música libre de derechos</li>
+          <li>Textos: nombre, zona y plazas</li>
+          <li>1 ronda de cambios</li>
+          <li>Entrega en 72 h</li>
+        </ul>
+        <p class="nota-pack">Para empezar a publicar en Instagram y TikTok.</p>
+        <a class="btn btn-2" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20me%20interesa%20el%20pack%20REEL%20de%2069%20%E2%82%AC.">Quiero el Reel</a>
+      </article>
+
+      <article class="pack destacado">
+        <span class="cinta">El que más se pide</span>
+        <h3>Tour completo</h3>
+        <p class="precio">139 <small>€</small></p>
+        <ul>
+          <li>Hasta 25 fotos</li>
+          <li>Vídeo tour de 45 a 60 s en horizontal (16:9)</li>
+          <li>Versión vertical para reels (9:16)</li>
+          <li>Textos por estancia y tu contacto al final</li>
+          <li>Música libre de derechos</li>
+          <li>2 rondas de cambios</li>
+          <li>Entrega en 72 h</li>
+        </ul>
+        <a class="btn btn-1" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20me%20interesa%20el%20pack%20TOUR%20COMPLETO%20de%20139%20%E2%82%AC.">Quiero el Tour completo</a>
+      </article>
+
+      <article class="pack">
+        <h3>Gestores</h3>
+        <p class="precio"><small>desde</small> 99 <small>€/piso</small></p>
+        <ul>
+          <li>A partir de 3 alojamientos</li>
+          <li>Tour completo de cada uno</li>
+          <li>Mismo estilo en toda tu cartera</li>
+          <li>Tu logo en todos los vídeos</li>
+          <li>Entregas por lotes</li>
+        </ul>
+        <p class="nota-pack">Para gestoras y propietarios con varios alojamientos.</p>
+        <a class="btn btn-2" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20gestiono%20varios%20alojamientos%20y%20me%20interesa%20el%20pack%20GESTORES.">Hablemos de tus pisos</a>
+      </article>
+    </div>
+
+    <div class="extras">
+      <strong>Extras para cualquier pack</strong>
+      <ul>
+        <li>Voz en off · +39 €</li>
+        <li>Textos también en inglés · +15 €</li>
+        <li>Entrega en 24 h · +25 €</li>
+      </ul>
+    </div>
+    <p class="packs-pie">¿Hotel, casa rural con varias habitaciones o algo distinto? <a href="#contacto">Escríbeme y lo ajustamos.</a></p>
+  </div>
+</section>
+
+<!-- ============ 6. CÓMO FUNCIONA ============ -->
+<section id="como-funciona">
+  <div class="contenedor">
+    <p class="etiqueta">Cómo funciona</p>
+    <h2>Tres pasos y no tienes que moverte de casa.</h2>
+    <ol class="pasos">
+      <li>
+        <h3>Me mandas las fotos</h3>
+        <p>Por WhatsApp o por email. Las de tu anuncio valen. Con 10 fotos ya se puede hacer un buen recorrido.</p>
+      </li>
+      <li>
+        <h3>Monto el recorrido</h3>
+        <p>Ordeno las estancias como si entraras por la puerta, genero los movimientos de cámara, elijo la música y escribo los textos.</p>
+      </li>
+      <li>
+        <h3>Lo ves y te lo entrego</h3>
+        <p>Te lo enseño con marca de agua, ajustamos lo que quieras y te lo mando en horizontal y en vertical.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ 7. POR QUÉ CONMIGO ============ -->
+<section id="por-que" class="gris">
+  <div class="contenedor">
+    <p class="etiqueta">Por qué conmigo</p>
+    <h2>Un vídeo que vende tu piso tal como es.</h2>
+    <ul class="rejilla-2">
+      <li>
+        <h3>Tu piso sale como es</h3>
+        <p>No invento metros, ni vistas, ni muebles. Reviso cada plano y descarto los que la IA deforma. Un vídeo que engaña se paga en reseñas.</p>
+      </li>
+      <li>
+        <h3>Lo ves antes de pagar</h3>
+        <p>Te lo enseño con marca de agua. Si no te convence, no pagas nada.</p>
+      </li>
+      <li>
+        <h3>Hablas conmigo, en español</h3>
+        <p>Persona real, sin intermediarios ni traducciones. Me escribes por WhatsApp y te contesto yo.</p>
+      </li>
+      <li>
+        <h3>Rápido y en los dos formatos</h3>
+        <p>En 72 horas tienes el vídeo en horizontal para tu web y en vertical para las redes.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ 8. PREGUNTAS FRECUENTES ============ -->
 <section id="faq">
   <div class="contenedor">
     <p class="etiqueta">Preguntas frecuentes</p>
     <h2>Lo que me suelen preguntar.</h2>
-
-    <!-- El atributo name="faq" hace que sólo quede una abierta en los navegadores que lo soportan -->
-    <div class="faq" style="margin-top:32px">
+    <div class="faq">
+      <details name="faq">
+        <summary>¿Puedo subir el vídeo a mi anuncio de Airbnb?</summary>
+        <p>En la mayoría de anuncios, no: Airbnb sólo deja subir fotos. El vídeo se usa donde la gente descubre tu alojamiento antes de reservar: Instagram, TikTok, tu web, tu ficha de Google, WhatsApp y los portales que sí admiten vídeo.</p>
+      </details>
       <details name="faq">
         <summary>¿Qué fotos necesito mandarte?</summary>
-        <p>Fotos del producto entero, bien enfocado y con luz suficiente para que se lea la etiqueta. Con tres o cuatro ángulos me sobra. Si tienes el logo o la etiqueta en archivo, mándalo también: el resultado sale más fino.</p>
+        <p>Entre 10 y 25, en horizontal y con buena luz. Una o dos por estancia, más la fachada, la terraza o las vistas si las tienes. Las de tu anuncio de Airbnb valen perfectamente.</p>
       </details>
       <details name="faq">
-        <summary>¿Sirven fotos hechas con el móvil?</summary>
-        <p>Sí, es lo normal. La mayoría de marcas con las que trabajo me manda fotos del móvil hechas encima de una mesa. Sólo necesito que se vea bien el producto; del fondo y de la luz me encargo yo.</p>
-      </details>
-      <details name="faq">
-        <summary>¿Se nota que son generadas con IA?</summary>
-        <p>No, porque no entrego lo que sale de la IA sin más. Cada imagen la remato en Photoshop y el producto se mantiene igual que el real. Lo que cambia es el fondo, la luz y la escena, no tu producto.</p>
+        <summary>¿Se nota que está hecho con IA?</summary>
+        <p>La IA genera el movimiento de cámara a partir de tus fotos. Yo reviso cada plano y descarto los que cambian algo del piso, como una puerta que se mueve o una lámpara que aparece. Lo que se ve es tu piso.</p>
       </details>
       <details name="faq">
         <summary>¿Y si no me gusta el resultado?</summary>
-        <p>Cada pack incluye rondas de cambios, y me dices qué quieres corregir. Si la primera entrega no te convence, no pagas.</p>
-      </details>
-      <details name="faq">
-        <summary>¿Puedo usarlas en Amazon y en anuncios?</summary>
-        <p>Sí. Las imágenes son tuyas y las puedes usar donde quieras: tu tienda, marketplaces, redes y publicidad de pago. Te las paso en los tamaños de cada sitio (1:1, 4:5 y 9:16).</p>
+        <p>Te lo enseño con marca de agua antes de pagar. Cada pack incluye rondas de cambios, y si aun así no te convence, no pagas.</p>
       </details>
       <details name="faq">
         <summary>¿Cuánto tardas?</summary>
-        <p>Cinco días para el pack Prueba y siete para el de Catálogo, contando desde que me mandas las fotos. Si tienes una fecha de lanzamiento, dímelo y lo cuadramos.</p>
+        <p>72 horas desde que tengo las fotos. Si lo necesitas antes, la entrega en 24 horas cuesta 25 € más.</p>
+      </details>
+      <details name="faq">
+        <summary>¿Y la música? ¿Me pueden bloquear el vídeo?</summary>
+        <!-- CAMBIAR: ajusta esta respuesta a la licencia de música que uses de verdad -->
+        <p>Uso música libre de derechos con licencia para uso comercial, así que puedes publicarlo en redes y en tu web sin problemas.</p>
+      </details>
+      <details name="faq">
+        <summary>Tengo varios pisos, ¿me haces precio?</summary>
+        <p>Sí. A partir de 3 alojamientos el tour completo sale desde 99 € por piso, con el mismo estilo para todos y tu logo. Escríbeme con cuántos son y te digo.</p>
+      </details>
+      <details name="faq">
+        <summary>¿Sirve para casas rurales y apartamentos de montaña?</summary>
+        <p>Sí, y lucen especialmente bien: exteriores, chimenea, vistas. Funciona para cualquier alojamiento que tenga buenas fotos de partida.</p>
       </details>
     </div>
   </div>
 </section>
 
-<!-- ============ 8. CONTACTO ============ -->
+<!-- ============ 9. OTRA CATEGORÍA: FOTOS DE PRODUCTO ============ -->
+<section id="producto">
+  <div class="contenedor">
+    <div class="otra">
+      <img src="img/catalogo.jpg" width="900" height="1200" loading="lazy" alt="Ejemplo de foto de catálogo: una botella sobre fondo neutro">
+      <div>
+        <p class="etiqueta">También hago</p>
+        <h2>Fotos de producto para marcas con tienda online.</h2>
+        <p>Fotos de catálogo, de ambiente y creatividades para anuncios, hechas a partir de las fotos que ya tienes de tus productos.</p>
+        <a class="btn btn-2" href="producto.html">Ver fotos de producto</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. CONTACTO ============ -->
 <section id="contacto">
   <div class="contenedor">
     <p class="etiqueta">Contacto</p>
-    <h2>Mándame una foto y te la devuelvo gratis.</h2>
-    <p class="intro">Sin compromiso ni letra pequeña: eliges un producto, me mandas una foto y te devuelvo una imagen terminada para que veas el resultado antes de pagar nada.</p>
+    <h2>Mándame 5 fotos y te hago un clip gratis.</h2>
+    <p class="intro">Sin compromiso: me pasas cinco fotos de tu piso y te devuelvo un clip de unos 10 segundos para que veas cómo queda antes de pagar nada.</p>
 
-    <div class="contacto-cols" style="margin-top:40px">
+    <div class="contacto-cols">
       <div>
-        <a class="btn btn-1 btn-grande" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20te%20mando%20una%20foto%20de%20mi%20producto%20para%20la%20muestra%20gratis.">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.97L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.85 9.85 0 0 0 12.04 2m0 1.67c2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.25 8.24-1.48 0-2.93-.4-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24m-2.6 3.98c-.16 0-.42.06-.64.3-.22.24-.85.83-.85 2.02s.87 2.34.99 2.5c.12.16 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.43-.59 1.63-1.15.2-.56.2-1.04.14-1.15-.06-.1-.22-.16-.46-.28-.24-.12-1.43-.71-1.66-.79-.22-.08-.38-.12-.54.12-.16.24-.62.79-.76.95-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.93-1.19-.71-.64-1.2-1.42-1.34-1.66-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.31-.74-1.79-.19-.46-.39-.4-.54-.41h-.46Z"/></svg>
+        <a class="btn btn-1 btn-grande" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20te%20mando%205%20fotos%20de%20mi%20piso%20para%20el%20clip%20gratis.">
+          <svg aria-hidden="true"><use href="#i-wa"/></svg>
           Escríbeme por WhatsApp
         </a>
         <!-- CAMBIAR: teléfono, email e Instagram -->
@@ -618,11 +554,10 @@ footer a{color:var(--tinta-suave)}
         <p class="dato"><strong>Email:</strong> <a href="mailto:TU_EMAIL@EJEMPLO.COM">TU_EMAIL@EJEMPLO.COM</a></p>
         <!-- CAMBIAR o BORRAR esta línea entera si no tienes Instagram -->
         <p class="dato"><strong>Instagram:</strong> <a href="https://instagram.com/TU_CUENTA" rel="me noopener">@TU_CUENTA</a></p>
-        <p class="dato" style="color:var(--tinta-suave)">Solsona (Lleida) · trabajo con marcas de toda España.</p>
+        <p class="dato" style="color:var(--tinta-suave)">Solsona (Lleida) · trabajo con alojamientos de toda España.</p>
       </div>
 
-      <!-- CAMBIAR: pon tu endpoint de Formspree en action="..."
-           (lo sacas creando un formulario gratis en formspree.io) -->
+      <!-- CAMBIAR: pon tu endpoint de Formspree en action="..." -->
       <form action="https://formspree.io/f/TU_ID_FORMSPREE" method="POST">
         <h3 style="margin-top:0">O déjame tus datos</h3>
         <label for="nombre">Nombre</label>
@@ -631,15 +566,25 @@ footer a{color:var(--tinta-suave)}
         <label for="email">Email</label>
         <input id="email" name="email" type="email" autocomplete="email" required>
 
-        <label for="producto">¿Qué vendes?</label>
-        <textarea id="producto" name="producto" placeholder="Cosmética natural, unas 20 referencias. Necesito fotos para la web y para Instagram." required></textarea>
+        <label for="anuncio">Enlace a tu anuncio <small>(opcional)</small></label>
+        <input id="anuncio" name="anuncio" type="url" inputmode="url" placeholder="https://www.airbnb.es/rooms/...">
 
-        <!-- Asunto del email que te llega y trampa anti-spam de Formspree -->
-        <input type="hidden" name="_subject" value="Nuevo contacto desde la web">
+        <label for="alojamientos">¿Cuántos alojamientos tienes?</label>
+        <select id="alojamientos" name="alojamientos">
+          <option>1</option>
+          <option>2 o 3</option>
+          <option>De 4 a 10</option>
+          <option>Más de 10</option>
+        </select>
+
+        <label for="mensaje">Cuéntame algo más <small>(opcional)</small></label>
+        <textarea id="mensaje" name="mensaje" placeholder="Apartamento de 2 habitaciones en la costa. Quiero un reel para Instagram."></textarea>
+
+        <input type="hidden" name="_subject" value="Nuevo contacto: vídeo tour">
         <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none">
 
         <button class="btn btn-3" type="submit">Enviar</button>
-        <p class="form-nota">Te contesto el mismo día. Si prefieres, mándame la foto directamente por WhatsApp.</p>
+        <p class="form-nota">Te contesto el mismo día. Si prefieres, mándame las fotos directamente por WhatsApp.</p>
       </form>
     </div>
   </div>
@@ -654,107 +599,24 @@ footer a{color:var(--tinta-suave)}
       <a href="https://wa.me/34XXXXXXXXX">WhatsApp</a> ·
       <a href="mailto:TU_EMAIL@EJEMPLO.COM">Email</a> ·
       <!-- CAMBIAR o BORRAR si no tienes Instagram -->
-      <a href="https://instagram.com/TU_CUENTA" rel="me noopener">Instagram</a>
+      <a href="https://instagram.com/TU_CUENTA" rel="me noopener">Instagram</a> ·
+      <a href="producto.html">Fotos de producto</a>
     </p>
   </div>
 </footer>
 
-<!-- Lupa: se abre al tocar una imagen de la exposición -->
-<dialog id="lupa" aria-label="Imagen ampliada">
-  <button type="button" class="cerrar" aria-label="Cerrar">&times;</button>
-  <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="">
-  <p></p>
-</dialog>
-
-<!-- Botón flotante de WhatsApp, sólo se ve en móvil -->
-<a class="flotante" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20te%20mando%20una%20foto%20de%20mi%20producto%20para%20la%20muestra%20gratis." aria-label="Escríbeme por WhatsApp">
-  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.97L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.85 9.85 0 0 0 12.04 2m0 1.67c2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.25 8.24-1.48 0-2.93-.4-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24m-2.6 3.98c-.16 0-.42.06-.64.3-.22.24-.85.83-.85 2.02s.87 2.34.99 2.5c.12.16 1.7 2.6 4.12 3.64.58.25 1.03.4 1.38.51.58.19 1.11.16 1.53.1.47-.07 1.43-.59 1.63-1.15.2-.56.2-1.04.14-1.15-.06-.1-.22-.16-.46-.28-.24-.12-1.43-.71-1.66-.79-.22-.08-.38-.12-.54.12-.16.24-.62.79-.76.95-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.93-1.19-.71-.64-1.2-1.42-1.34-1.66-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.31-.74-1.79-.19-.46-.39-.4-.54-.41h-.46Z"/></svg>
+<a class="flotante" href="https://wa.me/34XXXXXXXXX?text=Hola%2C%20te%20mando%205%20fotos%20de%20mi%20piso%20para%20el%20clip%20gratis." aria-label="Escríbeme por WhatsApp">
+  <svg aria-hidden="true"><use href="#i-wa"/></svg>
 </a>
 
 <script>
-/* ============================================================
-   Comparadores antes / después. JS propio, sin librerías.
-   Funciona con ratón, con el dedo y con el teclado (flechas).
-   No hace falta tocar nada aquí para cambiar las fotos.
-   ============================================================ */
 (function () {
-  var comparadores = document.querySelectorAll('[data-ba]');
-
-  Array.prototype.forEach.call(comparadores, function (caja) {
-    var mango = caja.querySelector('.ba-mango');
-    var arrastrando = false;
-
-    function poner(valor) {
-      var pos = Math.max(0, Math.min(100, valor));
-      caja.style.setProperty('--pos', pos);
-      if (mango) {
-        mango.setAttribute('aria-valuenow', Math.round(pos));
-        mango.setAttribute('aria-valuetext', Math.round(pos) + '% de la foto original');
-      }
-    }
-
-    function desdeEvento(e) {
-      var r = caja.getBoundingClientRect();
-      if (!r.width) return;
-      poner(((e.clientX - r.left) / r.width) * 100);
-    }
-
-    caja.addEventListener('pointerdown', function (e) {
-      arrastrando = true;
-      caja.setPointerCapture && caja.setPointerCapture(e.pointerId);
-      desdeEvento(e);
-    });
-
-    caja.addEventListener('pointermove', function (e) {
-      if (!arrastrando) return;
-      e.preventDefault();              // evita que la página se mueva al arrastrar
-      desdeEvento(e);
-    });
-
-    ['pointerup', 'pointercancel'].forEach(function (evt) {
-      caja.addEventListener(evt, function () { arrastrando = false; });
-    });
-    /* por si se suelta el ratón fuera de la imagen */
-    document.addEventListener('pointerup', function () { arrastrando = false; });
-
-    if (mango) {
-      mango.addEventListener('keydown', function (e) {
-        var actual = parseFloat(caja.style.getPropertyValue('--pos')) || 50;
-        var paso = e.shiftKey ? 10 : 2;
-        if (e.key === 'ArrowLeft') { poner(actual - paso); e.preventDefault(); }
-        else if (e.key === 'ArrowRight') { poner(actual + paso); e.preventDefault(); }
-        else if (e.key === 'Home') { poner(0); e.preventDefault(); }
-        else if (e.key === 'End') { poner(100); e.preventDefault(); }
-      });
-      /* el clic en el mango no debe reposicionar el deslizador de golpe */
-      mango.addEventListener('click', function (e) { e.preventDefault(); });
-    }
-
-    poner(50);
-  });
-
-  /* Lupa de la exposición: abre la imagen grande sin salir de la página */
-  var lupa = document.getElementById('lupa');
-  if (lupa) {
-    var lupaImg = lupa.querySelector('img');
-    var lupaPie = lupa.querySelector('p');
-    Array.prototype.forEach.call(document.querySelectorAll('.lupa-btn'), function (boton) {
-      boton.addEventListener('click', function () {
-        var origen = boton.querySelector('img');
-        if (!lupa.showModal) { window.open(boton.getAttribute('data-lupa'), '_blank'); return; }
-        lupaImg.src = boton.getAttribute('data-lupa');
-        lupaImg.alt = origen ? origen.alt : '';
-        lupaPie.textContent = boton.getAttribute('data-pie') || '';
-        lupa.showModal();
-        document.documentElement.classList.add('con-lupa');
-      });
-    });
-    lupa.addEventListener('click', function (e) {
-      if (e.target === lupa || e.target.classList.contains('cerrar')) lupa.close();
-    });
-    lupa.addEventListener('close', function () {
-      document.documentElement.classList.remove('con-lupa');
-    });
+  /* Si la persona tiene activado "reducir movimiento", el reel no arranca solo */
+  var reel = document.getElementById('reel');
+  if (reel && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    reel.removeAttribute('autoplay');
+    reel.pause();
+    reel.setAttribute('controls', '');
   }
 
   /* Año del pie, para no tener que tocarlo cada enero */

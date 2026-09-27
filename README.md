@@ -234,7 +234,10 @@ nodo usados existen en tu instalación.
 
 ## La web del servicio
 
-En la raíz del repositorio hay también **[`index.html`](index.html)**: una página única para
-vender el servicio (antes/después, packs, preguntas y contacto), sin frameworks ni dependencias,
-lista para publicar en GitHub Pages. Cómo cambiar los textos, sustituir las fotos de `img/` y
-publicarla está en **[`README-WEB.md`](README-WEB.md)**.
+En la raíz del repositorio está la web, lista para GitHub Pages y sin dependencias:
+
+- **[`index.html`](index.html)** — portada: vídeo tour con IA para pisos turísticos.
+- **[`producto.html`](producto.html)** — fotos de producto con IA (categoría secundaria).
+
+Cómo cambiar los textos, sustituir fotos y vídeos y publicarla está en
+**[`README-WEB.md`](README-WEB.md)**.
