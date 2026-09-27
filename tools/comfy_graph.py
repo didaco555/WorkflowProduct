@@ -441,6 +441,26 @@ SCHEMAS: dict[str, dict] = {
         "outputs": [("positive", "CONDITIONING"), ("LATENT", "LATENT")],
     },
 
+    # ---- encuadres: recortes calculados (comfy_extras/nodes_images.py, nodes_math.py) -------------
+    "ImageCrop": {
+        # la versión con enteros (la V2 usa un widget de caja que no se puede enlazar)
+        "inputs": [("image", "IMAGE", False)],
+        "widgets": [("width", "INT"), ("height", "INT"), ("x", "INT"), ("y", "INT")],
+        "outputs": [("IMAGE", "IMAGE")],
+    },
+    "ComfyMathExpression": {
+        # entradas autogrow: values.a, values.b, ... y un hueco libre al final
+        "inputs": [
+            ("values.a", "FLOAT,INT,BOOLEAN", False),
+            ("values.b", "FLOAT,INT,BOOLEAN", True),
+            ("values.c", "FLOAT,INT,BOOLEAN", True),
+            ("values.d", "FLOAT,INT,BOOLEAN", True),
+            ("values.e", "FLOAT,INT,BOOLEAN", True),
+        ],
+        "widgets": [("expression", "STRING")],
+        "outputs": [("FLOAT", "FLOAT"), ("INT", "INT"), ("BOOL", "BOOLEAN")],
+    },
+
     # ---- texto ----------------------------------------------------------------------------------
     "StringConcatenate": {
         "inputs": [],
@@ -591,7 +611,7 @@ class Graph:
             raise KeyError(f"{dst.type} no tiene entrada '{input_name}'")
 
         link_type = src.type
-        if expected not in ("*", link_type) and link_type != "*":
+        if expected not in ("*", link_type) and link_type != "*" and link_type not in expected.split(","):
             raise TypeError(f"{src.node.type}.{src.slot} ({link_type}) -> {dst.type}.{input_name} ({expected})")
         if expected == "*" and dst.match_type is None:
             dst.match_type = link_type

@@ -43,6 +43,29 @@ uno sale fiel al piso y se repite sin tocar los demás.
 El último frame es una imagen suelta: no sabe hacia dónde iba la cámara. Por eso hay que repetir el
 mismo movimiento en el prompt; si no, puede cambiar de dirección.
 
+## Anclaje doble: el plano empieza y termina en tu foto (workflows 23 y 24)
+
+Con sólo la foto de inicio, un modelo como H3 (hecho para contar historias con varios planos) hace
+un par de segundos de movimiento y luego **corta y se inventa otro plano**. La solución es anclar
+los dos extremos a la misma foto real:
+
+| Movimiento | Inicio | Final |
+|---|---|---|
+| avance | la foto entera (16:9) | el centro al 80 % (zoom 1,25x) |
+| retroceso | el centro al 80 % | la foto entera |
+| paneo / travelling | el 85 % de un lado | el 85 % del otro lado |
+| subida | el 85 % de abajo | el 85 % de arriba |
+| órbita | un poco a un lado | un poco al otro |
+| fijo | la foto entera | la foto entera |
+
+Los dos extremos son píxeles reales de tu foto: el modelo sólo se desplaza entre ellos. El mando
+**INTENSIDAD** escala el movimiento (0.5 = más sutil). Las dos vistas previas del grupo
+*ENCUADRES* te enseñan el inicio y el final antes de generar.
+
+Si aun así corta de plano: baja la INTENSIDAD o cambia la semilla. Y para un plano **sin nada de
+IA**, un zoom o paneo con fotogramas clave sobre la foto en CapCut es 100 % fiel, aunque plano
+(sin paralaje).
+
 ## Elección del modelo (septiembre 2026)
 
 Criterio: **gratis, que corra en ComfyUI en tu PC y que puedas usarlo legalmente en España para

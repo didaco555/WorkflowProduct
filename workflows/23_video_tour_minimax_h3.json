@@ -1,8 +1,8 @@
 {
   "id": "b6ec178f-50b2-5ecc-9a05-3cf23615aeba",
   "revision": 0,
-  "last_node_id": 136,
-  "last_link_id": 254,
+  "last_node_id": 152,
+  "last_link_id": 304,
   "nodes": [
     {
       "id": 92,
@@ -68,7 +68,9 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            218
+            298,
+            299,
+            300
           ]
         },
         {
@@ -90,7 +92,7 @@
         "image": "transparent_rgb_gaming_mouse.png",
         "upload": "image"
       },
-      "title": "1 · INICIO (foto o último frame)"
+      "title": "1 · FOTO del piso (o último frame)"
     },
     {
       "id": 115,
@@ -159,13 +161,13 @@
           "name": "first_frame",
           "shape": 7,
           "type": "IMAGE",
-          "link": 218
+          "link": 301
         },
         {
           "name": "last_frame",
           "shape": 7,
           "type": "IMAGE",
-          "link": 253
+          "link": 302
         },
         {
           "name": "prompt",
@@ -173,7 +175,7 @@
           "widget": {
             "name": "prompt"
           },
-          "link": 252
+          "link": 303
         },
         {
           "name": "width",
@@ -243,7 +245,7 @@
           "type": "VIDEO",
           "links": [
             194,
-            254
+            304
           ]
         }
       ],
@@ -370,7 +372,7 @@
       "type": "MarkdownNote",
       "pos": [
         -2570.0,
-        3640.0
+        2698.0
       ],
       "size": [
         420,
@@ -383,7 +385,7 @@
       "outputs": [],
       "properties": {},
       "widgets_values": [
-        "# Vídeo tour · MiniMax H3\n\nCada ejecución convierte **una foto real** del piso en un plano de ~5 s. Haces un plano por foto y los montas en CapCut/DaVinci con música.\n\n## Tres usos\n| Quieres… | Cómo |\n|---|---|\n| **Animar una foto** | Sube la foto en **1 · INICIO** (en la plantilla, abajo) y ejecuta. |\n| **Ir de una foto a otra del mismo espacio** | Activa **2 · FINAL** con Ctrl+B, sube la segunda foto y elige `transicion_foto_a_foto`. |\n| **Alargar un plano** | Sube en 1 · INICIO el `output/tour/ultimo_frame_…png` del plano anterior y repite el movimiento. |\n\n## Los mandos\n| Mando | Dónde | Qué hace |\n|---|---|---|\n| **▼ MOVIMIENTO DE CÁMARA** | aquí | el movimiento del plano |\n| **ESTANCIA** | aquí | una frase en inglés con lo que se ve |\n| **duración / semilla** | nodo MOTOR | 5 s por defecto (24 fps) |\n| **resolución** | *Resolution Selector* | 16:9 a 0.98 MP = 1344×768, la nativa de H3 |\n| **turbo** | nodo MOTOR (`value`) | `true` = LoRA Lightning de 8 pasos |\n\n**Regla de oro:** nunca vayas de una habitación a otra distinta con FINAL; la IA se inventa lo que hay entre medias. Entre estancias, corte en el montaje.\n\nH3 genera **audio** (le pido sólo ambiente): en el montaje lo cambias por música.\n\n**Licencia:** la de MiniMax H3 excluye la UE, Reino Unido, Corea y EE. UU. Úsalo bajo tu responsabilidad."
+        "# Vídeo tour · MiniMax H3\n\nCada ejecución convierte **una foto real** del piso en un plano de ~5 s con un movimiento suave. Haces un plano por foto y los montas en CapCut/DaVinci con música.\n\n## Cómo evita inventar\nEl plano está **anclado por los dos extremos a tu foto**: el inicio y el final son dos recortes de la misma foto (abajo, en *ENCUADRES*, ves las dos vistas previas). El modelo sólo se desplaza entre ellos: no tiene que imaginar nada fuera de la foto.\n\n## Los mandos\n| Mando | Qué hace |\n|---|---|\n| **▼ MOVIMIENTO DE CÁMARA** | elige el movimiento y, con él, los dos recortes |\n| **INTENSIDAD** | 1 = normal (zoom 1,25x, paneo del 15 %). 0.5 = más sutil. 1.5 = más marcado |\n| **ESTANCIA** | una frase en inglés con lo que se ve |\n| **duración / semilla** | en el nodo MOTOR (5 s por defecto) |\n| **resolución** | *Resolution Selector*: 16:9 a 0.98 MP = 1344×768, la nativa de H3 |\n| **turbo** | en el nodo MOTOR (`value`): `true` = LoRA Lightning de 8 pasos |\n\n## De una foto a otra del mismo espacio\nElige `transicion_foto_a_foto` y activa **2 · FINAL** con Ctrl+B. Sólo con dos fotos del mismo espacio: entre habitaciones distintas se inventaría el camino.\n\n**Si aun así corta de plano:** baja la INTENSIDAD a 0.5 o cambia la semilla.\n\nH3 genera **audio** de ambiente: en el montaje lo cambias por música.\n\n**Licencia:** la de MiniMax H3 excluye la UE, Reino Unido, Corea y EE. UU. Úsalo bajo tu responsabilidad."
       ],
       "title": "LÉEME PRIMERO"
     },
@@ -392,7 +394,7 @@
       "type": "CustomCombo",
       "pos": [
         -2180.0,
-        3640.0
+        2698.0
       ],
       "size": [
         300,
@@ -408,14 +410,24 @@
           "type": "STRING",
           "slot_index": 0,
           "links": [
-            247
+            288,
+            293
           ]
         },
         {
           "name": "INDEX",
           "type": "INT",
           "slot_index": 1,
-          "links": []
+          "links": [
+            248,
+            252,
+            256,
+            260,
+            269,
+            273,
+            277,
+            281
+          ]
         }
       ],
       "properties": {
@@ -443,17 +455,59 @@
     },
     {
       "id": 129,
-      "type": "PrimitiveStringMultiline",
+      "type": "PrimitiveFloat",
       "pos": [
         -1790.0,
-        3640.0
+        2698.0
+      ],
+      "size": [
+        340,
+        90.0
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "slot_index": 0,
+          "links": [
+            249,
+            253,
+            257,
+            261,
+            270,
+            274,
+            278,
+            282
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PrimitiveFloat"
+      },
+      "widgets_values": [
+        1.0
+      ],
+      "title": "INTENSIDAD del movimiento",
+      "color": "#9e6b3f",
+      "bgcolor": "#9e6b3f"
+    },
+    {
+      "id": 130,
+      "type": "PrimitiveStringMultiline",
+      "pos": [
+        -1400.0,
+        2698.0
       ],
       "size": [
         340,
         260.0
       ],
       "flags": {},
-      "order": 2,
+      "order": 3,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -462,7 +516,7 @@
           "type": "STRING",
           "slot_index": 0,
           "links": [
-            249
+            295
           ]
         }
       ],
@@ -477,18 +531,18 @@
       "bgcolor": "#9e6b3f"
     },
     {
-      "id": 130,
+      "id": 131,
       "type": "LoadImage",
       "pos": [
-        -1400.0,
-        3640.0
+        -1010.0,
+        2698.0
       ],
       "size": [
         340,
         356.0
       ],
       "flags": {},
-      "order": 3,
+      "order": 4,
       "mode": 4,
       "inputs": [],
       "outputs": [
@@ -497,7 +551,7 @@
           "type": "IMAGE",
           "slot_index": 0,
           "links": [
-            253
+            290
           ]
         },
         {
@@ -514,10 +568,979 @@
         "foto_final.png",
         "image"
       ],
-      "title": "2 · FINAL (opcional · Ctrl+B)"
+      "title": "2 · FINAL (sólo transicion_foto_a_foto · Ctrl+B)"
     },
     {
-      "id": 131,
+      "id": 132,
+      "type": "GetImageSize",
+      "pos": [
+        -2570.0,
+        3210.0
+      ],
+      "size": [
+        340,
+        86.0
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 298
+        }
+      ],
+      "outputs": [
+        {
+          "name": "width",
+          "type": "INT",
+          "slot_index": 0,
+          "links": [
+            246,
+            250,
+            254,
+            258,
+            267,
+            271,
+            275,
+            279
+          ]
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "slot_index": 1,
+          "links": [
+            247,
+            251,
+            255,
+            259,
+            268,
+            272,
+            276,
+            280
+          ]
+        },
+        {
+          "name": "batch_size",
+          "type": "INT",
+          "slot_index": 2,
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "GetImageSize"
+      },
+      "widgets_values": [],
+      "title": "Tamaño de la foto"
+    },
+    {
+      "id": 133,
+      "type": "ComfyMathExpression",
+      "pos": [
+        -2180.0,
+        3210.0
+      ],
+      "size": [
+        340,
+        200.0
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "values.a",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 246
+        },
+        {
+          "name": "values.b",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 247,
+          "shape": 7
+        },
+        {
+          "name": "values.c",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 248,
+          "shape": 7
+        },
+        {
+          "name": "values.d",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 249,
+          "shape": 7
+        },
+        {
+          "name": "values.e",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": null,
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "slot_index": 0,
+          "links": []
+        },
+        {
+          "name": "INT",
+          "type": "INT",
+          "slot_index": 1,
+          "links": [
+            262
+          ]
+        },
+        {
+          "name": "BOOL",
+          "type": "BOOLEAN",
+          "slot_index": 2,
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfyMathExpression"
+      },
+      "widgets_values": [
+        "floor(min(a, b * 16 / 9) * max(0.5, min(1.0, 1 - (1 - (1.0 if c == 0 else 0.8 if c == 1 else 0.85 if c == 2 else 0.85 if c == 3 else 0.85 if c == 4 else 0.85 if c == 5 else 0.9 if c == 6 else 0.85 if c == 7 else 1.0 if c == 8 else 1.0 if c == 9 else 1.0)) * d)))"
+      ],
+      "title": "INICIO · width"
+    },
+    {
+      "id": 134,
+      "type": "ComfyMathExpression",
+      "pos": [
+        -1790.0,
+        3210.0
+      ],
+      "size": [
+        340,
+        200.0
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "values.a",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 250
+        },
+        {
+          "name": "values.b",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 251,
+          "shape": 7
+        },
+        {
+          "name": "values.c",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 252,
+          "shape": 7
+        },
+        {
+          "name": "values.d",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 253,
+          "shape": 7
+        },
+        {
+          "name": "values.e",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": null,
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "slot_index": 0,
+          "links": []
+        },
+        {
+          "name": "INT",
+          "type": "INT",
+          "slot_index": 1,
+          "links": [
+            263
+          ]
+        },
+        {
+          "name": "BOOL",
+          "type": "BOOLEAN",
+          "slot_index": 2,
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfyMathExpression"
+      },
+      "widgets_values": [
+        "floor(min(a, b * 16 / 9) * max(0.5, min(1.0, 1 - (1 - (1.0 if c == 0 else 0.8 if c == 1 else 0.85 if c == 2 else 0.85 if c == 3 else 0.85 if c == 4 else 0.85 if c == 5 else 0.9 if c == 6 else 0.85 if c == 7 else 1.0 if c == 8 else 1.0 if c == 9 else 1.0)) * d)) * 9 / 16)"
+      ],
+      "title": "INICIO · height"
+    },
+    {
+      "id": 135,
+      "type": "ComfyMathExpression",
+      "pos": [
+        -1400.0,
+        3210.0
+      ],
+      "size": [
+        340,
+        200.0
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "values.a",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 254
+        },
+        {
+          "name": "values.b",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 255,
+          "shape": 7
+        },
+        {
+          "name": "values.c",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 256,
+          "shape": 7
+        },
+        {
+          "name": "values.d",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 257,
+          "shape": 7
+        },
+        {
+          "name": "values.e",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": null,
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "slot_index": 0,
+          "links": []
+        },
+        {
+          "name": "INT",
+          "type": "INT",
+          "slot_index": 1,
+          "links": [
+            264
+          ]
+        },
+        {
+          "name": "BOOL",
+          "type": "BOOLEAN",
+          "slot_index": 2,
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfyMathExpression"
+      },
+      "widgets_values": [
+        "floor((a - min(a, b * 16 / 9) * max(0.5, min(1.0, 1 - (1 - (1.0 if c == 0 else 0.8 if c == 1 else 0.85 if c == 2 else 0.85 if c == 3 else 0.85 if c == 4 else 0.85 if c == 5 else 0.9 if c == 6 else 0.85 if c == 7 else 1.0 if c == 8 else 1.0 if c == 9 else 1.0)) * d))) * (0.5 if c == 0 else 0.5 if c == 1 else 1.0 if c == 2 else 0.0 if c == 3 else 1.0 if c == 4 else 0.0 if c == 5 else 0.2 if c == 6 else 0.5 if c == 7 else 0.5 if c == 8 else 0.5 if c == 9 else 0.5))"
+      ],
+      "title": "INICIO · x"
+    },
+    {
+      "id": 136,
+      "type": "ComfyMathExpression",
+      "pos": [
+        -1010.0,
+        3210.0
+      ],
+      "size": [
+        340,
+        200.0
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "values.a",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 258
+        },
+        {
+          "name": "values.b",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 259,
+          "shape": 7
+        },
+        {
+          "name": "values.c",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 260,
+          "shape": 7
+        },
+        {
+          "name": "values.d",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 261,
+          "shape": 7
+        },
+        {
+          "name": "values.e",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": null,
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "slot_index": 0,
+          "links": []
+        },
+        {
+          "name": "INT",
+          "type": "INT",
+          "slot_index": 1,
+          "links": [
+            265
+          ]
+        },
+        {
+          "name": "BOOL",
+          "type": "BOOLEAN",
+          "slot_index": 2,
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfyMathExpression"
+      },
+      "widgets_values": [
+        "floor((b - min(a, b * 16 / 9) * max(0.5, min(1.0, 1 - (1 - (1.0 if c == 0 else 0.8 if c == 1 else 0.85 if c == 2 else 0.85 if c == 3 else 0.85 if c == 4 else 0.85 if c == 5 else 0.9 if c == 6 else 0.85 if c == 7 else 1.0 if c == 8 else 1.0 if c == 9 else 1.0)) * d)) * 9 / 16) * (0.5 if c == 0 else 0.5 if c == 1 else 0.5 if c == 2 else 0.5 if c == 3 else 0.5 if c == 4 else 0.5 if c == 5 else 0.5 if c == 6 else 1.0 if c == 7 else 0.5 if c == 8 else 0.5 if c == 9 else 0.5))"
+      ],
+      "title": "INICIO · y"
+    },
+    {
+      "id": 137,
+      "type": "ImageCrop",
+      "pos": [
+        -620.0,
+        3210.0
+      ],
+      "size": [
+        340,
+        174.0
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 299
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": 262
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": 263
+        },
+        {
+          "name": "x",
+          "type": "INT",
+          "widget": {
+            "name": "x"
+          },
+          "link": 264
+        },
+        {
+          "name": "y",
+          "type": "INT",
+          "widget": {
+            "name": "y"
+          },
+          "link": 265
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [
+            266,
+            301
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ImageCrop"
+      },
+      "widgets_values": [
+        1280,
+        720,
+        0,
+        0
+      ],
+      "title": "Encuadre INICIO (recorte de la foto real)"
+    },
+    {
+      "id": 138,
+      "type": "PreviewImage",
+      "pos": [
+        -230.0,
+        3210.0
+      ],
+      "size": [
+        340,
+        306.0
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 266
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": [],
+      "title": "Vista previa · INICIO"
+    },
+    {
+      "id": 139,
+      "type": "ComfyMathExpression",
+      "pos": [
+        -2570.0,
+        3546.0
+      ],
+      "size": [
+        340,
+        200.0
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "values.a",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 267
+        },
+        {
+          "name": "values.b",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 268,
+          "shape": 7
+        },
+        {
+          "name": "values.c",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 269,
+          "shape": 7
+        },
+        {
+          "name": "values.d",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 270,
+          "shape": 7
+        },
+        {
+          "name": "values.e",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": null,
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "slot_index": 0,
+          "links": []
+        },
+        {
+          "name": "INT",
+          "type": "INT",
+          "slot_index": 1,
+          "links": [
+            283
+          ]
+        },
+        {
+          "name": "BOOL",
+          "type": "BOOLEAN",
+          "slot_index": 2,
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfyMathExpression"
+      },
+      "widgets_values": [
+        "floor(min(a, b * 16 / 9) * max(0.5, min(1.0, 1 - (1 - (0.8 if c == 0 else 1.0 if c == 1 else 0.85 if c == 2 else 0.85 if c == 3 else 0.85 if c == 4 else 0.85 if c == 5 else 0.9 if c == 6 else 0.85 if c == 7 else 1.0 if c == 8 else 0.8 if c == 9 else 1.0)) * d)))"
+      ],
+      "title": "FINAL · width"
+    },
+    {
+      "id": 140,
+      "type": "ComfyMathExpression",
+      "pos": [
+        -2180.0,
+        3546.0
+      ],
+      "size": [
+        340,
+        200.0
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "values.a",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 271
+        },
+        {
+          "name": "values.b",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 272,
+          "shape": 7
+        },
+        {
+          "name": "values.c",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 273,
+          "shape": 7
+        },
+        {
+          "name": "values.d",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 274,
+          "shape": 7
+        },
+        {
+          "name": "values.e",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": null,
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "slot_index": 0,
+          "links": []
+        },
+        {
+          "name": "INT",
+          "type": "INT",
+          "slot_index": 1,
+          "links": [
+            284
+          ]
+        },
+        {
+          "name": "BOOL",
+          "type": "BOOLEAN",
+          "slot_index": 2,
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfyMathExpression"
+      },
+      "widgets_values": [
+        "floor(min(a, b * 16 / 9) * max(0.5, min(1.0, 1 - (1 - (0.8 if c == 0 else 1.0 if c == 1 else 0.85 if c == 2 else 0.85 if c == 3 else 0.85 if c == 4 else 0.85 if c == 5 else 0.9 if c == 6 else 0.85 if c == 7 else 1.0 if c == 8 else 0.8 if c == 9 else 1.0)) * d)) * 9 / 16)"
+      ],
+      "title": "FINAL · height"
+    },
+    {
+      "id": 141,
+      "type": "ComfyMathExpression",
+      "pos": [
+        -1790.0,
+        3546.0
+      ],
+      "size": [
+        340,
+        200.0
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "values.a",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 275
+        },
+        {
+          "name": "values.b",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 276,
+          "shape": 7
+        },
+        {
+          "name": "values.c",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 277,
+          "shape": 7
+        },
+        {
+          "name": "values.d",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 278,
+          "shape": 7
+        },
+        {
+          "name": "values.e",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": null,
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "slot_index": 0,
+          "links": []
+        },
+        {
+          "name": "INT",
+          "type": "INT",
+          "slot_index": 1,
+          "links": [
+            285
+          ]
+        },
+        {
+          "name": "BOOL",
+          "type": "BOOLEAN",
+          "slot_index": 2,
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfyMathExpression"
+      },
+      "widgets_values": [
+        "floor((a - min(a, b * 16 / 9) * max(0.5, min(1.0, 1 - (1 - (0.8 if c == 0 else 1.0 if c == 1 else 0.85 if c == 2 else 0.85 if c == 3 else 0.85 if c == 4 else 0.85 if c == 5 else 0.9 if c == 6 else 0.85 if c == 7 else 1.0 if c == 8 else 0.8 if c == 9 else 1.0)) * d))) * (0.5 if c == 0 else 0.5 if c == 1 else 0.0 if c == 2 else 1.0 if c == 3 else 0.0 if c == 4 else 1.0 if c == 5 else 0.8 if c == 6 else 0.5 if c == 7 else 0.5 if c == 8 else 0.5 if c == 9 else 0.5))"
+      ],
+      "title": "FINAL · x"
+    },
+    {
+      "id": 142,
+      "type": "ComfyMathExpression",
+      "pos": [
+        -1400.0,
+        3546.0
+      ],
+      "size": [
+        340,
+        200.0
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "values.a",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 279
+        },
+        {
+          "name": "values.b",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 280,
+          "shape": 7
+        },
+        {
+          "name": "values.c",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 281,
+          "shape": 7
+        },
+        {
+          "name": "values.d",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": 282,
+          "shape": 7
+        },
+        {
+          "name": "values.e",
+          "type": "FLOAT,INT,BOOLEAN",
+          "link": null,
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "slot_index": 0,
+          "links": []
+        },
+        {
+          "name": "INT",
+          "type": "INT",
+          "slot_index": 1,
+          "links": [
+            286
+          ]
+        },
+        {
+          "name": "BOOL",
+          "type": "BOOLEAN",
+          "slot_index": 2,
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfyMathExpression"
+      },
+      "widgets_values": [
+        "floor((b - min(a, b * 16 / 9) * max(0.5, min(1.0, 1 - (1 - (0.8 if c == 0 else 1.0 if c == 1 else 0.85 if c == 2 else 0.85 if c == 3 else 0.85 if c == 4 else 0.85 if c == 5 else 0.9 if c == 6 else 0.85 if c == 7 else 1.0 if c == 8 else 0.8 if c == 9 else 1.0)) * d)) * 9 / 16) * (0.5 if c == 0 else 0.5 if c == 1 else 0.5 if c == 2 else 0.5 if c == 3 else 0.5 if c == 4 else 0.5 if c == 5 else 0.5 if c == 6 else 0.0 if c == 7 else 0.5 if c == 8 else 0.5 if c == 9 else 0.5))"
+      ],
+      "title": "FINAL · y"
+    },
+    {
+      "id": 143,
+      "type": "ImageCrop",
+      "pos": [
+        -1010.0,
+        3546.0
+      ],
+      "size": [
+        340,
+        174.0
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 300
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": 283
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": 284
+        },
+        {
+          "name": "x",
+          "type": "INT",
+          "widget": {
+            "name": "x"
+          },
+          "link": 285
+        },
+        {
+          "name": "y",
+          "type": "INT",
+          "widget": {
+            "name": "y"
+          },
+          "link": 286
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [
+            287,
+            289
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ImageCrop"
+      },
+      "widgets_values": [
+        1280,
+        720,
+        0,
+        0
+      ],
+      "title": "Encuadre FINAL (recorte de la foto real)"
+    },
+    {
+      "id": 144,
+      "type": "PreviewImage",
+      "pos": [
+        -620.0,
+        3546.0
+      ],
+      "size": [
+        340,
+        306.0
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 287
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": [],
+      "title": "Vista previa · FINAL"
+    },
+    {
+      "id": 145,
+      "type": "StringContains",
+      "pos": [
+        -230.0,
+        3546.0
+      ],
+      "size": [
+        340,
+        138.0
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "string",
+          "type": "STRING",
+          "widget": {
+            "name": "string"
+          },
+          "link": 288
+        }
+      ],
+      "outputs": [
+        {
+          "name": "contains",
+          "type": "BOOLEAN",
+          "slot_index": 0,
+          "links": [
+            291
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "StringContains"
+      },
+      "widgets_values": [
+        "",
+        "transicion",
+        true
+      ],
+      "title": "¿transición?"
+    },
+    {
+      "id": 146,
+      "type": "ComfySwitchNode",
+      "pos": [
+        -2570.0,
+        3882.0
+      ],
+      "size": [
+        340,
+        130.0
+      ],
+      "flags": {},
+      "order": 19,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "on_false",
+          "type": "IMAGE",
+          "link": 289,
+          "shape": 7
+        },
+        {
+          "name": "on_true",
+          "type": "IMAGE",
+          "link": 290,
+          "shape": 7
+        },
+        {
+          "name": "switch",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "switch"
+          },
+          "link": 291
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [
+            302
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfySwitchNode"
+      },
+      "widgets_values": [
+        false
+      ],
+      "title": "Final: recorte / foto FINAL"
+    },
+    {
+      "id": 147,
       "type": "PrimitiveStringMultiline",
       "pos": [
         -2570.0,
@@ -528,7 +1551,7 @@
         260.0
       ],
       "flags": {},
-      "order": 4,
+      "order": 20,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -537,7 +1560,7 @@
           "type": "STRING",
           "slot_index": 0,
           "links": [
-            246
+            292
           ]
         }
       ],
@@ -545,12 +1568,12 @@
         "Node name for S&R": "PrimitiveStringMultiline"
       },
       "widgets_values": [
-        "{\n  \"avance_lento\": \"Real estate walkthrough video. The shot opens exactly on <Picture 1>. The camera slowly dollies forward into the room, gently getting closer to the centre of the space. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. Do not add people, text, logos or new objects, and do not change the layout of the room. Single continuous shot, no cuts. Audio: quiet natural room ambience only, no music, no voices, no speech.\",\n  \"retroceso_revelado\": \"Real estate walkthrough video. The shot opens exactly on <Picture 1>. The camera slowly pulls back, gradually revealing more of the room. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. Do not add people, text, logos or new objects, and do not change the layout of the room. Single continuous shot, no cuts. Audio: quiet natural room ambience only, no music, no voices, no speech.\",\n  \"paneo_a_izquierda\": \"Real estate walkthrough video. The shot opens exactly on <Picture 1>. The camera slowly pans from right to left across the room, keeping the horizon perfectly level. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. Do not add people, text, logos or new objects, and do not change the layout of the room. Single continuous shot, no cuts. Audio: quiet natural room ambience only, no music, no voices, no speech.\",\n  \"paneo_a_derecha\": \"Real estate walkthrough video. The shot opens exactly on <Picture 1>. The camera slowly pans from left to right across the room, keeping the horizon perfectly level. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. Do not add people, text, logos or new objects, and do not change the layout of the room. Single continuous shot, no cuts. Audio: quiet natural room ambience only, no music, no voices, no speech.\",\n  \"travelling_lateral_izquierda\": \"Real estate walkthrough video. The shot opens exactly on <Picture 1>. The camera slides sideways to the left at a constant height, creating gentle parallax between the furniture in the foreground and the background. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. Do not add people, text, logos or new objects, and do not change the layout of the room. Single continuous shot, no cuts. Audio: quiet natural room ambience only, no music, no voices, no speech.\",\n  \"travelling_lateral_derecha\": \"Real estate walkthrough video. The shot opens exactly on <Picture 1>. The camera slides sideways to the right at a constant height, creating gentle parallax between the furniture in the foreground and the background. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. Do not add people, text, logos or new objects, and do not change the layout of the room. Single continuous shot, no cuts. Audio: quiet natural room ambience only, no music, no voices, no speech.\",\n  \"orbita_suave\": \"Real estate walkthrough video. The shot opens exactly on <Picture 1>. The camera makes a slow, subtle arc around the centre of the room, with gentle parallax. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. Do not add people, text, logos or new objects, and do not change the layout of the room. Single continuous shot, no cuts. Audio: quiet natural room ambience only, no music, no voices, no speech.\",\n  \"subida_vertical\": \"Real estate walkthrough video. The shot opens exactly on <Picture 1>. The camera slowly rises vertically, showing the room from a slightly higher point of view. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. Do not add people, text, logos or new objects, and do not change the layout of the room. Single continuous shot, no cuts. Audio: quiet natural room ambience only, no music, no voices, no speech.\",\n  \"fijo_con_vida\": \"Real estate walkthrough video. The shot opens exactly on <Picture 1>. Static camera, the framing does not change. Only subtle natural movement: sheer curtains moving gently in the breeze and soft sunlight shifting slightly. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. Do not add people, text, logos or new objects, and do not change the layout of the room. Single continuous shot, no cuts. Audio: quiet natural room ambience only, no music, no voices, no speech.\",\n  \"exterior_avance\": \"Real estate walkthrough video. The shot opens exactly on <Picture 1>. Slow, smooth camera move forward towards the building, steady like a drone shot, the architecture and surroundings stay exactly as in the image. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. Do not add people, text, logos or new objects, and do not change the layout of the room. Single continuous shot, no cuts. Audio: quiet natural room ambience only, no music, no voices, no speech.\",\n  \"transicion_foto_a_foto\": \"Real estate walkthrough video. The shot opens exactly on <Picture 1> and ends exactly on <Picture 2>. The camera moves smoothly and continuously from the first view to the final view of the same space, like walking slowly through the room with a gimbal. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. Do not add people, text, logos or new objects, and do not change the layout of the room. Single continuous shot, no cuts. Audio: quiet natural room ambience only, no music, no voices, no speech.\"\n}"
+        "{\n  \"avance_lento\": \"One single continuous camera shot. No cuts, no scene changes, no new shots, no new locations. The video opens exactly on <Picture 1> and ends exactly on <Picture 2>. The camera slowly dollies forward into the room, gently getting closer to the centre of the space. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. <Picture 1> and <Picture 2> show the same real room: the camera only glides smoothly between these two framings. Do not add people, text, logos or new objects, and do not change the layout of the room. Audio: quiet natural room ambience only, no music, no voices, no speech.\",\n  \"retroceso_revelado\": \"One single continuous camera shot. No cuts, no scene changes, no new shots, no new locations. The video opens exactly on <Picture 1> and ends exactly on <Picture 2>. The camera slowly pulls back, gradually revealing more of the room. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. <Picture 1> and <Picture 2> show the same real room: the camera only glides smoothly between these two framings. Do not add people, text, logos or new objects, and do not change the layout of the room. Audio: quiet natural room ambience only, no music, no voices, no speech.\",\n  \"paneo_a_izquierda\": \"One single continuous camera shot. No cuts, no scene changes, no new shots, no new locations. The video opens exactly on <Picture 1> and ends exactly on <Picture 2>. The camera slowly pans from right to left across the room, keeping the horizon perfectly level. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. <Picture 1> and <Picture 2> show the same real room: the camera only glides smoothly between these two framings. Do not add people, text, logos or new objects, and do not change the layout of the room. Audio: quiet natural room ambience only, no music, no voices, no speech.\",\n  \"paneo_a_derecha\": \"One single continuous camera shot. No cuts, no scene changes, no new shots, no new locations. The video opens exactly on <Picture 1> and ends exactly on <Picture 2>. The camera slowly pans from left to right across the room, keeping the horizon perfectly level. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. <Picture 1> and <Picture 2> show the same real room: the camera only glides smoothly between these two framings. Do not add people, text, logos or new objects, and do not change the layout of the room. Audio: quiet natural room ambience only, no music, no voices, no speech.\",\n  \"travelling_lateral_izquierda\": \"One single continuous camera shot. No cuts, no scene changes, no new shots, no new locations. The video opens exactly on <Picture 1> and ends exactly on <Picture 2>. The camera slides sideways to the left at a constant height, creating gentle parallax between the furniture in the foreground and the background. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. <Picture 1> and <Picture 2> show the same real room: the camera only glides smoothly between these two framings. Do not add people, text, logos or new objects, and do not change the layout of the room. Audio: quiet natural room ambience only, no music, no voices, no speech.\",\n  \"travelling_lateral_derecha\": \"One single continuous camera shot. No cuts, no scene changes, no new shots, no new locations. The video opens exactly on <Picture 1> and ends exactly on <Picture 2>. The camera slides sideways to the right at a constant height, creating gentle parallax between the furniture in the foreground and the background. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. <Picture 1> and <Picture 2> show the same real room: the camera only glides smoothly between these two framings. Do not add people, text, logos or new objects, and do not change the layout of the room. Audio: quiet natural room ambience only, no music, no voices, no speech.\",\n  \"orbita_suave\": \"One single continuous camera shot. No cuts, no scene changes, no new shots, no new locations. The video opens exactly on <Picture 1> and ends exactly on <Picture 2>. The camera makes a slow, subtle arc around the centre of the room, with gentle parallax. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. <Picture 1> and <Picture 2> show the same real room: the camera only glides smoothly between these two framings. Do not add people, text, logos or new objects, and do not change the layout of the room. Audio: quiet natural room ambience only, no music, no voices, no speech.\",\n  \"subida_vertical\": \"One single continuous camera shot. No cuts, no scene changes, no new shots, no new locations. The video opens exactly on <Picture 1> and ends exactly on <Picture 2>. The camera slowly rises vertically, showing the room from a slightly higher point of view. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. <Picture 1> and <Picture 2> show the same real room: the camera only glides smoothly between these two framings. Do not add people, text, logos or new objects, and do not change the layout of the room. Audio: quiet natural room ambience only, no music, no voices, no speech.\",\n  \"fijo_con_vida\": \"One single continuous camera shot. No cuts, no scene changes, no new shots, no new locations. The video opens exactly on <Picture 1> and ends exactly on <Picture 2>. Static camera, the framing does not change. Only subtle natural movement: sheer curtains moving gently in the breeze and soft sunlight shifting slightly. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. <Picture 1> and <Picture 2> show the same real room: the camera only glides smoothly between these two framings. Do not add people, text, logos or new objects, and do not change the layout of the room. Audio: quiet natural room ambience only, no music, no voices, no speech.\",\n  \"exterior_avance\": \"One single continuous camera shot. No cuts, no scene changes, no new shots, no new locations. The video opens exactly on <Picture 1> and ends exactly on <Picture 2>. Slow, smooth camera move forward towards the building, steady like a drone shot, the architecture and surroundings stay exactly as in the image. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. <Picture 1> and <Picture 2> show the same real room: the camera only glides smoothly between these two framings. Do not add people, text, logos or new objects, and do not change the layout of the room. Audio: quiet natural room ambience only, no music, no voices, no speech.\",\n  \"transicion_foto_a_foto\": \"One single continuous camera shot. No cuts, no scene changes, no new shots, no new locations. The video opens exactly on <Picture 1> and ends exactly on <Picture 2>. The camera moves smoothly and continuously from the first view to the final view of the same space, like walking slowly through the room with a gimbal. Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography. <Picture 1> and <Picture 2> show the same real room: the camera only glides smoothly between these two framings. Do not add people, text, logos or new objects, and do not change the layout of the room. Audio: quiet natural room ambience only, no music, no voices, no speech.\"\n}"
       ],
       "title": "CATÁLOGO de movimientos (JSON)"
     },
     {
-      "id": 132,
+      "id": 148,
       "type": "JsonExtractString",
       "pos": [
         -2180.0,
@@ -561,7 +1584,7 @@
         108.0
       ],
       "flags": {},
-      "order": 5,
+      "order": 21,
       "mode": 0,
       "inputs": [
         {
@@ -570,7 +1593,7 @@
           "widget": {
             "name": "json_string"
           },
-          "link": 246
+          "link": 292
         },
         {
           "name": "key",
@@ -578,7 +1601,7 @@
           "widget": {
             "name": "key"
           },
-          "link": 247
+          "link": 293
         }
       ],
       "outputs": [
@@ -587,7 +1610,7 @@
           "type": "STRING",
           "slot_index": 0,
           "links": [
-            248
+            294
           ]
         }
       ],
@@ -601,7 +1624,7 @@
       "title": "Movimiento"
     },
     {
-      "id": 133,
+      "id": 149,
       "type": "StringConcatenate",
       "pos": [
         -1790.0,
@@ -612,7 +1635,7 @@
         134.0
       ],
       "flags": {},
-      "order": 6,
+      "order": 22,
       "mode": 0,
       "inputs": [
         {
@@ -621,7 +1644,7 @@
           "widget": {
             "name": "string_a"
           },
-          "link": 248
+          "link": 294
         },
         {
           "name": "string_b",
@@ -629,7 +1652,7 @@
           "widget": {
             "name": "string_b"
           },
-          "link": 249
+          "link": 295
         }
       ],
       "outputs": [
@@ -638,7 +1661,7 @@
           "type": "STRING",
           "slot_index": 0,
           "links": [
-            252
+            303
           ]
         }
       ],
@@ -653,7 +1676,7 @@
       "title": "PROMPT ✅ final → motor"
     },
     {
-      "id": 134,
+      "id": 150,
       "type": "GetVideoComponents",
       "pos": [
         -2570.0,
@@ -664,13 +1687,13 @@
         86.0
       ],
       "flags": {},
-      "order": 7,
+      "order": 23,
       "mode": 0,
       "inputs": [
         {
           "name": "video",
           "type": "VIDEO",
-          "link": 254
+          "link": 304
         }
       ],
       "outputs": [
@@ -679,7 +1702,7 @@
           "type": "IMAGE",
           "slot_index": 0,
           "links": [
-            250
+            296
           ]
         },
         {
@@ -714,7 +1737,7 @@
       "title": "Frames del plano"
     },
     {
-      "id": 135,
+      "id": 151,
       "type": "ImageFromBatch",
       "pos": [
         -2180.0,
@@ -725,13 +1748,13 @@
         138.0
       ],
       "flags": {},
-      "order": 8,
+      "order": 24,
       "mode": 0,
       "inputs": [
         {
           "name": "image",
           "type": "IMAGE",
-          "link": 250
+          "link": 296
         }
       ],
       "outputs": [
@@ -740,7 +1763,7 @@
           "type": "IMAGE",
           "slot_index": 0,
           "links": [
-            251
+            297
           ]
         }
       ],
@@ -754,7 +1777,7 @@
       "title": "Último frame"
     },
     {
-      "id": 136,
+      "id": 152,
       "type": "SaveImage",
       "pos": [
         -1790.0,
@@ -765,13 +1788,13 @@
         112.0
       ],
       "flags": {},
-      "order": 9,
+      "order": 25,
       "mode": 0,
       "inputs": [
         {
           "name": "images",
           "type": "IMAGE",
-          "link": 251
+          "link": 297
         }
       ],
       "outputs": [],
@@ -794,14 +1817,6 @@
       "VIDEO"
     ],
     [
-      218,
-      114,
-      0,
-      105,
-      0,
-      "IMAGE"
-    ],
-    [
       219,
       115,
       0,
@@ -819,73 +1834,473 @@
     ],
     [
       246,
-      131,
-      0,
-      132,
-      0,
-      "STRING"
-    ],
-    [
-      247,
-      128,
-      0,
-      132,
-      1,
-      "STRING"
-    ],
-    [
-      248,
       132,
       0,
       133,
       0,
-      "STRING"
+      "INT"
+    ],
+    [
+      247,
+      132,
+      1,
+      133,
+      1,
+      "INT"
+    ],
+    [
+      248,
+      128,
+      1,
+      133,
+      2,
+      "INT"
     ],
     [
       249,
       129,
       0,
       133,
+      3,
+      "FLOAT"
+    ],
+    [
+      250,
+      132,
+      0,
+      134,
+      0,
+      "INT"
+    ],
+    [
+      251,
+      132,
+      1,
+      134,
+      1,
+      "INT"
+    ],
+    [
+      252,
+      128,
+      1,
+      134,
+      2,
+      "INT"
+    ],
+    [
+      253,
+      129,
+      0,
+      134,
+      3,
+      "FLOAT"
+    ],
+    [
+      254,
+      132,
+      0,
+      135,
+      0,
+      "INT"
+    ],
+    [
+      255,
+      132,
+      1,
+      135,
+      1,
+      "INT"
+    ],
+    [
+      256,
+      128,
+      1,
+      135,
+      2,
+      "INT"
+    ],
+    [
+      257,
+      129,
+      0,
+      135,
+      3,
+      "FLOAT"
+    ],
+    [
+      258,
+      132,
+      0,
+      136,
+      0,
+      "INT"
+    ],
+    [
+      259,
+      132,
+      1,
+      136,
+      1,
+      "INT"
+    ],
+    [
+      260,
+      128,
+      1,
+      136,
+      2,
+      "INT"
+    ],
+    [
+      261,
+      129,
+      0,
+      136,
+      3,
+      "FLOAT"
+    ],
+    [
+      262,
+      133,
+      1,
+      137,
+      1,
+      "INT"
+    ],
+    [
+      263,
+      134,
+      1,
+      137,
+      2,
+      "INT"
+    ],
+    [
+      264,
+      135,
+      1,
+      137,
+      3,
+      "INT"
+    ],
+    [
+      265,
+      136,
+      1,
+      137,
+      4,
+      "INT"
+    ],
+    [
+      266,
+      137,
+      0,
+      138,
+      0,
+      "IMAGE"
+    ],
+    [
+      267,
+      132,
+      0,
+      139,
+      0,
+      "INT"
+    ],
+    [
+      268,
+      132,
+      1,
+      139,
+      1,
+      "INT"
+    ],
+    [
+      269,
+      128,
+      1,
+      139,
+      2,
+      "INT"
+    ],
+    [
+      270,
+      129,
+      0,
+      139,
+      3,
+      "FLOAT"
+    ],
+    [
+      271,
+      132,
+      0,
+      140,
+      0,
+      "INT"
+    ],
+    [
+      272,
+      132,
+      1,
+      140,
+      1,
+      "INT"
+    ],
+    [
+      273,
+      128,
+      1,
+      140,
+      2,
+      "INT"
+    ],
+    [
+      274,
+      129,
+      0,
+      140,
+      3,
+      "FLOAT"
+    ],
+    [
+      275,
+      132,
+      0,
+      141,
+      0,
+      "INT"
+    ],
+    [
+      276,
+      132,
+      1,
+      141,
+      1,
+      "INT"
+    ],
+    [
+      277,
+      128,
+      1,
+      141,
+      2,
+      "INT"
+    ],
+    [
+      278,
+      129,
+      0,
+      141,
+      3,
+      "FLOAT"
+    ],
+    [
+      279,
+      132,
+      0,
+      142,
+      0,
+      "INT"
+    ],
+    [
+      280,
+      132,
+      1,
+      142,
+      1,
+      "INT"
+    ],
+    [
+      281,
+      128,
+      1,
+      142,
+      2,
+      "INT"
+    ],
+    [
+      282,
+      129,
+      0,
+      142,
+      3,
+      "FLOAT"
+    ],
+    [
+      283,
+      139,
+      1,
+      143,
+      1,
+      "INT"
+    ],
+    [
+      284,
+      140,
+      1,
+      143,
+      2,
+      "INT"
+    ],
+    [
+      285,
+      141,
+      1,
+      143,
+      3,
+      "INT"
+    ],
+    [
+      286,
+      142,
+      1,
+      143,
+      4,
+      "INT"
+    ],
+    [
+      287,
+      143,
+      0,
+      144,
+      0,
+      "IMAGE"
+    ],
+    [
+      288,
+      128,
+      0,
+      145,
+      0,
+      "STRING"
+    ],
+    [
+      289,
+      143,
+      0,
+      146,
+      0,
+      "IMAGE"
+    ],
+    [
+      290,
+      131,
+      0,
+      146,
+      1,
+      "IMAGE"
+    ],
+    [
+      291,
+      145,
+      0,
+      146,
+      2,
+      "BOOLEAN"
+    ],
+    [
+      292,
+      147,
+      0,
+      148,
+      0,
+      "STRING"
+    ],
+    [
+      293,
+      128,
+      0,
+      148,
       1,
       "STRING"
     ],
     [
-      250,
-      134,
+      294,
+      148,
       0,
-      135,
+      149,
+      0,
+      "STRING"
+    ],
+    [
+      295,
+      130,
+      0,
+      149,
+      1,
+      "STRING"
+    ],
+    [
+      296,
+      150,
+      0,
+      151,
       0,
       "IMAGE"
     ],
     [
-      251,
-      135,
+      297,
+      151,
       0,
-      136,
+      152,
       0,
       "IMAGE"
     ],
     [
-      252,
-      133,
+      298,
+      114,
+      0,
+      132,
+      0,
+      "IMAGE"
+    ],
+    [
+      299,
+      114,
+      0,
+      137,
+      0,
+      "IMAGE"
+    ],
+    [
+      300,
+      114,
+      0,
+      143,
+      0,
+      "IMAGE"
+    ],
+    [
+      301,
+      137,
+      0,
+      105,
+      0,
+      "IMAGE"
+    ],
+    [
+      302,
+      146,
+      0,
+      105,
+      1,
+      "IMAGE"
+    ],
+    [
+      303,
+      149,
       0,
       105,
       2,
       "STRING"
     ],
     [
-      253,
-      130,
-      0,
-      105,
-      1,
-      "IMAGE"
-    ],
-    [
-      254,
+      304,
       105,
       0,
-      134,
+      150,
       0,
       "VIDEO"
     ]
@@ -908,8 +2323,8 @@
       "title": "PANEL DE CONTROL · lo único que tocas",
       "bounding": [
         -2590.0,
-        3590.0,
-        1550.0,
+        2648.0,
+        1940.0,
         442.0
       ],
       "color": "#9e6b3f",
@@ -918,6 +2333,19 @@
     },
     {
       "id": 3,
+      "title": "ENCUADRES · inicio y final salen de tu foto",
+      "bounding": [
+        -2590.0,
+        3160.0,
+        2720.0,
+        872.0
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 4,
       "title": "CATÁLOGO DE MOVIMIENTOS",
       "bounding": [
         -2590.0,
@@ -930,7 +2358,7 @@
       "flags": {}
     },
     {
-      "id": 4,
+      "id": 5,
       "title": "ÚLTIMO FRAME (para alargar el plano)",
       "bounding": [
         -2590.0,

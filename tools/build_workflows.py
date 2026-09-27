@@ -1696,6 +1696,19 @@ class _Injerto:
         src["outputs"][src_slot]["links"] = (src["outputs"][src_slot].get("links") or []) + [self.last_link]
         self.wf["links"].append([self.last_link, src["id"], src_slot, dst["id"], slot, typ])
 
+    def soltar(self, dst, dst_name):
+        """Quita el enlace que llega a la entrada `dst_name` (p. ej. el que trae la plantilla)."""
+        slot = next(k for k, i in enumerate(dst["inputs"]) if i["name"] == dst_name)
+        lid = dst["inputs"][slot].get("link")
+        if lid is None:
+            return
+        dst["inputs"][slot]["link"] = None
+        for l in self.wf["links"]:
+            if l[0] == lid:
+                src = self.by_id[l[1]]
+                src["outputs"][l[2]]["links"] = [x for x in src["outputs"][l[2]]["links"] if x != lid]
+        self.wf["links"] = [l for l in self.wf["links"] if l[0] != lid]
+
     def _renumerar(self, dst):
         """Tras insertar una entrada, los enlaces que llegan a `dst` cambian de índice de socket."""
         slot_of = {i["link"]: k for k, i in enumerate(dst["inputs"]) if i.get("link") is not None}
@@ -1767,22 +1780,82 @@ def build_ltx_tour():
 # ======================================================================================
 # Vídeo tour con MiniMax H3 / FastVideo FastH3 (sobre las plantillas oficiales de ComfyUI)
 # ======================================================================================
+# H3 está entrenado para contar historias con varios planos: si sólo le das la foto de inicio,
+# a los pocos segundos corta y se inventa el siguiente plano. Por eso aquí el plano se ancla por
+# los DOS extremos a la MISMA foto real: el inicio y el final son dos recortes de esa foto (p. ej.
+# avance = foto entera → centro ampliado). El modelo sólo se mueve entre dos imágenes reales.
+#
+# Encuadre = (escala, posición x, posición y) sobre el mayor recorte 16:9 que cabe en la foto.
+# escala 1 = ese recorte entero; 0.8 = un 80 % (zoom 1,25x). posición 0 = izquierda/arriba,
+# 1 = derecha/abajo. El orden tiene que ser el de MOVIMIENTOS (el desplegable da el índice).
+ENCUADRES = {
+    "avance_lento": ((1.0, 0.5, 0.5), (0.8, 0.5, 0.5)),
+    "retroceso_revelado": ((0.8, 0.5, 0.5), (1.0, 0.5, 0.5)),
+    "paneo_a_izquierda": ((0.85, 1.0, 0.5), (0.85, 0.0, 0.5)),
+    "paneo_a_derecha": ((0.85, 0.0, 0.5), (0.85, 1.0, 0.5)),
+    "travelling_lateral_izquierda": ((0.85, 1.0, 0.5), (0.85, 0.0, 0.5)),
+    "travelling_lateral_derecha": ((0.85, 0.0, 0.5), (0.85, 1.0, 0.5)),
+    "orbita_suave": ((0.9, 0.2, 0.5), (0.9, 0.8, 0.5)),
+    "subida_vertical": ((0.85, 0.5, 1.0), (0.85, 0.5, 0.0)),
+    "fijo_con_vida": ((1.0, 0.5, 0.5), (1.0, 0.5, 0.5)),
+    "exterior_avance": ((1.0, 0.5, 0.5), (0.8, 0.5, 0.5)),
+    "transicion_foto_a_foto": ((1.0, 0.5, 0.5), (1.0, 0.5, 0.5)),  # el final es la foto FINAL
+}
+assert list(ENCUADRES) == list(MOVIMIENTOS), "ENCUADRES y MOVIMIENTOS deben ir en el mismo orden"
+
 # H3 no usa prompt negativo (BasicGuider): lo que no se quiere va escrito en el positivo.
+H3_HEAD = (
+    "One single continuous camera shot. No cuts, no scene changes, no new shots, no new locations. "
+    "The video opens exactly on <Picture 1> and ends exactly on <Picture 2>. "
+)
 H3_TAIL = (
-    " Do not add people, text, logos or new objects, and do not change the layout of the room. "
-    "Single continuous shot, no cuts. Audio: quiet natural room ambience only, no music, no voices, no speech."
+    " <Picture 1> and <Picture 2> show the same real room: the camera only glides smoothly between these two "
+    "framings. Do not add people, text, logos or new objects, and do not change the layout of the room. "
+    "Audio: quiet natural room ambience only, no music, no voices, no speech."
 )
 
 
 def _catalogo_h3() -> dict:
-    out = {}
-    for k, v in MOVIMIENTOS.items():
-        if k == "transicion_foto_a_foto":
-            start = "Real estate walkthrough video. The shot opens exactly on <Picture 1> and ends exactly on <Picture 2>. "
-        else:
-            start = "Real estate walkthrough video. The shot opens exactly on <Picture 1>. "
-        out[k] = start + v + " " + TOUR_BASE + H3_TAIL
-    return out
+    return {k: H3_HEAD + v + " " + TOUR_BASE + H3_TAIL for k, v in MOVIMIENTOS.items()}
+
+
+def _ternario(valores: list) -> str:
+    """`v0 if c == 0 else v1 if c == 1 else …` para el nodo Math Expression (c = índice)."""
+    partes = [f"{v} if c == {k} else" for k, v in enumerate(valores[:-1])]
+    return "(" + " ".join(partes + [str(valores[-1])]) + ")"
+
+
+def _encuadres(g: Graph, indice, intensidad):
+    """Dos recortes 16:9 de la foto (inicio y final) según el movimiento. Devuelve (tamaño, crop0, crop1)."""
+    tam = g.add("GetImageSize", [], title="Tamaño de la foto")
+    bw = "min(a, b * 16 / 9)"
+    crops = []
+    for extremo, nombre in ((0, "INICIO"), (1, "FINAL")):
+        esc = _ternario([ENCUADRES[k][extremo][0] for k in ENCUADRES])
+        px = _ternario([ENCUADRES[k][extremo][1] for k in ENCUADRES])
+        py = _ternario([ENCUADRES[k][extremo][2] for k in ENCUADRES])
+        s_ = f"max(0.5, min(1.0, 1 - (1 - {esc}) * d))"
+        exprs = {
+            "width": f"floor({bw} * {s_})",
+            "height": f"floor({bw} * {s_} * 9 / 16)",
+            "x": f"floor((a - {bw} * {s_}) * {px})",
+            "y": f"floor((b - {bw} * {s_} * 9 / 16) * {py})",
+        }
+        vals = {}
+        for campo, e in exprs.items():
+            m = g.add(
+                "ComfyMathExpression",
+                [e],
+                {"values.a": tam.out(0), "values.b": tam.out(1), "values.c": indice, "values.d": intensidad},
+                title=f"{nombre} · {campo}",
+            )
+            vals[campo] = m.out(1)
+        crop = g.add(
+            "ImageCrop", [1280, 720, 0, 0], vals, title=f"Encuadre {nombre} (recorte de la foto real)"
+        )
+        g.add("PreviewImage", [], {"images": crop.out(0)}, title=f"Vista previa · {nombre}")
+        crops.append(crop)
+    return tam, crops[0], crops[1]
 
 
 def _panel_h3(g: Graph, *, rapido: bool):
@@ -1791,34 +1864,34 @@ def _panel_h3(g: Graph, *, rapido: bool):
         note(
             g,
             f"# Vídeo tour · {motor}\n\n"
-            "Cada ejecución convierte **una foto real** del piso en un plano de ~5 s. Haces un plano por "
-            "foto y los montas en CapCut/DaVinci con música.\n\n"
-            "## Tres usos\n"
-            "| Quieres… | Cómo |\n"
-            "|---|---|\n"
-            "| **Animar una foto** | Sube la foto en **1 · INICIO** (en la plantilla, abajo) y ejecuta. |\n"
-            "| **Ir de una foto a otra del mismo espacio** | Activa **2 · FINAL** con Ctrl+B, sube la segunda "
-            "foto y elige `transicion_foto_a_foto`. |\n"
-            "| **Alargar un plano** | Sube en 1 · INICIO el `output/tour/ultimo_frame_…png` del plano "
-            "anterior y repite el movimiento. |\n\n"
+            "Cada ejecución convierte **una foto real** del piso en un plano de ~5 s con un movimiento "
+            "suave. Haces un plano por foto y los montas en CapCut/DaVinci con música.\n\n"
+            "## Cómo evita inventar\n"
+            "El plano está **anclado por los dos extremos a tu foto**: el inicio y el final son dos "
+            "recortes de la misma foto (abajo, en *ENCUADRES*, ves las dos vistas previas). El modelo sólo "
+            "se desplaza entre ellos: no tiene que imaginar nada fuera de la foto.\n\n"
             "## Los mandos\n"
-            "| Mando | Dónde | Qué hace |\n"
-            "|---|---|---|\n"
-            "| **▼ MOVIMIENTO DE CÁMARA** | aquí | el movimiento del plano |\n"
-            "| **ESTANCIA** | aquí | una frase en inglés con lo que se ve |\n"
-            "| **duración / semilla** | nodo MOTOR | 5 s por defecto (24 fps) |\n"
-            + ("| **resolución** | *Scale Image to Total Pixels* | 0.9 MP ≈ 768p, con la proporción de tu foto; 0.4 para pruebas rápidas |\n"
+            "| Mando | Qué hace |\n"
+            "|---|---|\n"
+            "| **▼ MOVIMIENTO DE CÁMARA** | elige el movimiento y, con él, los dos recortes |\n"
+            "| **INTENSIDAD** | 1 = normal (zoom 1,25x, paneo del 15 %). 0.5 = más sutil. 1.5 = más marcado |\n"
+            "| **ESTANCIA** | una frase en inglés con lo que se ve |\n"
+            "| **duración / semilla** | en el nodo MOTOR (5 s por defecto) |\n"
+            + ("| **resolución** | *Scale Image to Total Pixels*: 0.9 MP ≈ 1280×720; 0.4 para pruebas rápidas |\n"
                if rapido else
-               "| **resolución** | *Resolution Selector* | 16:9 a 0.98 MP = 1344×768, la nativa de H3 |\n"
-               "| **turbo** | nodo MOTOR (`value`) | `true` = LoRA Lightning de 8 pasos |\n")
-            + "\n**Regla de oro:** nunca vayas de una habitación a otra distinta con FINAL; la IA se inventa lo "
-            "que hay entre medias. Entre estancias, corte en el montaje.\n\n"
-            "H3 genera **audio** (le pido sólo ambiente): en el montaje lo cambias por música.\n\n"
+               "| **resolución** | *Resolution Selector*: 16:9 a 0.98 MP = 1344×768, la nativa de H3 |\n"
+               "| **turbo** | en el nodo MOTOR (`value`): `true` = LoRA Lightning de 8 pasos |\n")
+            + "\n## De una foto a otra del mismo espacio\n"
+            "Elige `transicion_foto_a_foto` y activa **2 · FINAL** con Ctrl+B. Sólo con dos fotos del mismo "
+            "espacio: entre habitaciones distintas se inventaría el camino.\n\n"
+            "**Si aun así corta de plano:** baja la INTENSIDAD a 0.5 o cambia la semilla.\n\n"
+            "H3 genera **audio** de ambiente: en el montaje lo cambias por música.\n\n"
             "**Licencia:** la de MiniMax H3 excluye la UE, Reino Unido, Corea y EE. UU. Úsalo bajo tu "
             "responsabilidad.",
             title="LÉEME PRIMERO",
         )
         movimiento = combo(g, list(_catalogo_h3().keys()), "avance_lento", title="▼ MOVIMIENTO DE CÁMARA")
+        intensidad = g.add("PrimitiveFloat", [1.0], title="INTENSIDAD del movimiento", color=ORANGE)
         estancia = g.add(
             "PrimitiveStringMultiline",
             ["The room is a bright living room with a grey sofa, a wooden coffee table and a large window."],
@@ -1828,8 +1901,19 @@ def _panel_h3(g: Graph, *, rapido: bool):
         final = g.add(
             "LoadImage",
             ["foto_final.png", "image"],
-            title="2 · FINAL (opcional · Ctrl+B)",
+            title="2 · FINAL (sólo transicion_foto_a_foto · Ctrl+B)",
             mode=MODE_BYPASS,
+        )
+    with g.group("ENCUADRES · inicio y final salen de tu foto", BLUE):
+        tam, crop0, crop1 = _encuadres(g, movimiento.out(1), intensidad.out(0))
+        es_transicion = g.add(
+            "StringContains", ["", "transicion", True], {"string": movimiento.out(0)}, title="¿transición?"
+        )
+        fin = g.add(
+            "ComfySwitchNode",
+            [False],
+            {"on_false": crop1.out(0), "on_true": final.out(0), "switch": es_transicion.out(0)},
+            title="Final: recorte / foto FINAL",
         )
     with g.group("CATÁLOGO DE MOVIMIENTOS", GREY):
         cat = g.add(
@@ -1850,7 +1934,7 @@ def _panel_h3(g: Graph, *, rapido: bool):
         comps = g.add("GetVideoComponents", [], title="Frames del plano")
         last = g.add("ImageFromBatch", [-1, 1], {"image": comps.out(0)}, title="Último frame")
         g.add("SaveImage", ["tour/ultimo_frame"], {"images": last.out(0)}, title="GUARDAR ÚLTIMO FRAME")
-    return prompt, comps, final
+    return {"prompt": prompt, "comps": comps, "tam": tam, "crop0": crop0, "crop1": crop1, "fin": fin}
 
 
 def build_h3_tour():
@@ -1859,29 +1943,19 @@ def build_h3_tour():
         (False, "video_minimax_h3_i2v.json", "23_video_tour_minimax_h3.json", "tour/plano_h3"),
     ):
         g = Graph("h3-" + salida)
-        prompt, comps, final = _panel_h3(g, rapido=rapido)
+        p = _panel_h3(g, rapido=rapido)
         inj = _Injerto(plantilla, g)
         wf, motor = inj.wf, inj.motor
 
-        # En estas plantillas el prompt es un widget del subgrafo sin socket: se crea el socket
-        # justo detrás de las dos imágenes (orden de las entradas del subgrafo).
-        inj.enlazar(inj.nodo(prompt), 0, motor, "prompt", "STRING", widget_en=2)
-        inj.enlazar(inj.nodo(final), 0, motor, "last_frame", "IMAGE")
-        inj.enlazar(motor, 0, inj.nodo(comps), "video", "VIDEO")
-
-        wv = motor["widgets_values"]
-        wv[0], wv[3] = "", 5  # prompt enlazado · 5 s
-        motor["title"] = "MOTOR · " + ("FastVideo FastH3 8 pasos" if rapido else "MiniMax H3") + " (plantilla oficial)"
-
-        # Nodos auxiliares que la plantilla trae sueltos (sin conectar a nada): fuera
+        # Nodos auxiliares que la plantilla trae sueltos (sin entrada conectada): fuera
         sueltos = [
             n["id"] for n in wf["nodes"]
             if n["type"] in ("ImageScaleToTotalPixels", "GetImageSize")
+            and n["id"] <= inj.node_off
             and not any(i.get("link") for i in n["inputs"])
         ]
         for nid in list(sueltos):
-            n = inj.by_id[nid]
-            for o in n["outputs"]:
+            for o in inj.by_id[nid]["outputs"]:
                 for lid in o.get("links") or []:
                     for m in wf["nodes"]:
                         for i in m["inputs"]:
@@ -1889,22 +1963,42 @@ def build_h3_tour():
                                 i["link"] = None
                                 if m["type"] == "GetImageSize":
                                     sueltos.append(m["id"])
-        dead_links = {l[0] for l in wf["links"] if l[1] in sueltos or l[3] in sueltos}
-        wf["links"] = [l for l in wf["links"] if l[0] not in dead_links]
+        wf["links"] = [l for l in wf["links"] if l[1] not in sueltos and l[3] not in sueltos]
         wf["nodes"] = [n for n in wf["nodes"] if n["id"] not in sueltos]
+
+        foto = next(
+            n for n in wf["nodes"] if n["type"] == "LoadImage" and n["id"] <= inj.node_off
+        )
+        # La foto ya no va directa al motor: va a los dos recortes, y los recortes al motor
+        inj.soltar(motor, "first_frame")
+        for n in (p["tam"], p["crop0"], p["crop1"]):
+            inj.enlazar(foto, 0, inj.nodo(n), "image", "IMAGE")
+        inj.enlazar(inj.nodo(p["crop0"]), 0, motor, "first_frame", "IMAGE")
+        inj.enlazar(inj.nodo(p["fin"]), 0, motor, "last_frame", "IMAGE")
+        # En estas plantillas el prompt es un widget del subgrafo sin socket: se crea detrás de las imágenes
+        inj.enlazar(inj.nodo(p["prompt"]), 0, motor, "prompt", "STRING", widget_en=2)
+        inj.enlazar(motor, 0, inj.nodo(p["comps"]), "video", "VIDEO")
+
+        # FastH3 saca el tamaño del lienzo de la imagen: ahora del recorte 16:9, no de la foto entera
+        for n in wf["nodes"]:
+            if n["type"] == "ImageScaleToTotalPixels" and n["id"] <= inj.node_off:
+                inj.soltar(n, "image")
+                inj.enlazar(inj.nodo(p["crop0"]), 0, n, "image", "IMAGE")
+                n["widgets_values"][1] = 0.9
+
+        wv = motor["widgets_values"]
+        wv[0], wv[3] = "", 5  # prompt enlazado · 5 s
+        motor["title"] = "MOTOR · " + ("FastVideo FastH3 8 pasos" if rapido else "MiniMax H3") + " (plantilla oficial)"
 
         for n in wf["nodes"]:
             if n["type"] == "SaveVideo":
                 n["widgets_values"][0] = prefijo
                 n["title"] = "GUARDAR PLANO"
-            elif n["type"] == "LoadImage" and n["id"] != inj.nodo(final)["id"]:
-                n["title"], n["widgets_values"][0] = "1 · INICIO (foto o último frame)", "foto_inicio.png"
+            elif n is foto:
+                n["title"], n["widgets_values"][0] = "1 · FOTO del piso (o último frame)", "foto_inicio.png"
             elif n["type"] == "ResolutionSelector":
                 n["widgets_values"] = ["16:9 (Widescreen)", 0.98, 32]
-            elif n["type"] == "ImageScaleToTotalPixels":
-                n["widgets_values"][1] = 0.9
         inj.guardar(salida)
-
 
 def main():
     os.makedirs(OUT, exist_ok=True)
