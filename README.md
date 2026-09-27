@@ -19,6 +19,8 @@ suscripciones: una vez descargados los modelos, cada foto te cuesta lo que tarde
 | **[`workflows/21_video_tour_ltx25.json`](workflows/21_video_tour_ltx25.json)** | **Vídeo tour** para pisos turísticos: una foto → un plano de 5 s con movimiento de cámara (**LTX-2.5**, el recomendado) |
 | [`workflows/22_video_transicion_ltx25.json`](workflows/22_video_transicion_ltx25.json) | Vídeo de una foto a otra del mismo espacio (LTX-2.5) |
 | [`workflows/20_video_tour_inmobiliario.json`](workflows/20_video_tour_inmobiliario.json) | Vídeo tour con **Wan 2.2** (alternativa): foto → plano o foto → foto, con SeedVR2 a 1080p y FILM a 32 fps |
+| [`workflows/23_video_tour_minimax_h3.json`](workflows/23_video_tour_minimax_h3.json) | Vídeo tour con **MiniMax H3** (el mejor en calidad; su licencia excluye la UE) |
+| [`workflows/24_video_tour_fasth3.json`](workflows/24_video_tour_fasth3.json) | Vídeo tour con **FastH3**, H3 destilado a 8 pasos (misma licencia) |
 
 Empieza por **`10_estudio_producto.json`**: es el que usarás a diario. Los otros cuatro de producto
 son las mismas piezas por separado, más sencillas de leer y de modificar. Para vídeo, el **`21`**.

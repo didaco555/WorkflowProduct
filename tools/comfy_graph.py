@@ -405,7 +405,8 @@ SCHEMAS: dict[str, dict] = {
     },
     "SaveVideo": {
         "inputs": [("video", "VIDEO", False)],
-        "widgets": [("filename_prefix", "STRING"), ("format", "COMBO"), ("codec", "COMBO")],
+        # las versiones recientes guardan un cuarto valor (el códec oculto de compatibilidad)
+        "widgets": [("filename_prefix", "STRING"), ("format", "COMBO"), ("codec", "COMBO"), ("codec_legacy", "COMBO")],
         "outputs": [("video", "VIDEO")],
     },
 
@@ -425,6 +426,19 @@ SCHEMAS: dict[str, dict] = {
         "inputs": [],
         "widgets": [("aspect_ratio", "COMBO"), ("megapixels", "FLOAT"), ("multiple", "INT")],
         "outputs": [("width", "INT"), ("height", "INT")],
+    },
+
+    # ---- vídeo: MiniMax H3 (comfy_extras/nodes_minimax_h3.py) — va dentro del subgrafo oficial;
+    #      el validador lo usa para saber qué entradas del subgrafo son opcionales ------------------
+    "MiniMaxH3ImageToVideo": {
+        "inputs": [
+            ("clip", "CLIP", False),
+            ("vae", "VAE", False),
+            ("first_frame", "IMAGE", True),
+            ("last_frame", "IMAGE", True),
+        ],
+        "widgets": [("prompt", "STRING"), ("width", "INT"), ("height", "INT"), ("length", "INT")],
+        "outputs": [("positive", "CONDITIONING"), ("LATENT", "LATENT")],
     },
 
     # ---- texto ----------------------------------------------------------------------------------

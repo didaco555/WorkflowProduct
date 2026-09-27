@@ -94,6 +94,21 @@ def validate_file(path: str) -> list[str]:
     optional_inputs = {
         (t, i[0]) for t, sch in SCHEMAS.items() for i in sch["inputs"] if i[2]
     }
+    # Una entrada de subgrafo es opcional si todo lo que alimenta dentro son entradas opcionales.
+    for sg in (wf.get("definitions") or {}).get("subgraphs", []):
+        inner = {n["id"]: n for n in sg.get("nodes", [])}
+        inner_links = {l["id"]: l for l in sg.get("links", []) if isinstance(l, dict)}
+        for sg_in in sg.get("inputs", []):
+            targets = []
+            for lid in sg_in.get("linkIds") or []:
+                l = inner_links.get(lid)
+                if not l or l["target_id"] not in inner:
+                    continue
+                tn = inner[l["target_id"]]
+                tin = (tn.get("inputs") or [])[l["target_slot"]]
+                targets.append((tn["type"], tin.get("name")))
+            if targets and all(t in optional_inputs for t in targets):
+                optional_inputs.add((sg["id"], sg_in["name"]))
     for link in wf["links"]:
         lid, src_id, src_slot, dst_id, dst_slot, ltype = link
         src, dst = nodes.get(src_id), nodes.get(dst_id)

@@ -7,8 +7,10 @@ Workflows:
 | **[`21_video_tour_ltx25.json`](../workflows/21_video_tour_ltx25.json)** | **LTX-2.5** | **foto → plano**. El recomendado. |
 | **[`22_video_transicion_ltx25.json`](../workflows/22_video_transicion_ltx25.json)** | **LTX-2.5** | **foto → foto** del mismo espacio |
 | [`20_video_tour_inmobiliario.json`](../workflows/20_video_tour_inmobiliario.json) | Wan 2.2 14B | las dos cosas en un grafo (FINAL opcional), con SeedVR2 y FILM |
+| [`23_video_tour_minimax_h3.json`](../workflows/23_video_tour_minimax_h3.json) | MiniMax H3 | foto → plano, FINAL opcional. **Licencia: excluye la UE** |
+| [`24_video_tour_fasth3.json`](../workflows/24_video_tour_fasth3.json) | FastVideo FastH3 (H3 a 8 pasos) | lo mismo, mucho más rápido. **Licencia: la de H3** |
 
-Modelos y descargas: [`MODELOS.md`](MODELOS.md) secciones 6 (Wan) y 7 (LTX-2.5).
+Modelos y descargas: [`MODELOS.md`](MODELOS.md) secciones 6 (Wan), 7 (LTX-2.5) y 8 (H3).
 
 ## La idea en una frase
 

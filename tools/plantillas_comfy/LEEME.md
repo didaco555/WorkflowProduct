@@ -6,7 +6,9 @@ Copias sin modificar de las plantillas oficiales de
 
 - `video_ltx2_5_i2v.json` — LTX-2.5 imagen a vídeo (dos etapas con reescalado latente x2)
 - `video_ltx2_5_flf2v.json` — LTX-2.5 primer y último frame a vídeo
+- `video_minimax_h3_i2v.json` — MiniMax H3 imagen a vídeo (primer y último frame opcionales)
+- `video_fastvideo_fasth3_i2v.json` — FastVideo FastH3, H3 destilado a 8 pasos
 
 `tools/build_workflows.py` las carga, les añade el panel de movimientos de cámara, el guardado
-del último frame y los prompts de tour inmobiliario, y escribe `workflows/21_…` y `workflows/22_…`.
-El motor de dentro (el subgrafo) no se toca, salvo el prompt negativo.
+del último frame y los prompts de tour inmobiliario, y escribe `workflows/21_…` a `workflows/24_…`.
+El motor de dentro (el subgrafo) no se toca, salvo el prompt negativo de LTX (H3 no usa negativo).

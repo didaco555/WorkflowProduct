@@ -153,6 +153,24 @@ Son los archivos que piden las plantillas oficiales de ComfyUI para LTX-2.5. El 
 **int8 convrot**, el mismo formato que tu SeedVR2, y ComfyUI lo va pasando entre RAM y VRAM.
 
 
+
+## 8 · Vídeo: MiniMax H3 y FastVideo FastH3
+
+Para `23_video_tour_minimax_h3.json` (H3 base) y `24_video_tour_fasth3.json` (FastH3, 8 pasos).
+Es el modelo abierto mejor valorado en imagen a vídeo, pero **su licencia excluye la UE, Reino Unido,
+Corea y EE. UU.**: en España no te cubre. Úsalo bajo tu responsabilidad.
+
+- `diffusion_models/` → [minimax_h3_fl2va_pruned_int8_convrot.safetensors](https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors) *(23)*
+- `diffusion_models/` → [fastvideo_fasth3_8step_v2_pruned_int8_convrot.safetensors](https://huggingface.co/FastVideo/FastVideo-FastH3-Comfy/resolve/main/diffusion_models/fastvideo_fasth3_8step_v2_pruned_int8_convrot.safetensors) *(24)*
+- `text_encoders/` → [qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors](https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors)
+- `vae/` → [minimax_h3_video_vae_int8_convrot.safetensors](https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_video_vae_int8_convrot.safetensors)
+- `vae/` → [minimax_h3_audio_vae_fp32.safetensors](https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_audio_vae_fp32.safetensors)
+- `loras/` → [minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors](https://huggingface.co/lightx2v/Minimax-h3-Turbo/resolve/main/minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors) *(sólo el 23: aunque el turbo vaya apagado, el workflow comprueba que el archivo existe)*
+
+Son los archivos de las plantillas oficiales de ComfyUI. Si ya habías abierto esas plantillas, lo
+normal es que los tengas todos.
+
+
 ---
 
 ## Descarga rápida por línea de comandos

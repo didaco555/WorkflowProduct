@@ -1638,56 +1638,85 @@ def _panel_ltx(g: Graph, catalogo: dict, default: str, *, flf: bool):
     return prompt, comps
 
 
-def _merge_ltx(template_file: str, g: Graph, prompt_node, comps_node, out_name: str, *, flf: bool):
-    """Mete el panel (Graph) encima de la plantilla oficial y lo cablea al subgrafo del motor."""
-    wf = copy.deepcopy(json.load(open(os.path.join(PLANTILLAS, template_file), encoding="utf-8")))
-    add = g.to_dict()
-    node_off, link_off = wf["last_node_id"], wf["last_link_id"]
+class _Injerto:
+    """Mete un Graph (panel en español) encima de una plantilla oficial de ComfyUI con subgrafo."""
 
-    # Colocar el panel encima de la plantilla
-    tmin_x = min(n["pos"][0] for n in wf["nodes"])
-    tmin_y = min(n["pos"][1] for n in wf["nodes"])
-    amax_y = max(n["pos"][1] + n["size"][1] for n in add["nodes"])
-    dx, dy = tmin_x - 60, tmin_y - amax_y - 160
+    def __init__(self, template_file: str, g: Graph):
+        wf = copy.deepcopy(json.load(open(os.path.join(PLANTILLAS, template_file), encoding="utf-8")))
+        add = g.to_dict()
+        self.node_off, link_off = wf["last_node_id"], wf["last_link_id"]
 
-    for n in add["nodes"]:
-        n["id"] += node_off
-        n["pos"] = [n["pos"][0] + dx, n["pos"][1] + dy]
-        for i in n["inputs"]:
-            if i.get("link") is not None:
-                i["link"] += link_off
-        for o in n["outputs"]:
-            o["links"] = [l + link_off for l in o["links"]]
-    for l in add["links"]:
-        l[0] += link_off
-        l[1] += node_off
-        l[3] += node_off
-    for k, grp in enumerate(add["groups"]):
-        b = grp["bounding"]
-        grp["bounding"] = [b[0] + dx, b[1] + dy, b[2], b[3]]
-        grp["id"] = len(wf.get("groups", [])) + k + 1
-    wf["nodes"] += add["nodes"]
-    wf["links"] += add["links"]
-    wf.setdefault("groups", []).extend(add["groups"])
-    last_link = link_off + add["last_link_id"]
+        # Colocar el panel encima de la plantilla
+        tmin_x = min(n["pos"][0] for n in wf["nodes"])
+        tmin_y = min(n["pos"][1] for n in wf["nodes"])
+        amax_y = max(n["pos"][1] + n["size"][1] for n in add["nodes"])
+        dx, dy = tmin_x - 60, tmin_y - amax_y - 160
 
-    sub_ids = {sg["id"] for sg in wf["definitions"]["subgraphs"]}
-    motor = next(n for n in wf["nodes"] if n["type"] in sub_ids)
-    by_id = {n["id"]: n for n in wf["nodes"]}
+        for n in add["nodes"]:
+            n["id"] += self.node_off
+            n["pos"] = [n["pos"][0] + dx, n["pos"][1] + dy]
+            for i in n["inputs"]:
+                if i.get("link") is not None:
+                    i["link"] += link_off
+            for o in n["outputs"]:
+                o["links"] = [l + link_off for l in o["links"]]
+        for l in add["links"]:
+            l[0] += link_off
+            l[1] += self.node_off
+            l[3] += self.node_off
+        for k, grp in enumerate(add["groups"]):
+            b = grp["bounding"]
+            grp["bounding"] = [b[0] + dx, b[1] + dy, b[2], b[3]]
+            grp["id"] = len(wf.get("groups", [])) + k + 1
+        wf["nodes"] += add["nodes"]
+        wf["links"] += add["links"]
+        wf.setdefault("groups", []).extend(add["groups"])
+        self.last_link = link_off + add["last_link_id"]
+        wf["last_node_id"] = self.node_off + add["last_node_id"]
 
-    def link(src, src_slot, dst, dst_name, typ):
-        nonlocal last_link
-        last_link += 1
+        sub_ids = {sg["id"] for sg in wf["definitions"]["subgraphs"]}
+        self.motor = next(n for n in wf["nodes"] if n["type"] in sub_ids)
+        self.by_id = {n["id"]: n for n in wf["nodes"]}
+        self.wf = wf
+
+    def nodo(self, n):
+        """El nodo del panel (Graph) ya dentro de la plantilla."""
+        return self.by_id[n.id + self.node_off]
+
+    def enlazar(self, src, src_slot, dst, dst_name, typ, *, widget_en=None):
+        """Enlace nuevo. Si `dst` no tiene esa entrada, la crea como widget convertido en `widget_en`."""
+        if not any(i["name"] == dst_name for i in dst["inputs"]):
+            dst["inputs"].insert(
+                widget_en, {"name": dst_name, "type": typ, "widget": {"name": dst_name}, "link": None}
+            )
+            self._renumerar(dst)
+        self.last_link += 1
         slot = next(k for k, i in enumerate(dst["inputs"]) if i["name"] == dst_name)
-        dst["inputs"][slot]["link"] = last_link
-        src["outputs"][src_slot].setdefault("links", [])
-        src["outputs"][src_slot]["links"] = (src["outputs"][src_slot]["links"] or []) + [last_link]
-        wf["links"].append([last_link, src["id"], src_slot, dst["id"], slot, typ])
+        dst["inputs"][slot]["link"] = self.last_link
+        src["outputs"][src_slot]["links"] = (src["outputs"][src_slot].get("links") or []) + [self.last_link]
+        self.wf["links"].append([self.last_link, src["id"], src_slot, dst["id"], slot, typ])
 
-    link(by_id[prompt_node.id + node_off], 0, motor, "value", "STRING")
-    link(motor, 0, by_id[comps_node.id + node_off], "video", "VIDEO")
-    wf["last_node_id"] = node_off + add["last_node_id"]
-    wf["last_link_id"] = last_link
+    def _renumerar(self, dst):
+        """Tras insertar una entrada, los enlaces que llegan a `dst` cambian de índice de socket."""
+        slot_of = {i["link"]: k for k, i in enumerate(dst["inputs"]) if i.get("link") is not None}
+        for l in self.wf["links"]:
+            if l[3] == dst["id"] and l[0] in slot_of:
+                l[4] = slot_of[l[0]]
+
+    def guardar(self, out_name: str):
+        self.wf["last_link_id"] = self.last_link
+        self.wf["id"] = str(uuid5_ns(out_name))
+        with open(os.path.join(OUT, out_name), "w", encoding="utf-8") as fh:
+            json.dump(self.wf, fh, ensure_ascii=False, indent=2)
+            fh.write("\n")
+
+
+def _merge_ltx(template_file: str, g: Graph, prompt_node, comps_node, out_name: str, *, flf: bool):
+    """Panel de movimientos encima de la plantilla oficial de LTX-2.5, cableado a su subgrafo."""
+    inj = _Injerto(template_file, g)
+    wf, motor = inj.wf, inj.motor
+    inj.enlazar(inj.nodo(prompt_node), 0, motor, "value", "STRING")
+    inj.enlazar(motor, 0, inj.nodo(comps_node), "video", "VIDEO")
 
     # Ajustes del motor: prompt enlazado, sin "prompt enhance", 5 s
     wv = motor["widgets_values"]
@@ -1716,10 +1745,7 @@ def _merge_ltx(template_file: str, g: Graph, prompt_node, comps_node, out_name: 
     else:
         loaders[0]["title"], loaders[0]["widgets_values"][0] = "1 · INICIO (foto o último frame)", "foto_inicio.png"
 
-    wf["id"] = str(uuid5_ns(out_name))
-    with open(os.path.join(OUT, out_name), "w", encoding="utf-8") as fh:
-        json.dump(wf, fh, ensure_ascii=False, indent=2)
-        fh.write("\n")
+    inj.guardar(out_name)
 
 
 def uuid5_ns(name: str):
@@ -1738,6 +1764,148 @@ def build_ltx_tour():
     _merge_ltx("video_ltx2_5_flf2v.json", g, prompt, comps, "22_video_transicion_ltx25.json", flf=True)
 
 
+# ======================================================================================
+# Vídeo tour con MiniMax H3 / FastVideo FastH3 (sobre las plantillas oficiales de ComfyUI)
+# ======================================================================================
+# H3 no usa prompt negativo (BasicGuider): lo que no se quiere va escrito en el positivo.
+H3_TAIL = (
+    " Do not add people, text, logos or new objects, and do not change the layout of the room. "
+    "Single continuous shot, no cuts. Audio: quiet natural room ambience only, no music, no voices, no speech."
+)
+
+
+def _catalogo_h3() -> dict:
+    out = {}
+    for k, v in MOVIMIENTOS.items():
+        if k == "transicion_foto_a_foto":
+            start = "Real estate walkthrough video. The shot opens exactly on <Picture 1> and ends exactly on <Picture 2>. "
+        else:
+            start = "Real estate walkthrough video. The shot opens exactly on <Picture 1>. "
+        out[k] = start + v + " " + TOUR_BASE + H3_TAIL
+    return out
+
+
+def _panel_h3(g: Graph, *, rapido: bool):
+    motor = "FastVideo FastH3 · 8 pasos" if rapido else "MiniMax H3"
+    with g.group("PANEL DE CONTROL · lo único que tocas", ORANGE):
+        note(
+            g,
+            f"# Vídeo tour · {motor}\n\n"
+            "Cada ejecución convierte **una foto real** del piso en un plano de ~5 s. Haces un plano por "
+            "foto y los montas en CapCut/DaVinci con música.\n\n"
+            "## Tres usos\n"
+            "| Quieres… | Cómo |\n"
+            "|---|---|\n"
+            "| **Animar una foto** | Sube la foto en **1 · INICIO** (en la plantilla, abajo) y ejecuta. |\n"
+            "| **Ir de una foto a otra del mismo espacio** | Activa **2 · FINAL** con Ctrl+B, sube la segunda "
+            "foto y elige `transicion_foto_a_foto`. |\n"
+            "| **Alargar un plano** | Sube en 1 · INICIO el `output/tour/ultimo_frame_…png` del plano "
+            "anterior y repite el movimiento. |\n\n"
+            "## Los mandos\n"
+            "| Mando | Dónde | Qué hace |\n"
+            "|---|---|---|\n"
+            "| **▼ MOVIMIENTO DE CÁMARA** | aquí | el movimiento del plano |\n"
+            "| **ESTANCIA** | aquí | una frase en inglés con lo que se ve |\n"
+            "| **duración / semilla** | nodo MOTOR | 5 s por defecto (24 fps) |\n"
+            + ("| **resolución** | *Scale Image to Total Pixels* | 0.9 MP ≈ 768p, con la proporción de tu foto; 0.4 para pruebas rápidas |\n"
+               if rapido else
+               "| **resolución** | *Resolution Selector* | 16:9 a 0.98 MP = 1344×768, la nativa de H3 |\n"
+               "| **turbo** | nodo MOTOR (`value`) | `true` = LoRA Lightning de 8 pasos |\n")
+            + "\n**Regla de oro:** nunca vayas de una habitación a otra distinta con FINAL; la IA se inventa lo "
+            "que hay entre medias. Entre estancias, corte en el montaje.\n\n"
+            "H3 genera **audio** (le pido sólo ambiente): en el montaje lo cambias por música.\n\n"
+            "**Licencia:** la de MiniMax H3 excluye la UE, Reino Unido, Corea y EE. UU. Úsalo bajo tu "
+            "responsabilidad.",
+            title="LÉEME PRIMERO",
+        )
+        movimiento = combo(g, list(_catalogo_h3().keys()), "avance_lento", title="▼ MOVIMIENTO DE CÁMARA")
+        estancia = g.add(
+            "PrimitiveStringMultiline",
+            ["The room is a bright living room with a grey sofa, a wooden coffee table and a large window."],
+            title="ESTANCIA (qué se ve, en inglés)",
+            color=ORANGE,
+        )
+        final = g.add(
+            "LoadImage",
+            ["foto_final.png", "image"],
+            title="2 · FINAL (opcional · Ctrl+B)",
+            mode=MODE_BYPASS,
+        )
+    with g.group("CATÁLOGO DE MOVIMIENTOS", GREY):
+        cat = g.add(
+            "PrimitiveStringMultiline",
+            [json.dumps(_catalogo_h3(), ensure_ascii=False, indent=2)],
+            title="CATÁLOGO de movimientos (JSON)",
+        )
+        mov_txt = g.add(
+            "JsonExtractString", ["", ""], {"json_string": cat.out(0), "key": movimiento.out(0)}, title="Movimiento"
+        )
+        prompt = g.add(
+            "StringConcatenate",
+            ["", "", "\n\n"],
+            {"string_a": mov_txt.out(0), "string_b": estancia.out(0)},
+            title="PROMPT ✅ final → motor",
+        )
+    with g.group("ÚLTIMO FRAME (para alargar el plano)", GREEN):
+        comps = g.add("GetVideoComponents", [], title="Frames del plano")
+        last = g.add("ImageFromBatch", [-1, 1], {"image": comps.out(0)}, title="Último frame")
+        g.add("SaveImage", ["tour/ultimo_frame"], {"images": last.out(0)}, title="GUARDAR ÚLTIMO FRAME")
+    return prompt, comps, final
+
+
+def build_h3_tour():
+    for rapido, plantilla, salida, prefijo in (
+        (True, "video_fastvideo_fasth3_i2v.json", "24_video_tour_fasth3.json", "tour/plano_fasth3"),
+        (False, "video_minimax_h3_i2v.json", "23_video_tour_minimax_h3.json", "tour/plano_h3"),
+    ):
+        g = Graph("h3-" + salida)
+        prompt, comps, final = _panel_h3(g, rapido=rapido)
+        inj = _Injerto(plantilla, g)
+        wf, motor = inj.wf, inj.motor
+
+        # En estas plantillas el prompt es un widget del subgrafo sin socket: se crea el socket
+        # justo detrás de las dos imágenes (orden de las entradas del subgrafo).
+        inj.enlazar(inj.nodo(prompt), 0, motor, "prompt", "STRING", widget_en=2)
+        inj.enlazar(inj.nodo(final), 0, motor, "last_frame", "IMAGE")
+        inj.enlazar(motor, 0, inj.nodo(comps), "video", "VIDEO")
+
+        wv = motor["widgets_values"]
+        wv[0], wv[3] = "", 5  # prompt enlazado · 5 s
+        motor["title"] = "MOTOR · " + ("FastVideo FastH3 8 pasos" if rapido else "MiniMax H3") + " (plantilla oficial)"
+
+        # Nodos auxiliares que la plantilla trae sueltos (sin conectar a nada): fuera
+        sueltos = [
+            n["id"] for n in wf["nodes"]
+            if n["type"] in ("ImageScaleToTotalPixels", "GetImageSize")
+            and not any(i.get("link") for i in n["inputs"])
+        ]
+        for nid in list(sueltos):
+            n = inj.by_id[nid]
+            for o in n["outputs"]:
+                for lid in o.get("links") or []:
+                    for m in wf["nodes"]:
+                        for i in m["inputs"]:
+                            if i.get("link") == lid:
+                                i["link"] = None
+                                if m["type"] == "GetImageSize":
+                                    sueltos.append(m["id"])
+        dead_links = {l[0] for l in wf["links"] if l[1] in sueltos or l[3] in sueltos}
+        wf["links"] = [l for l in wf["links"] if l[0] not in dead_links]
+        wf["nodes"] = [n for n in wf["nodes"] if n["id"] not in sueltos]
+
+        for n in wf["nodes"]:
+            if n["type"] == "SaveVideo":
+                n["widgets_values"][0] = prefijo
+                n["title"] = "GUARDAR PLANO"
+            elif n["type"] == "LoadImage" and n["id"] != inj.nodo(final)["id"]:
+                n["title"], n["widgets_values"][0] = "1 · INICIO (foto o último frame)", "foto_inicio.png"
+            elif n["type"] == "ResolutionSelector":
+                n["widgets_values"] = ["16:9 (Widescreen)", 0.98, 32]
+            elif n["type"] == "ImageScaleToTotalPixels":
+                n["widgets_values"][1] = 0.9
+        inj.guardar(salida)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     build_rescue()
@@ -1747,6 +1915,7 @@ def main():
     build_estudio()
     build_video_tour()
     build_ltx_tour()
+    build_h3_tour()
     for f in sorted(os.listdir(OUT)):
         print("escrito:", os.path.join("workflows", f))
 
