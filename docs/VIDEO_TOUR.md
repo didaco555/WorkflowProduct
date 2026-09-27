@@ -5,6 +5,7 @@ Workflows:
 | Archivo | Motor | Para qué |
 |---|---|---|
 | **[`25_video_tour_parallax.json`](../workflows/25_video_tour_parallax.json)** | **Depth Anything 3 + DepthFlow** | **foto → recorrido 2.5D sin IA generativa**: no puede inventar nada. El recomendado para enseñar el piso tal cual. |
+| **[`26_video_tour_h3_guiado.json`](../workflows/26_video_tour_h3_guiado.json)** | **2.5D + FastH3** | el recorrido 2.5D da 5 anclas reales y FastH3 genera el vídeo pasando por ellas: realismo de H3 sin salirse de la foto. **Licencia de H3: excluye la UE** |
 | [`21_video_tour_ltx25.json`](../workflows/21_video_tour_ltx25.json) | LTX-2.5 | foto → plano con IA (más "vida", pero puede inventar) |
 | **[`22_video_transicion_ltx25.json`](../workflows/22_video_transicion_ltx25.json)** | **LTX-2.5** | **foto → foto** del mismo espacio |
 | [`20_video_tour_inmobiliario.json`](../workflows/20_video_tour_inmobiliario.json) | Wan 2.2 14B | las dos cosas en un grafo (FINAL opcional), con SeedVR2 y FILM |
@@ -59,9 +60,21 @@ huecos se ven (se rellenan estirando el borde). Con INTENSIDAD 0.3–0.6 no se n
 tipo de movimiento de los vídeos inmobiliarios. Un "paseo" de verdad hasta otra habitación es
 imposible sin inventar: para eso está el corte en el montaje.
 
+### Con MiniMax H3 encima (workflow 26)
+
+El 26 hace primero el recorrido 2.5D y saca de él cinco fotogramas: inicio, 1/4, mitad, 3/4 y
+final. Esos cinco se fijan en FastH3 como anclas (nodo nativo *Add Guide for MiniMax H3*), así que
+H3 tiene que pasar por ellos. Pone el realismo y la suavidad del vídeo generado, pero el camino y
+el contenido ya vienen dados por la foto. Cada ejecución guarda los dos vídeos: la guía 2.5D pura
+(`tour/guia_parallax`) y el de H3 (`tour/plano_h3_guiado`), para quedarte con el mejor.
+
+Las tres anclas intermedias se pueden quitar (bypass) para dar más libertad a H3. Con las cinco
+puestas, H3 casi no puede salirse del recorrido.
+
 | Qué necesitas | Workflow |
 |---|---|
 | Enseñar el piso **exactamente como es**, movimiento suave con profundidad | **25 (2.5D)** |
+| Lo mismo con el acabado de H3, pegado a la foto | **26 (2.5D + H3)** |
 | Más "vida" (luz que cambia, cortinas), aceptando revisar cada plano por si inventa | 21 LTX-2.5 · 24/23 H3 con anclaje doble |
 
 ## Anclaje doble: el plano empieza y termina en tu foto (workflows 23 y 24)

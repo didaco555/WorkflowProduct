@@ -2020,46 +2020,25 @@ PARALLAX_MOVIMIENTOS = [
 _FLEX = [1.0, 0.0, "intensity", "relative"]  # strength, feature_threshold, feature_param, feature_mode
 
 
-def build_parallax_tour():
-    g = Graph("25-parallax")
+def _panel_parallax_mandos(g: Graph, *, frames: int, ancho: int, alto: int):
+    movimiento = combo(g, PARALLAX_MOVIMIENTOS, "avance", title="▼ MOVIMIENTO")
+    intensidad = g.add("PrimitiveFloat", [0.5], title="INTENSIDAD", color=ORANGE)
+    n_frames = g.add("PrimitiveInt", [frames, "fixed"], title=f"FRAMES ({frames})", color=ORANGE)
+    w = g.add("PrimitiveInt", [ancho, "fixed"], title="ANCHO", color=ORANGE)
+    h = g.add("PrimitiveInt", [alto, "fixed"], title="ALTO", color=ORANGE)
+    invertir = g.add("PrimitiveFloat", [0.0], title="INVERTIR PROFUNDIDAD (0 / 1)", color=ORANGE)
+    return movimiento, intensidad, n_frames, w, h, invertir
 
-    with g.group("PANEL DE CONTROL · lo único que tocas", ORANGE):
-        note(
-            g,
-            "# Vídeo tour 2.5D · la cámara recorre tu foto\n\n"
-            "**Nada de IA generativa.** Depth Anything 3 calcula la profundidad de la foto y DepthFlow mueve "
-            "una cámara virtual por ella: lo cercano se desplaza más que lo lejano, como si alguien "
-            "caminara por la habitación. **Sólo se mueven píxeles de tu foto**: no aparece nada que no exista.\n\n"
-            "## Los mandos\n"
-            "| Mando | Qué hace |\n"
-            "|---|---|\n"
-            "| **▼ MOVIMIENTO** | avance, retroceso, lateral, subida/bajada, órbita suave, fijo con vida |\n"
-            "| **INTENSIDAD** | 0.5 = recorrido suave de inmobiliaria. 0.3 = muy sutil. Más de 0.8 empieza a estirar bordes |\n"
-            "| **FRAMES** | 150 = 5 s a 30 fps |\n"
-            "| **ANCHO / ALTO** | 1920×1080 horizontal. La foto se recorta al centro para llenarlo |\n"
-            "| **INVERTIR PROFUNDIDAD** | ponlo a 1 si ves que el fondo se acerca en vez del primer plano |\n\n"
-            "## El límite honesto\n"
-            "Una foto no tiene lo que hay **detrás** de los muebles. Cuanto más se mueve la cámara, más se "
-            "notan esos huecos (se rellenan estirando el borde, no inventando). Con INTENSIDAD 0.3–0.6 no se "
-            "ven: es el movimiento que usan los vídeos de inmobiliaria.\n\n"
-            "Si el lateral o la subida van al revés de lo que esperas, elige el contrario "
-            "(`lateral_izquierda` ↔ `lateral_derecha`, `subida` ↔ `bajada`).\n\n"
-            "**Necesita el paquete *ComfyUI-Depthflow-Nodes*** (ComfyUI Manager → Install Missing Custom Nodes).",
-            title="LÉEME PRIMERO",
-        )
-        movimiento = combo(g, PARALLAX_MOVIMIENTOS, "avance", title="▼ MOVIMIENTO")
-        intensidad = g.add("PrimitiveFloat", [0.5], title="INTENSIDAD", color=ORANGE)
-        frames = g.add("PrimitiveInt", [150, "fixed"], title="FRAMES (150 = 5 s)", color=ORANGE)
-        ancho = g.add("PrimitiveInt", [1920, "fixed"], title="ANCHO", color=ORANGE)
-        alto = g.add("PrimitiveInt", [1080, "fixed"], title="ALTO", color=ORANGE)
-        invertir = g.add("PrimitiveFloat", [0.0], title="INVERTIR PROFUNDIDAD (0 / 1)", color=ORANGE)
 
+def _bloque_parallax(g: Graph, mandos, *, fps: float):
+    """Foto → recorte → profundidad (DA3) → movimiento (DepthFlow) → frames. Devuelve (encuadre, frames)."""
+    movimiento, intensidad, n_frames, w, h, invertir = mandos
     with g.group("FOTO", BLUE):
         foto = g.add("LoadImage", ["foto_inicio.png", "image"], title="FOTO del piso")
         encuadre = g.add(
             "ImageScale",
             ["lanczos", 1920, 1080, "center"],
-            {"image": foto.out(0), "width": ancho.out(0), "height": alto.out(0)},
+            {"image": foto.out(0), "width": w.out(0), "height": h.out(0)},
             title="Recorte al formato del vídeo",
         )
 
@@ -2075,7 +2054,7 @@ def build_parallax_tour():
         prof_hd = g.add(
             "ImageScale",
             ["bilinear", 1920, 1080, "disabled"],
-            {"image": prof.out(0), "width": ancho.out(0), "height": alto.out(0)},
+            {"image": prof.out(0), "width": w.out(0), "height": h.out(0)},
             title="Profundidad al tamaño del vídeo",
         )
         g.add("PreviewImage", [], {"images": prof_hd.out(0)}, title="Vista previa · profundidad (claro = cerca)")
@@ -2112,24 +2091,236 @@ def build_parallax_tour():
                 match_type="DEPTHFLOW_MOTION",
             ).out(0)
 
-    with g.group("RENDER Y GUARDADO", GREEN):
         render = g.add(
             "Depthflow",
-            [1.0, 30.0, 30.0, 150, 90, 1.0, 0.0, "mirror", 5],
+            [1.0, fps, fps, 150, 90, 1.0, 0.0, "mirror", 5],
             {
                 "image": encuadre.out(0),
                 "depth_map": prof_hd.out(0),
                 "motion": elegido,
-                "num_frames": frames.out(0),
+                "num_frames": n_frames.out(0),
                 "invert": invertir.out(0),
             },
             title="DepthFlow · render 2.5D",
         )
+    return encuadre, render
+
+
+def build_parallax_tour():
+    g = Graph("25-parallax")
+
+    with g.group("PANEL DE CONTROL · lo único que tocas", ORANGE):
+        note(
+            g,
+            "# Vídeo tour 2.5D · la cámara recorre tu foto\n\n"
+            "**Nada de IA generativa.** Depth Anything 3 calcula la profundidad de la foto y DepthFlow mueve "
+            "una cámara virtual por ella: lo cercano se desplaza más que lo lejano, como si alguien "
+            "caminara por la habitación. **Sólo se mueven píxeles de tu foto**: no aparece nada que no exista.\n\n"
+            "## Los mandos\n"
+            "| Mando | Qué hace |\n"
+            "|---|---|\n"
+            "| **▼ MOVIMIENTO** | avance, retroceso, lateral, subida/bajada, órbita suave, fijo con vida |\n"
+            "| **INTENSIDAD** | 0.5 = recorrido suave de inmobiliaria. 0.3 = muy sutil. Más de 0.8 empieza a estirar bordes |\n"
+            "| **FRAMES** | 150 = 5 s a 30 fps |\n"
+            "| **ANCHO / ALTO** | 1920×1080 horizontal. La foto se recorta al centro para llenarlo |\n"
+            "| **INVERTIR PROFUNDIDAD** | ponlo a 1 si ves que el fondo se acerca en vez del primer plano |\n\n"
+            "## El límite honesto\n"
+            "Una foto no tiene lo que hay **detrás** de los muebles. Cuanto más se mueve la cámara, más se "
+            "notan esos huecos (se rellenan estirando el borde, no inventando). Con INTENSIDAD 0.3–0.6 no se "
+            "ven: es el movimiento que usan los vídeos de inmobiliaria.\n\n"
+            "Si el lateral o la subida van al revés de lo que esperas, elige el contrario "
+            "(`lateral_izquierda` ↔ `lateral_derecha`, `subida` ↔ `bajada`).\n\n"
+            "**Necesita el paquete *ComfyUI-Depthflow-Nodes*** (ComfyUI Manager → Install Missing Custom Nodes).",
+            title="LÉEME PRIMERO",
+        )
+        mandos = _panel_parallax_mandos(g, frames=150, ancho=1920, alto=1080)
+
+    _, render = _bloque_parallax(g, mandos, fps=30.0)
+
+    with g.group("GUARDADO", GREEN):
         video = g.add("CreateVideo", [30.0], {"images": render.out(0)})
         g.add("SaveVideo", ["tour/plano_parallax", "auto", "auto"], {"video": video.out(0)}, title="GUARDAR PLANO")
 
     g.save(os.path.join(OUT, "25_video_tour_parallax.json"))
 
+
+# ======================================================================================
+# Vídeo tour con MiniMax H3 guiado por el recorrido 2.5D
+# ======================================================================================
+# El recorrido 2.5D (sólo píxeles reales) se hace primero; de él salen 5 fotogramas que se
+# fijan en H3 como anclas: inicio, 1/4, mitad, 3/4 y final. H3 pone el realismo y la suavidad,
+# pero tiene que pasar por esas cinco imágenes reales: el camino y el contenido ya vienen dados.
+FASTH3_UNET = "fastvideo_fasth3_8step_v2_pruned_int8_convrot.safetensors"
+H3_CLIP = "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors"
+H3_VAE = "minimax_h3_video_vae_int8_convrot.safetensors"
+H3_AUDIO_VAE = "minimax_h3_audio_vae_fp32.safetensors"
+H3_FRAMES = 124  # 5 s a 24 fps; H3 sólo admite 17k+5 frames
+H3_ANCLAS = (31, 62, 93)  # 1/4, mitad y 3/4 (el inicio y el final van como primer y último frame)
+
+H3_GUIADO_MOV = {
+    "avance": "The camera slowly moves forward into the room.",
+    "retroceso": "The camera slowly moves backward, revealing a little more of the room.",
+    "lateral_izquierda": "The camera slides slowly to the left, with gentle parallax between near and far objects.",
+    "lateral_derecha": "The camera slides slowly to the right, with gentle parallax between near and far objects.",
+    "subida": "The camera slowly rises.",
+    "bajada": "The camera slowly lowers.",
+    "orbita_suave": "The camera sways gently around the centre of the room, with subtle parallax.",
+    "fijo_con_vida": "The camera is almost still, with a barely perceptible breathing movement.",
+}
+assert list(H3_GUIADO_MOV) == PARALLAX_MOVIMIENTOS
+
+
+def _catalogo_h3_guiado() -> dict:
+    head = (
+        "One single continuous camera shot of a real room, no cuts, no scene changes. "
+        "The video opens exactly on <Picture 1> and ends exactly on <Picture 2>, and passes through the "
+        "given keyframes of the same room. "
+    )
+    tail = (
+        " Keep the room exactly as it is: same walls, floor, windows, doors, furniture and decoration. "
+        "Nothing appears, disappears or changes shape. Do not add people, text or new objects. "
+        "Smooth steady gimbal movement, natural light, photorealistic. "
+        "Audio: quiet natural room ambience only, no music, no voices."
+    )
+    return {k: head + v + tail for k, v in H3_GUIADO_MOV.items()}
+
+
+def build_h3_guiado():
+    g = Graph("26-h3-guiado")
+
+    with g.group("PANEL DE CONTROL · lo único que tocas", ORANGE):
+        note(
+            g,
+            "# Vídeo tour · MiniMax H3 guiado por tu foto\n\n"
+            "Lo mejor de los dos mundos:\n\n"
+            "1. **Recorrido 2.5D**: Depth Anything 3 + DepthFlow mueven una cámara por la profundidad de tu foto. "
+            "Sólo píxeles reales (se guarda aparte en `tour/guia_parallax`).\n"
+            "2. **Cinco anclas**: de ese recorrido salen 5 fotogramas (inicio, 1/4, mitad, 3/4, final).\n"
+            "3. **FastH3** genera el vídeo **obligado a pasar por esas cinco imágenes reales**: pone el "
+            "realismo y la suavidad, pero el camino y el contenido ya vienen dados. No tiene de dónde "
+            "inventarse otro plano.\n\n"
+            "## Los mandos\n"
+            "| Mando | Qué hace |\n"
+            "|---|---|\n"
+            "| **▼ MOVIMIENTO** | avance, retroceso, lateral, subida/bajada, órbita suave, fijo con vida |\n"
+            "| **INTENSIDAD** | 0.5 = suave. 0.3 = muy sutil |\n"
+            "| **ESTANCIA** | una frase en inglés con lo que se ve |\n"
+            "| **SEMILLA** | cambia el resultado de H3 sin cambiar el recorrido |\n"
+            "| **ANCHO / ALTO** | 1344×768, la resolución nativa de H3 (múltiplos de 32) |\n"
+            "| **FRAMES** | 124 = 5 s a 24 fps. H3 sólo acepta 17k+5: 107 (4,5 s), 124 (5 s), 141, 158 (6,6 s)… |\n\n"
+            "**Más libertad / menos:** las 3 anclas intermedias son nodos *Ancla* en el grupo MOTOR. "
+            "Ponles bypass (Ctrl+B) para dar más libertad a H3; déjalas para que no se salga del recorrido.\n\n"
+            "Si el fondo se acerca en vez del primer plano, pon **INVERTIR PROFUNDIDAD** a 1.\n\n"
+            "**Necesita** el paquete *ComfyUI-Depthflow-Nodes* (Manager → Install Missing Custom Nodes) y "
+            "los modelos de FastH3 y Depth Anything 3.\n\n"
+            "**Licencia:** la de MiniMax H3 excluye la UE, Reino Unido, Corea y EE. UU. Úsalo bajo tu "
+            "responsabilidad.",
+            title="LÉEME PRIMERO",
+        )
+        mandos = _panel_parallax_mandos(g, frames=H3_FRAMES, ancho=1344, alto=768)
+        movimiento = mandos[0]
+        estancia = g.add(
+            "PrimitiveStringMultiline",
+            ["The room is a bright living room with a grey sofa, a wooden coffee table and a large window."],
+            title="ESTANCIA (qué se ve, en inglés)",
+            color=ORANGE,
+        )
+        semilla = g.add("PrimitiveInt", [1, "randomize"], title="SEMILLA", color=ORANGE)
+
+    _, guia = _bloque_parallax(g, mandos, fps=24.0)
+    w, h = mandos[3], mandos[4]
+
+    with g.group("GUÍA 2.5D · se guarda aparte y da las 5 anclas", GREEN):
+        guia_video = g.add("CreateVideo", [24.0], {"images": guia.out(0)})
+        g.add("SaveVideo", ["tour/guia_parallax", "auto", "auto"], {"video": guia_video.out(0)}, title="GUARDAR GUÍA 2.5D")
+        primero = g.add("ImageFromBatch", [0, 1], {"image": guia.out(0)}, title="Ancla · inicio")
+        ultimo = g.add("ImageFromBatch", [-1, 1], {"image": guia.out(0)}, title="Ancla · final")
+        # Las anclas intermedias van a 1/4, 1/2 y 3/4 de la duración, sea cual sea FRAMES
+        idx = [
+            g.add(
+                "ComfyMathExpression", [f"floor(a * {q})"], {"values.a": mandos[2].out(0)}, title=f"frame al {int(q * 100)} %"
+            ).out(1)
+            for q in (0.25, 0.5, 0.75)
+        ]
+        medios = [
+            g.add("ImageFromBatch", [k, 1], {"image": guia.out(0), "batch_index": i}, title=f"Ancla · {int(q * 100)} %")
+            for k, i, q in zip(H3_ANCLAS, idx, (0.25, 0.5, 0.75))
+        ]
+
+    with g.group("CATÁLOGO", GREY):
+        cat = g.add(
+            "PrimitiveStringMultiline",
+            [json.dumps(_catalogo_h3_guiado(), ensure_ascii=False, indent=2)],
+            title="CATÁLOGO de movimientos (JSON)",
+        )
+        mov_txt = g.add(
+            "JsonExtractString", ["", ""], {"json_string": cat.out(0), "key": movimiento.out(0)}, title="Movimiento"
+        )
+        prompt = g.add(
+            "StringConcatenate",
+            ["", "", "\n\n"],
+            {"string_a": mov_txt.out(0), "string_b": estancia.out(0)},
+            title="PROMPT ✅ final",
+        )
+
+    with g.group("MOTOR · FastVideo FastH3 8 pasos (como la plantilla oficial) + anclas", PURPLE):
+        unet = g.add("UNETLoader", [FASTH3_UNET, "default"], title="Modelo · FastH3 8 pasos")
+        clip = g.add("CLIPLoader", [H3_CLIP, "minimax", "default"], title="Text encoder · Qwen3-VL")
+        vae = g.add("VAELoader", [H3_VAE], title="VAE vídeo · H3")
+        avae = g.add("VAELoader", [H3_AUDIO_VAE], title="VAE audio · H3")
+        shift = g.add("MiniMaxH3SigmaShift", [10.0, 3.0], {"model": unet.out(0)})
+        attn = g.add("ModelAttentionBackend", ["comfy kitchen attention"], {"model": shift.out(0)})
+        sparse = g.add(
+            "BlockSparseAttention",
+            ["vsa", 10, 0.2, 1, "", 12288, 256, "exact_kv_and_rows", False],
+            {"model": attn.out(0)},
+        )
+        i2v = g.add(
+            "MiniMaxH3ImageToVideo",
+            ["", 1344, 768, H3_FRAMES],
+            {
+                "clip": clip.out(0),
+                "vae": vae.out(0),
+                "first_frame": primero.out(0),
+                "last_frame": ultimo.out(0),
+                "prompt": prompt.out(0),
+                "width": w.out(0),
+                "height": h.out(0),
+                "length": mandos[2].out(0),
+            },
+            title="H3 · inicio y final del recorrido",
+        )
+        pos = i2v.out(0)
+        for k, i, nodo, q in zip(H3_ANCLAS, idx, medios, (25, 50, 75)):
+            pos = g.add(
+                "MiniMaxH3AddGuide",
+                [k],
+                {"positive": pos, "vae": vae.out(0), "latent": i2v.out(1), "image": nodo.out(0), "frame_idx": i},
+                title=f"Ancla al {q} % (Ctrl+B = más libertad)",
+            ).out(0)
+        guider = g.add("BasicGuider", [], {"model": sparse.out(0), "conditioning": pos})
+        sched = g.add("BasicScheduler", ["simple", 8, 1.0], {"model": sparse.out(0)})
+        sampler = g.add("KSamplerSelect", ["res_multistep"])
+        noise = g.add("RandomNoise", [1, "fixed"], {"noise_seed": semilla.out(0)})
+        out = g.add(
+            "SamplerCustomAdvanced",
+            [],
+            {
+                "noise": noise.out(0),
+                "guider": guider.out(0),
+                "sampler": sampler.out(0),
+                "sigmas": sched.out(0),
+                "latent_image": i2v.out(1),
+            },
+        )
+        frames_h3 = g.add("VAEDecode", [], {"samples": out.out(0), "vae": vae.out(0)})
+        audio = g.add("VAEDecodeAudio", [], {"samples": out.out(0), "vae": avae.out(0)})
+
+    with g.group("GUARDADO", GREEN):
+        video = g.add("CreateVideo", [24.0], {"images": frames_h3.out(0), "audio": audio.out(0)})
+        g.add("SaveVideo", ["tour/plano_h3_guiado", "auto", "auto"], {"video": video.out(0)}, title="GUARDAR PLANO H3")
+
+    g.save(os.path.join(OUT, "26_video_tour_h3_guiado.json"))
 
 def main():
     os.makedirs(OUT, exist_ok=True)
@@ -2142,6 +2333,7 @@ def main():
     build_ltx_tour()
     build_h3_tour()
     build_parallax_tour()
+    build_h3_guiado()
     for f in sorted(os.listdir(OUT)):
         print("escrito:", os.path.join("workflows", f))
 

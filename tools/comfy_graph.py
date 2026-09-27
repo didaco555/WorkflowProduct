@@ -521,6 +521,55 @@ SCHEMAS: dict[str, dict] = {
         "outputs": [("DEPTHFLOW_MOTION", "DEPTHFLOW_MOTION")],
     },
 
+    # ---- MiniMax H3 desplegado (comfy_extras/nodes_minimax_h3.py y compañía) ------------------
+    "MiniMaxH3AddGuide": {
+        "inputs": [
+            ("positive", "CONDITIONING", False),
+            ("vae", "VAE", True),
+            ("audio_vae", "VAE", True),
+            ("latent", "LATENT", False),
+            ("image", "IMAGE", True),
+            ("audio", "AUDIO", True),
+        ],
+        "widgets": [("frame_idx", "INT")],
+        "outputs": [("positive", "CONDITIONING")],
+    },
+    "MiniMaxH3SigmaShift": {
+        "inputs": [("model", "MODEL", False)],
+        "widgets": [("shift_video", "FLOAT"), ("shift_audio", "FLOAT")],
+        "outputs": [("MODEL", "MODEL")],
+    },
+    "ModelAttentionBackend": {
+        "inputs": [("model", "MODEL", False)],
+        "widgets": [("attention", "COMBO")],
+        "outputs": [("model", "MODEL")],
+    },
+    "BlockSparseAttention": {
+        # widgets tal y como los guarda la plantilla oficial de FastH3 (9 valores)
+        "inputs": [("model", "MODEL", False)],
+        "widgets": [
+            ("selection", "COMBO"), ("keep_percent", "FLOAT"), ("start_percent", "FLOAT"),
+            ("end_percent", "FLOAT"), ("dense_blocks", "STRING"), ("min_tokens", "INT"),
+            ("extra_tokens", "INT"), ("sink_conditioning", "COMBO"), ("debug", "BOOLEAN"),
+        ],
+        "outputs": [("model", "MODEL")],
+    },
+    "BasicGuider": {
+        "inputs": [("model", "MODEL", False), ("conditioning", "CONDITIONING", False)],
+        "widgets": [],
+        "outputs": [("GUIDER", "GUIDER")],
+    },
+    "BasicScheduler": {
+        "inputs": [("model", "MODEL", False)],
+        "widgets": [("scheduler", "COMBO"), ("steps", "INT"), ("denoise", "FLOAT")],
+        "outputs": [("SIGMAS", "SIGMAS")],
+    },
+    "VAEDecodeAudio": {
+        "inputs": [("samples", "LATENT", False), ("vae", "VAE", False)],
+        "widgets": [],
+        "outputs": [("AUDIO", "AUDIO")],
+    },
+
     # ---- texto ----------------------------------------------------------------------------------
     "StringConcatenate": {
         "inputs": [],
@@ -587,6 +636,10 @@ NODE_PACKS = {
         "DepthflowMotionPresetCircle",
     )
 }
+
+# Nodos con entradas "autogrow" (values.a, values.b, …): el frontend guarda las conectadas y
+# un único hueco libre al final.
+AUTOGROW = {"ComfyMathExpression": "values."}
 
 # Nodos cuyo número de widgets lo define el usuario en el frontend.
 VARIADIC_WIDGETS = {"CustomCombo"}
@@ -751,7 +804,12 @@ class Graph:
         for order, n in enumerate(self.nodes):
             schema = SCHEMAS[n.type]
             inputs = []
+            libre = False  # autogrow: ya se ha guardado el hueco libre
             for name, typ, optional in schema["inputs"]:
+                if n.type in AUTOGROW and name.startswith(AUTOGROW[n.type]) and n.inputs.get(name) is None:
+                    if libre:
+                        continue
+                    libre = True
                 entry = {"name": name, "type": typ, "link": n.inputs.get(name)}
                 if typ == "*" and n.match_type:
                     entry["type"] = n.match_type

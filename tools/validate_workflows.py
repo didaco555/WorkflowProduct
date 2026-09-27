@@ -129,7 +129,8 @@ def validate_file(path: str) -> list[str]:
         declared = {i["name"]: i for i in (n.get("inputs") or [])}
         for name, _typ, optional in schema["inputs"]:
             if name not in declared:
-                err(f"nodo {n['id']} ({n['type']}): falta la entrada '{name}'")
+                if not optional:  # las opcionales (p. ej. huecos autogrow) pueden no guardarse
+                    err(f"nodo {n['id']} ({n['type']}): falta la entrada '{name}'")
             elif not optional and declared[name].get("link") is None:
                 err(f"nodo {n['id']} ({n['type']}): entrada obligatoria '{name}' sin conectar")
         if (n["type"] not in VARIADIC_WIDGETS

@@ -174,12 +174,13 @@ normal es que los tengas todos.
 
 ## 9 · Vídeo 2.5D: Depth Anything 3 + DepthFlow (sin IA generativa)
 
-Para `25_video_tour_parallax.json`: la cámara recorre la foto usando su profundidad. No genera
-nada, sólo mueve los píxeles de la foto.
+Para `25_video_tour_parallax.json` (y la parte 2.5D del `26`): la cámara recorre la foto usando su
+profundidad. No genera nada, sólo mueve los píxeles de la foto. El `26` usa además los modelos de
+FastH3 de la sección 8.
 
 - `geometry_estimation/` → [depth_anything_3_mono_large.safetensors](https://huggingface.co/Comfy-Org/Depth-Anything-3/resolve/main/geometry_estimation/depth_anything_3_mono_large.safetensors) *(crea la carpeta si no existe; Depth Anything 3 va en el núcleo de ComfyUI)*
 - Paquete de nodos **ComfyUI-Depthflow-Nodes** (de akatz, sobre la librería DepthFlow de
-  Tremeschin). Es el único workflow del repositorio con nodos de terceros. Se instala así:
+  Tremeschin). Son los únicos workflows del repositorio (25 y 26) con nodos de terceros. Se instala así:
   1. Abre `25_video_tour_parallax.json`: los nodos de DepthFlow salen en rojo.
   2. **Manager → Install Missing Custom Nodes** → instala *ComfyUI-Depthflow-Nodes*.
   3. Reinicia ComfyUI.
