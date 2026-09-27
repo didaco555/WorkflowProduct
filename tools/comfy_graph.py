@@ -328,6 +328,94 @@ SCHEMAS: dict[str, dict] = {
         "outputs": [("images", "IMAGE")],
     },
 
+    "SeedVR2TemporalChunk": {
+        # parte el latente de vídeo en trozos que quepan en VRAM; la salida `latents` es una lista
+        "inputs": [("latent", "LATENT", False)],
+        "widgets": [("temporal_overlap", "INT"), ("chunking_mode", "COMBO")],
+        "outputs": [("latents", "LATENT"), ("temporal_overlap", "INT")],
+    },
+    "SeedVR2TemporalMerge": {
+        "inputs": [("latents", "LATENT", False), ("temporal_overlap", "INT", False)],
+        "widgets": [],
+        "outputs": [("latent", "LATENT")],
+    },
+
+    # ---- vídeo: Wan 2.2 (comfy_extras/nodes_wan.py) ---------------------------------------------
+    "ModelSamplingSD3": {
+        "inputs": [("model", "MODEL", False)],
+        "widgets": [("shift", "FLOAT")],
+        "outputs": [("MODEL", "MODEL")],
+    },
+    "KSamplerAdvanced": {
+        "inputs": [
+            ("model", "MODEL", False),
+            ("positive", "CONDITIONING", False),
+            ("negative", "CONDITIONING", False),
+            ("latent_image", "LATENT", False),
+        ],
+        "widgets": [
+            ("add_noise", "COMBO"),
+            ("noise_seed", "INT"),
+            ("control_after_generate", "COMBO"),
+            ("steps", "INT"),
+            ("cfg", "FLOAT"),
+            ("sampler_name", "COMBO"),
+            ("scheduler", "COMBO"),
+            ("start_at_step", "INT"),
+            ("end_at_step", "INT"),
+            ("return_with_leftover_noise", "COMBO"),
+        ],
+        "outputs": [("LATENT", "LATENT")],
+    },
+    "WanFirstLastFrameToVideo": {
+        "inputs": [
+            ("positive", "CONDITIONING", False),
+            ("negative", "CONDITIONING", False),
+            ("vae", "VAE", False),
+            ("clip_vision_start_image", "CLIP_VISION_OUTPUT", True),
+            ("clip_vision_end_image", "CLIP_VISION_OUTPUT", True),
+            ("start_image", "IMAGE", True),
+            ("end_image", "IMAGE", True),
+        ],
+        "widgets": [("width", "INT"), ("height", "INT"), ("length", "INT"), ("batch_size", "INT")],
+        "outputs": [("positive", "CONDITIONING"), ("negative", "CONDITIONING"), ("latent", "LATENT")],
+    },
+    "ImageFromBatch": {
+        "inputs": [("image", "IMAGE", False)],
+        "widgets": [("batch_index", "INT"), ("length", "INT")],
+        "outputs": [("IMAGE", "IMAGE")],
+    },
+
+    # ---- vídeo: interpolación de frames y guardado (comfy_extras/nodes_frame_interpolation.py,
+    #      comfy_extras/nodes_video.py) ------------------------------------------------------------
+    "FrameInterpolationModelLoader": {
+        "inputs": [],
+        "widgets": [("model_name", "COMBO")],
+        "outputs": [("INTERP_MODEL", "INTERP_MODEL")],
+    },
+    "FrameInterpolate": {
+        "inputs": [("interp_model", "INTERP_MODEL", False), ("images", "IMAGE", False)],
+        "widgets": [("multiplier", "INT")],
+        "outputs": [("IMAGE", "IMAGE")],
+    },
+    "CreateVideo": {
+        "inputs": [("images", "IMAGE", False), ("audio", "AUDIO", True)],
+        "widgets": [("fps", "FLOAT")],
+        "outputs": [("VIDEO", "VIDEO")],
+    },
+    "SaveVideo": {
+        "inputs": [("video", "VIDEO", False)],
+        "widgets": [("filename_prefix", "STRING"), ("format", "COMBO"), ("codec", "COMBO")],
+        "outputs": [("video", "VIDEO")],
+    },
+
+    # ---- texto ----------------------------------------------------------------------------------
+    "StringConcatenate": {
+        "inputs": [],
+        "widgets": [("string_a", "STRING"), ("string_b", "STRING"), ("delimiter", "STRING")],
+        "outputs": [("STRING", "STRING")],
+    },
+
     # ---- lógica -------------------------------------------------------------------------------
     "ComfySwitchNode": {
         "inputs": [("on_false", "*", True), ("on_true", "*", True)],

@@ -4,7 +4,8 @@ Todos son gratuitos y de pesos abiertos. Los enlaces salen de las plantillas ofi
 ComfyUI (`Comfy-Org/workflow_templates`), así que son los archivos empaquetados que espera el
 núcleo de ComfyUI.
 
-Tamaño total con las variantes recomendadas: **~45 GB**. Puedes empezar sólo con el bloque de
+Tamaño total con las variantes recomendadas: **~45 GB** para fotografía de producto, más
+**~36 GB** si vas a hacer vídeo tour (sección 6). Puedes empezar sólo con el bloque de
 Qwen-Image-Edit + BiRefNet + RealESRGAN (~30 GB) y añadir el resto después.
 
 ## Dónde va cada cosa
@@ -15,16 +16,24 @@ Qwen-Image-Edit + BiRefNet + RealESRGAN (~30 GB) y añadir el resto después.
     ├── 📂 diffusion_models/
     │   ├── qwen_image_edit_2511_fp8mixed.safetensors
     │   ├── flux-2-klein-9b-fp8.safetensors
-    │   └── seedvr2_3b_int8_convrot.safetensors
+    │   ├── seedvr2_3b_int8_convrot.safetensors
+    │   ├── wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors   ← vídeo
+    │   └── wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors    ← vídeo
     ├── 📂 text_encoders/
     │   ├── qwen_2.5_vl_7b_fp8_scaled.safetensors
-    │   └── qwen_3_8b_fp8mixed.safetensors
+    │   ├── qwen_3_8b_fp8mixed.safetensors
+    │   └── umt5_xxl_fp8_e4m3fn_scaled.safetensors             ← vídeo
     ├── 📂 vae/
     │   ├── qwen_image_vae.safetensors
     │   ├── flux2-vae.safetensors
-    │   └── seedvr2_ema_vae_fp16.safetensors
+    │   ├── seedvr2_ema_vae_fp16.safetensors
+    │   └── wan_2.1_vae.safetensors                            ← vídeo
     ├── 📂 loras/
-    │   └── Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors
+    │   ├── Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors
+    │   ├── wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors   ← vídeo
+    │   └── wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors    ← vídeo
+    ├── 📂 frame_interpolation/
+    │   └── film_net_fp16.safetensors                          ← vídeo
     ├── 📂 background_removal/
     │   └── birefnet.safetensors
     └── 📂 upscale_models/
@@ -93,6 +102,34 @@ otro modelo compatible (RMBG) en esa misma carpeta, aparece en el desplegable.
 Alternativas populares para producto (más “crujientes”): `4x-UltraSharp`, `4x_NMKD-Siax_200k`.
 Cualquier archivo que dejes en `upscale_models/` aparece en el desplegable del nodo.
 
+
+## 6 · Vídeo: Wan 2.2 14B + FILM
+
+Para el workflow `20_video_tour_inmobiliario.json`. Wan 2.2 imagen-a-vídeo son **dos modelos**
+(ruido alto y ruido bajo) que se usan uno detrás de otro; hacen falta los dos. Licencia Apache 2.0.
+El método y el porqué de cada ajuste están en [`VIDEO_TOUR.md`](VIDEO_TOUR.md).
+
+- `diffusion_models/` → [wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors](https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/diffusion_models/wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors) *(~14 GB)*
+- `diffusion_models/` → [wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors](https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/diffusion_models/wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors) *(~14 GB)*
+- `text_encoders/` → [umt5_xxl_fp8_e4m3fn_scaled.safetensors](https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors) *(~7 GB)*
+- `vae/` → [wan_2.1_vae.safetensors](https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors) *(sí, el VAE de 2.1: es el que usa el 14B)*
+- `loras/` → [wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors](https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/loras/wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors) *(el modo ⚡ TURBO)*
+- `loras/` → [wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors](https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/loras/wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors)
+- `frame_interpolation/` → [film_net_fp16.safetensors](https://huggingface.co/Comfy-Org/frame_interpolation/resolve/main/frame_interpolation/film_net_fp16.safetensors) *(pasa de 16 a 32 fps)*
+
+El reescalado a 1080p usa el **SeedVR2 3B** de la sección 3, que ya tienes.
+
+**VRAM**: cada modelo de 14B ocupa ~14 GB en fp8, pero ComfyUI carga uno y aparca el otro en RAM.
+Con 24 GB, 1280×720 va cómodo; con 16 GB, genera a 832×480 y reescala con SeedVR2. Ten 64 GB de RAM
+si puedes.
+
+**Alternativa más rápida**: el nodo también acepta modelos RIFE (p. ej. `rife_v4.26.safetensors`,
+que la plantilla oficial de ComfyUI lista junto a FILM). Si lo pones en `frame_interpolation/`,
+elígelo en el nodo *Modelo · FILM*: es más rápido y en movimientos lentos apenas se nota.
+
+**Actualiza ComfyUI**: los nodos de interpolación (`FrameInterpolate`) y el troceo de SeedVR2 para
+vídeo (`SeedVR2TemporalChunk`) son de este año.
+
 ---
 
 ## Descarga rápida por línea de comandos
@@ -115,6 +152,15 @@ dl vae              https://huggingface.co/Comfy-Org/SeedVR2/resolve/main/vae/se
 dl diffusion_models https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-fp8/resolve/main/flux-2-klein-9b-fp8.safetensors
 dl text_encoders    https://huggingface.co/Comfy-Org/flux2-klein-9B/resolve/main/split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors
 dl vae              https://huggingface.co/Comfy-Org/flux2-dev/resolve/main/split_files/vae/flux2-vae.safetensors
+
+# vídeo tour (workflow 20)
+dl diffusion_models https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/diffusion_models/wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors
+dl diffusion_models https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/diffusion_models/wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors
+dl text_encoders    https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors
+dl vae              https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors
+dl loras            https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/loras/wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors
+dl loras            https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/loras/wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors
+dl frame_interpolation https://huggingface.co/Comfy-Org/frame_interpolation/resolve/main/frame_interpolation/film_net_fp16.safetensors
 ```
 
 Algunos repositorios de Hugging Face piden aceptar la licencia con la cuenta antes de descargar

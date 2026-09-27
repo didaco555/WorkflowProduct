@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Genera los workflows .json de fotografía de producto para ComfyUI.
+"""Genera los workflows .json de ComfyUI: fotografía de producto y vídeo tour inmobiliario.
 
     python3 tools/build_workflows.py
 
@@ -39,6 +39,15 @@ SEEDVR2_UNET = "seedvr2_3b_int8_convrot.safetensors"
 SEEDVR2_VAE = "seedvr2_ema_vae_fp16.safetensors"
 
 BIREFNET = "birefnet.safetensors"
+
+# Vídeo: Wan 2.2 14B imagen-a-vídeo (dos expertos: ruido alto + ruido bajo) y su LoRA de 4 pasos
+WAN_HIGH = "wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors"
+WAN_LOW = "wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors"
+WAN_LORA_HIGH = "wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors"
+WAN_LORA_LOW = "wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors"
+WAN_CLIP = "umt5_xxl_fp8_e4m3fn_scaled.safetensors"
+WAN_VAE = "wan_2.1_vae.safetensors"
+FILM_INTERP = "film_net_fp16.safetensors"
 GAN_UPSCALER = "RealESRGAN_x4plus.safetensors"
 
 BLUE, GREEN, PURPLE, ORANGE, RED, GREY = "#3f789e", "#2d7d46", "#6b3f9e", "#9e6b3f", "#9e3f3f", "#444"
@@ -1202,6 +1211,344 @@ def build_estudio():
     g.save(os.path.join(OUT, "10_estudio_producto.json"))
 
 
+# ======================================================================================
+# Vídeo tour inmobiliario (Wan 2.2 14B + SeedVR2 + FILM)
+# ======================================================================================
+# Lo que se repite en todos los movimientos: fidelidad al espacio y cámara de gimbal.
+TOUR_BASE = (
+    "Real estate video tour of this exact space. Keep the room exactly as in the image: same walls, floor, "
+    "ceiling, windows, doors, furniture, decoration and layout. Nothing appears, disappears or changes shape. "
+    "Smooth, steady, slow camera movement like a professional gimbal shot, constant speed, no shake. "
+    "Natural light, photorealistic, sharp details, straight vertical lines, professional architectural videography."
+)
+
+# Clave = lo que ves en el desplegable. Valor = la frase de movimiento (en inglés: Wan la sigue mejor).
+MOVIMIENTOS = {
+    "avance_lento": "The camera slowly dollies forward into the room, gently getting closer to the centre of the space.",
+    "retroceso_revelado": "The camera slowly pulls back, gradually revealing more of the room.",
+    "paneo_a_izquierda": "The camera slowly pans from right to left across the room, keeping the horizon perfectly level.",
+    "paneo_a_derecha": "The camera slowly pans from left to right across the room, keeping the horizon perfectly level.",
+    "travelling_lateral_izquierda": (
+        "The camera slides sideways to the left at a constant height, creating gentle parallax between the "
+        "furniture in the foreground and the background."
+    ),
+    "travelling_lateral_derecha": (
+        "The camera slides sideways to the right at a constant height, creating gentle parallax between the "
+        "furniture in the foreground and the background."
+    ),
+    "orbita_suave": "The camera makes a slow, subtle arc around the centre of the room, with gentle parallax.",
+    "subida_vertical": "The camera slowly rises vertically, showing the room from a slightly higher point of view.",
+    "fijo_con_vida": (
+        "Static camera, the framing does not change. Only subtle natural movement: sheer curtains moving gently "
+        "in the breeze and soft sunlight shifting slightly."
+    ),
+    "exterior_avance": (
+        "Slow, smooth camera move forward towards the building, steady like a drone shot, the architecture "
+        "and surroundings stay exactly as in the image."
+    ),
+    "transicion_foto_a_foto": (
+        "The camera moves smoothly and continuously from the first view to the final view of the same space, "
+        "like walking slowly through the room with a gimbal."
+    ),
+}
+CATALOGO_MOVIMIENTOS = {k: v + " " + TOUR_BASE for k, v in MOVIMIENTOS.items()}
+
+# El negativo oficial de Wan (en chino, es el que mejor funciona) + lo que estropea un tour inmobiliario.
+TOUR_NEG = (
+    "色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，低质量，JPEG压缩残留，"
+    "丑陋的，残缺的，畸形的，杂乱的背景，背景人很多，倒着走\n"
+    "warped walls, bent straight lines, morphing furniture, objects appearing or disappearing, changing room layout, "
+    "duplicated windows, extra doors, people, animals, text, watermark, logo, fast motion, camera shake, jitter, "
+    "flicker, fisheye distortion, blurry, low quality"
+)
+
+
+def seedvr2_video_upscale(g: Graph, frames_port, *, scale: float = 1.5):
+    """SeedVR2 3B en modo vídeo: reescala todos los frames a la vez, troceando en el tiempo si no cabe."""
+    up = g.add("ImageScaleBy", ["lanczos", scale], {"image": frames_port}, title="Escala (1.5 = 720p → 1080p)")
+    pre = g.add("SeedVR2Preprocess", [], {"resized_images": up.out(0)})
+    vae = g.add("VAELoader", [SEEDVR2_VAE], title="VAE · SeedVR2")
+    unet = g.add("UNETLoader", [SEEDVR2_UNET, "default"], title="Modelo · SeedVR2 3B")
+    enc = g.add("VAEEncodeTiled", [512, 128, 64, 8], {"pixels": pre.out(0), "vae": vae.out(0)})
+    chunk = g.add(
+        "SeedVR2TemporalChunk",
+        [0, "auto"],
+        {"latent": enc.out(0)},
+        title="Trocear en el tiempo (auto = según tu VRAM)",
+    )
+    cond = g.add("SeedVR2Conditioning", [], {"model": unet.out(0), "vae_conditioning": chunk.out(0)})
+    ks = g.add(
+        "KSampler",
+        [0, "fixed", 1, 1.0, "euler", "simple", 1.0],
+        {
+            "model": unet.out(0),
+            "positive": cond.out(0),
+            "negative": cond.out(1),
+            "latent_image": chunk.out(0),
+        },
+        title="SeedVR2 · 1 paso",
+    )
+    merge = g.add(
+        "SeedVR2TemporalMerge", [], {"latents": ks.out(0), "temporal_overlap": chunk.out(1)}, title="Unir trozos"
+    )
+    dec = g.add("VAEDecodeTiled", [512, 128, 64, 8], {"samples": merge.out(0), "vae": vae.out(0)})
+    post = g.add(
+        "SeedVR2PostProcessing",
+        ["lab"],
+        {"images": dec.out(0), "original_resized_images": up.out(0)},
+        title="Corrección de color (fiel al original)",
+    )
+    return post.out(0)
+
+
+def build_video_tour():
+    g = Graph("20-video-tour")
+
+    # ------------------------------------------------------------ panel de control
+    with g.group("PANEL DE CONTROL · lo único que tocas", ORANGE):
+        note(
+            g,
+            "# Vídeo tour inmobiliario — un plano por ejecución\n\n"
+            "Cada ejecución genera **un plano de ~5 s** a partir de **una foto real** del piso. "
+            "Haces un plano por foto y los montas en CapCut/DaVinci con música. Todo corre en tu GPU.\n\n"
+            "## Tres formas de usarlo\n"
+            "| Quieres… | Cómo |\n"
+            "|---|---|\n"
+            "| **Animar una foto** (lo normal) | Sube la foto en **1 · INICIO** y ejecuta. |\n"
+            "| **Ir de una foto a otra del mismo espacio** | Activa **2 · FINAL** (Ctrl+B), sube la segunda "
+            "foto y elige `transicion_foto_a_foto`. |\n"
+            "| **Alargar un plano** (seguir el movimiento) | Sube en **1 · INICIO** el PNG de "
+            "`output/tour/ultimo_frame_…` del plano anterior y repite el mismo movimiento. |\n\n"
+            "## Los mandos\n"
+            "| Mando | Qué hace |\n"
+            "|---|---|\n"
+            "| **▼ MOVIMIENTO DE CÁMARA** | El movimiento del plano. Es el mando principal. |\n"
+            "| **ESTANCIA** | Una línea describiendo lo que se ve (opcional, ayuda a no inventar). |\n"
+            "| **⚡ TURBO** | `true` = 4 pasos (~4-5x más rápido). `false` = 20 pasos. |\n"
+            "| **ANCHO / ALTO** | 1280×720 horizontal · 720×1280 vertical · 832×480 si vas justo de VRAM. |\n"
+            "| **FRAMES** | 81 = 5 s (a 16 fps). Siempre 4n+1: 49 = 3 s, 65 = 4 s, 81 = 5 s. |\n"
+            "| **1080p (SeedVR2)** | Reescala el plano a 1920×1080 con el SeedVR2 que ya tienes. |\n"
+            "| **32 fps (FILM)** | Dobla los frames para que los movimientos lentos no vayan a saltos. |\n\n"
+            "## Regla de oro\n"
+            "**Nunca encadenes habitaciones distintas.** Si le pides ir del salón al baño, la IA se inventa "
+            "el pasillo. Salta de estancia con un corte en el montaje, como hace un videógrafo de verdad.\n\n"
+            "Salidas en `output/tour/`: el vídeo (`plano_…mp4`) y su último frame (`ultimo_frame_…png`).",
+            title="LÉEME PRIMERO",
+        )
+        movimiento = combo(g, list(CATALOGO_MOVIMIENTOS.keys()), "avance_lento", title="▼ MOVIMIENTO DE CÁMARA")
+        estancia = g.add(
+            "PrimitiveStringMultiline",
+            ["Bright living room with a grey sofa, a wooden coffee table and a large window."],
+            title="ESTANCIA (qué se ve, en inglés)",
+            color=ORANGE,
+        )
+        turbo = g.add("PrimitiveBoolean", [True], title="⚡ TURBO (false = calidad)", color=ORANGE)
+        ancho = g.add("PrimitiveInt", [1280, "fixed"], title="ANCHO", color=ORANGE)
+        alto = g.add("PrimitiveInt", [720, "fixed"], title="ALTO", color=ORANGE)
+        frames = g.add("PrimitiveInt", [81, "fixed"], title="FRAMES (81 = 5 s)", color=ORANGE)
+        semilla = g.add("PrimitiveInt", [1, "randomize"], title="SEMILLA (fija = repetir plano)", color=ORANGE)
+        hd = g.add("PrimitiveBoolean", [False], title="1080p con SeedVR2", color=ORANGE)
+        fluido = g.add("PrimitiveBoolean", [True], title="32 fps con FILM", color=ORANGE)
+
+    # ---------------------------------------------------------------- entradas
+    with g.group("ENTRADAS", BLUE):
+        note(
+            g,
+            "### Qué subir\n\n"
+            "**1 · INICIO** es obligatoria: una foto del piso **o** el `ultimo_frame` del plano anterior "
+            "(está en `ComfyUI/output/tour/`; súbelo con *choose file to upload* o arrástralo encima).\n\n"
+            "**2 · FINAL** viene **en bypass** (en gris): así el plano es libre y sólo parte de la foto de "
+            "inicio. Actívala con **Ctrl+B** cuando quieras que el plano **termine exactamente** en otra foto "
+            "real: dos ángulos del mismo salón, la puerta de la terraza y la terraza…\n\n"
+            "La foto se recorta al centro para llenar ANCHO×ALTO. Para vertical desde fotos horizontales "
+            "se pierde mucho de los lados: mejor genera en horizontal y recorta el reel en el montaje.",
+            title="Entradas",
+        )
+        inicio = g.add("LoadImage", ["foto_inicio.png", "image"], title="1 · INICIO (foto o último frame)")
+        final = g.add(
+            "LoadImage",
+            ["foto_final.png", "image"],
+            title="2 · FINAL (opcional · Ctrl+B)",
+            mode=MODE_BYPASS,
+        )
+
+    # ---------------------------------------------------------------- catálogo
+    with g.group("CATÁLOGO DE MOVIMIENTOS", GREY):
+        note(
+            g,
+            "### Cómo sale el prompt\n\n"
+            "`ESTANCIA` + el movimiento elegido + una base común que obliga a conservar el espacio "
+            "(mismas paredes, muebles y ventanas; nada aparece ni desaparece; cámara de gimbal).\n\n"
+            "## Añadir movimientos\n"
+            "1. Escribe una entrada nueva en el **CATÁLOGO**: `\"mi_movimiento\": \"frase en inglés\"`.\n"
+            "2. Doble clic en el desplegable para añadir `mi_movimiento` a la lista.\n\n"
+            "Las entradas del catálogo ya llevan la base de fidelidad al final; cópiala en las tuyas.\n\n"
+            "Con **TURBO** el CFG es 1 y el negativo no se usa; sólo cuenta en modo calidad.",
+            title="Ampliar el catálogo",
+        )
+        catalogo = g.add(
+            "PrimitiveStringMultiline",
+            [json.dumps(CATALOGO_MOVIMIENTOS, ensure_ascii=False, indent=2)],
+            title="CATÁLOGO de movimientos (JSON)",
+        )
+        mov_txt = g.add(
+            "JsonExtractString",
+            ["", ""],
+            {"json_string": catalogo.out(0), "key": movimiento.out(0)},
+            title="Movimiento elegido",
+        )
+        prompt = g.add(
+            "StringConcatenate",
+            ["", "", "\n\n"],
+            {"string_a": estancia.out(0), "string_b": mov_txt.out(0)},
+            title="PROMPT ✅ final",
+        )
+        negativo = g.add("PrimitiveStringMultiline", [TOUR_NEG], title="PROMPT ❌ negativo")
+
+    # ---------------------------------------------------------------- motor
+    with g.group("MOTOR · Wan 2.2 14B imagen-a-vídeo (ruido alto → ruido bajo)", PURPLE):
+        note(
+            g,
+            "### Cómo funciona Wan 2.2\n\n"
+            "Son **dos modelos** que se pasan el testigo: el de *ruido alto* decide el movimiento y la "
+            "composición en los primeros pasos, y el de *ruido bajo* pone el detalle en los últimos.\n\n"
+            "| | Pasos | CFG | Cambio de modelo |\n"
+            "|---|---|---|---|\n"
+            "| ⚡ TURBO (LoRA lightx2v) | 4 | 1 | en el paso 2 |\n"
+            "| Calidad | 20 | 3.5 | en el paso 10 |\n\n"
+            "Encuadra en turbo; pasa a calidad sólo si el turbo te deja el movimiento raro.\n\n"
+            "**Sin memoria suficiente:** baja a 832×480 y activa *1080p con SeedVR2* al final.",
+            title="Motor",
+        )
+        clip = g.add("CLIPLoader", [WAN_CLIP, "wan", "default"], title="Text encoder · umt5-xxl")
+        vae = g.add("VAELoader", [WAN_VAE], title="VAE · Wan 2.1")
+        pos = g.add("CLIPTextEncode", [""], {"clip": clip.out(0), "text": prompt.out(0)}, title="PROMPT ✅")
+        neg = g.add("CLIPTextEncode", [""], {"clip": clip.out(0), "text": negativo.out(0)}, title="PROMPT ❌")
+        cond = g.add(
+            "WanFirstLastFrameToVideo",
+            [1280, 720, 81, 1],
+            {
+                "positive": pos.out(0),
+                "negative": neg.out(0),
+                "vae": vae.out(0),
+                "start_image": inicio.out(0),
+                "end_image": final.out(0),
+                "width": ancho.out(0),
+                "height": alto.out(0),
+                "length": frames.out(0),
+            },
+            title="Wan · foto inicio (+ foto final)",
+        )
+
+        def expert(unet_name: str, lora_name: str, label: str):
+            unet = g.add("UNETLoader", [unet_name, "default"], title=f"Modelo · Wan 2.2 14B {label}")
+            shift = g.add("ModelSamplingSD3", [5.0], {"model": unet.out(0)}, title=f"Shift 5 · {label}")
+            lora = g.add(
+                "LoraLoaderModelOnly", [lora_name, 1.0], {"model": shift.out(0)}, title=f"LoRA 4 pasos · {label}"
+            )
+            return g.add(
+                "ComfySwitchNode",
+                [False],
+                {"on_false": shift.out(0), "on_true": lora.out(0), "switch": turbo.out(0)},
+                title=f"{label}: calidad / turbo",
+            ).out(0)
+
+        m_high = expert(WAN_HIGH, WAN_LORA_HIGH, "ruido alto")
+        m_low = expert(WAN_LOW, WAN_LORA_LOW, "ruido bajo")
+
+        def by_turbo(quality, fast, kind: str, title: str):
+            q = g.add(kind, [quality, "fixed"] if kind == "PrimitiveInt" else [quality], title=f"{title} (calidad)")
+            t = g.add(kind, [fast, "fixed"] if kind == "PrimitiveInt" else [fast], title=f"{title} (turbo)")
+            return g.add(
+                "ComfySwitchNode",
+                [False],
+                {"on_false": q.out(0), "on_true": t.out(0), "switch": turbo.out(0)},
+                title=title,
+            ).out(0)
+
+        steps = by_turbo(20, 4, "PrimitiveInt", "Pasos")
+        split = by_turbo(10, 2, "PrimitiveInt", "Cambio de modelo en el paso")
+        cfg = by_turbo(3.5, 1.0, "PrimitiveFloat", "CFG")
+
+        ks_high = g.add(
+            "KSamplerAdvanced",
+            ["enable", 1, "randomize", 4, 1.0, "euler", "simple", 0, 2, "enable"],
+            {
+                "model": m_high,
+                "positive": cond.out(0),
+                "negative": cond.out(1),
+                "latent_image": cond.out(2),
+                "noise_seed": semilla.out(0),
+                "steps": steps,
+                "cfg": cfg,
+                "end_at_step": split,
+            },
+            title="Muestreo 1 · ruido alto (movimiento)",
+        )
+        ks_low = g.add(
+            "KSamplerAdvanced",
+            ["disable", 0, "fixed", 4, 1.0, "euler", "simple", 2, 10000, "disable"],
+            {
+                "model": m_low,
+                "positive": cond.out(0),
+                "negative": cond.out(1),
+                "latent_image": ks_high.out(0),
+                "steps": steps,
+                "cfg": cfg,
+                "start_at_step": split,
+            },
+            title="Muestreo 2 · ruido bajo (detalle)",
+        )
+        raw = g.add("VAEDecode", [], {"samples": ks_low.out(0), "vae": vae.out(0)}, title="Frames del plano (16 fps)")
+
+    # ---------------------------------------------------------------- acabado
+    with g.group("ACABADO · 1080p (SeedVR2) + 32 fps (FILM) + guardar", GREEN):
+        note(
+            g,
+            "### Acabado\n\n"
+            "1. **1080p con SeedVR2** (apagado por defecto): el mismo SeedVR2 que usas para las fotos, en "
+            "modo vídeo. Trocea el plano en el tiempo si no te cabe en la VRAM. Con el interruptor en "
+            "`false` ni se carga.\n"
+            "2. **32 fps con FILM**: Wan saca 16 fps y en un travelling lento se nota. FILM inventa un frame "
+            "intermedio entre cada par y el plano pasa a 32 fps con la misma duración.\n"
+            "3. Se guarda el vídeo en `output/tour/plano_…mp4` y el **último frame** en "
+            "`output/tour/ultimo_frame_…png` (a la resolución de Wan, listo para encadenar).\n\n"
+            "Si ves parpadeo de color tras SeedVR2, cambia la corrección de color a `none`.",
+            title="Acabado",
+        )
+        upscaled = seedvr2_video_upscale(g, raw.out(0), scale=1.5)
+        after_up = g.add(
+            "ComfySwitchNode",
+            [False],
+            {"on_false": raw.out(0), "on_true": upscaled, "switch": hd.out(0)},
+            title="¿1080p?",
+        )
+        interp_model = g.add("FrameInterpolationModelLoader", [FILM_INTERP], title="Modelo · FILM")
+        interp = g.add(
+            "FrameInterpolate", [2], {"interp_model": interp_model.out(0), "images": after_up.out(0)}, title="x2 frames"
+        )
+        after_fi = g.add(
+            "ComfySwitchNode",
+            [False],
+            {"on_false": after_up.out(0), "on_true": interp.out(0), "switch": fluido.out(0)},
+            title="¿32 fps?",
+        )
+        fps16 = g.add("PrimitiveFloat", [16.0], title="fps sin FILM")
+        fps32 = g.add("PrimitiveFloat", [32.0], title="fps con FILM")
+        fps = g.add(
+            "ComfySwitchNode",
+            [False],
+            {"on_false": fps16.out(0), "on_true": fps32.out(0), "switch": fluido.out(0)},
+            title="fps",
+        )
+        video = g.add("CreateVideo", [16.0], {"images": after_fi.out(0), "fps": fps.out(0)})
+        g.add("SaveVideo", ["tour/plano", "auto", "auto"], {"video": video.out(0)}, title="GUARDAR PLANO")
+        last = g.add("ImageFromBatch", [-1, 1], {"image": raw.out(0)}, title="Último frame")
+        g.add("SaveImage", ["tour/ultimo_frame"], {"images": last.out(0)}, title="GUARDAR ÚLTIMO FRAME")
+
+    g.save(os.path.join(OUT, "20_video_tour_inmobiliario.json"))
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     build_rescue()
@@ -1209,6 +1556,7 @@ def main():
     build_lifestyle()
     build_retouch()
     build_estudio()
+    build_video_tour()
     for f in sorted(os.listdir(OUT)):
         print("escrito:", os.path.join("workflows", f))
 

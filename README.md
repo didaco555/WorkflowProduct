@@ -1,4 +1,4 @@
-# WorkflowProduct — fotografía de producto con ComfyUI
+# WorkflowProduct — fotografía de producto y vídeo tour con ComfyUI
 
 Workflows `.json` listos para arrastrar a ComfyUI, pensados para trabajar con **la foto que manda
 el cliente** (a menudo mala) y sacar de ahí dos entregables:
@@ -16,9 +16,10 @@ suscripciones: una vez descargados los modelos, cada foto te cuesta lo que tarde
 | [`workflows/01_packshot_catalogo.json`](workflows/01_packshot_catalogo.json) | Packshot de catálogo, con **4 niveles** encadenados |
 | [`workflows/02_lifestyle_escena.json`](workflows/02_lifestyle_escena.json) | Producto integrado en una escena, con **dos motores** a elegir |
 | [`workflows/03_retoque_zona.json`](workflows/03_retoque_zona.json) | “Rodear lo que no me gusta”: pintas una zona y sólo eso se regenera |
+| **[`workflows/20_video_tour_inmobiliario.json`](workflows/20_video_tour_inmobiliario.json)** | **Vídeo tour** para pisos turísticos: una foto → un plano de 5 s con movimiento de cámara (Wan 2.2 + SeedVR2 + FILM) |
 
-Empieza por **`10_estudio_producto.json`**: es el que usarás a diario. Los otros cuatro son las
-mismas piezas por separado, más sencillas de leer y de modificar.
+Empieza por **`10_estudio_producto.json`**: es el que usarás a diario. Los otros cuatro de producto
+son las mismas piezas por separado, más sencillas de leer y de modificar. Para vídeo, el **`20`**.
 
 Cada workflow lleva dentro sus propias notas (nodos `MarkdownNote`), así que se explica solo una
 vez abierto.
@@ -229,6 +230,39 @@ python3 tools/validate_workflows.py   # comprueba enlaces, sockets y tipos
 
 `tools/validate_workflows.py --comfyui /ruta/a/ComfyUI` comprueba además que todos los tipos de
 nodo usados existen en tu instalación.
+
+
+---
+
+## Vídeo tour inmobiliario: `20_video_tour_inmobiliario.json`
+
+Convierte **una foto del piso en un plano de ~5 s** con un movimiento de cámara de gimbal. Se hace
+un plano por foto y se montan en CapCut o DaVinci. El método completo (por qué no se encadena todo
+el piso, qué movimiento va con cada estancia, cómo se monta) está en
+**[`docs/VIDEO_TOUR.md`](docs/VIDEO_TOUR.md)**.
+
+| Mando | Qué hace |
+|---|---|
+| **▼ MOVIMIENTO DE CÁMARA** | avance, retroceso, paneos, travellings, órbita, subida, fijo con vida, exterior, transición foto a foto |
+| **ESTANCIA** | una línea (en inglés) con lo que se ve; ayuda a no inventar |
+| **⚡ TURBO** | `true` = 4 pasos con la LoRA lightx2v; `false` = 20 pasos |
+| **ANCHO / ALTO / FRAMES** | 1280×720 y 81 frames (5 s) por defecto |
+| **1080p con SeedVR2** | reescala el plano con el SeedVR2 que ya usas para fotos |
+| **32 fps con FILM** | interpola frames para que los movimientos lentos vayan suaves |
+
+Tres usos del mismo grafo:
+
+1. **Foto → plano**: sube la foto en *1 · INICIO* y ejecuta.
+2. **Foto → foto del mismo espacio**: activa *2 · FINAL* con Ctrl+B y elige `transicion_foto_a_foto`.
+   El plano termina exactamente en la segunda foto.
+3. **Alargar un plano**: sube en *1 · INICIO* el `output/tour/ultimo_frame_…png` que guarda cada
+   ejecución y repite el mismo movimiento.
+
+**No encadenes habitaciones distintas**: la IA se inventaría lo que hay entre medias. Entre
+estancias, corte en el montaje.
+
+Modelos nuevos a descargar: Wan 2.2 14B imagen-a-vídeo, su text encoder, su VAE, las LoRA de 4 pasos y
+FILM (~36 GB en total). Están en [`docs/MODELOS.md`](docs/MODELOS.md#6--vídeo-wan-22-14b--film).
 
 ---
 
