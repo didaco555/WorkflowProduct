@@ -38,12 +38,16 @@ def validate_file(path: str) -> list[str]:
     def err(msg: str) -> None:
         errors.append(f"{os.path.basename(path)}: {msg}")
 
+    # Los subgrafos (plantillas oficiales de ComfyUI) aparecen como nodos cuyo tipo es el id del
+    # subgrafo. Su interior no se valida aquí; sí sus enlaces con el resto del grafo.
+    subgraph_types = {sg["id"] for sg in (wf.get("definitions") or {}).get("subgraphs", [])}
+
     nodes = {}
     for n in wf["nodes"]:
         if n["id"] in nodes:
             err(f"id de nodo duplicado {n['id']}")
         nodes[n["id"]] = n
-        if n["type"] not in SCHEMAS:
+        if n["type"] not in SCHEMAS and n["type"] not in subgraph_types:
             err(f"nodo {n['id']}: tipo desconocido para el validador: {n['type']}")
 
     if wf["last_node_id"] < max(nodes, default=0):
@@ -75,7 +79,8 @@ def validate_file(path: str) -> list[str]:
         if ins[dst_slot].get("link") != lid:
             err(f"enlace {lid}: la entrada {dst['type']}.{ins[dst_slot]['name']} apunta a {ins[dst_slot].get('link')}")
         out_type, in_type = outs[src_slot].get("type"), ins[dst_slot].get("type")
-        if out_type != in_type and "*" not in (out_type, in_type):
+        # una entrada puede aceptar varios tipos separados por comas (p. ej. "IMAGE,MASK")
+        if out_type not in str(in_type).split(",") and "*" not in (out_type, in_type):
             err(f"enlace {lid}: tipos incompatibles {src['type']}.{out_type} -> {dst['type']}.{in_type}")
         if ltype != out_type:
             err(f"enlace {lid}: tipo declarado {ltype} != tipo de la salida {out_type}")

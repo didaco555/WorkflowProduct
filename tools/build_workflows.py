@@ -8,6 +8,7 @@ Escribe en `workflows/`. Editar aquí y regenerar es más seguro que tocar el JS
 
 from __future__ import annotations
 
+import copy
 import json
 import os
 import sys
@@ -22,6 +23,7 @@ from comfy_graph import MODE_BYPASS, MODE_NEVER, Graph  # noqa: E402
 Engine = namedtuple("Engine", "image fitted clip vae model steps cfg")
 
 OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "workflows")
+PLANTILLAS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "plantillas_comfy")
 
 # ======================================================================================
 # Modelos (nombres de archivo tal y como quedan dentro de ComfyUI/models/...)
@@ -1549,6 +1551,193 @@ def build_video_tour():
     g.save(os.path.join(OUT, "20_video_tour_inmobiliario.json"))
 
 
+# ======================================================================================
+# Vídeo tour con LTX-2.5 (sobre las plantillas oficiales de ComfyUI)
+# ======================================================================================
+# LTX genera audio a la vez que el vídeo: se le pide sólo ambiente de la habitación, que en el
+# montaje se sustituye por la música.
+LTX_AUDIO = " Quiet natural room ambience only: no music, no voices, no speech."
+LTX_I2V_PREFIX = "Use the provided start image as the first frame. "
+LTX_FLF_PREFIX = (
+    "Use the provided start image as the first frame and the provided end image as the final frame anchor. "
+)
+LTX_NEG = (
+    "people, animals, text, watermark, logo, subtitles, warped walls, bent straight lines, morphing furniture, "
+    "objects appearing or disappearing, changing room layout, duplicated windows, extra doors, fast camera "
+    "motion, camera shake, jitter, flicker, fisheye distortion, blurry, low quality, cartoon, CGI look, "
+    "music, speech, voices"
+)
+
+
+def _catalogo_ltx(prefix: str) -> dict:
+    return {k: prefix + v + " " + TOUR_BASE + LTX_AUDIO for k, v in MOVIMIENTOS.items()}
+
+
+def _panel_ltx(g: Graph, catalogo: dict, default: str, *, flf: bool):
+    """Panel de control en español: movimiento + estancia -> prompt. Devuelve (prompt, entrada de vídeo)."""
+    with g.group("PANEL DE CONTROL · lo único que tocas", ORANGE):
+        if flf:
+            uso = (
+                "# Vídeo tour · de una foto a otra (LTX-2.5)\n\n"
+                "El plano **empieza en la foto 1 y termina en la foto 2**. Úsalo sólo con dos fotos "
+                "**del mismo espacio** (dos ángulos del salón, la puerta de la terraza y la terraza). Con "
+                "habitaciones distintas la IA se inventa lo que hay entre medias.\n\n"
+            )
+        else:
+            uso = (
+                "# Vídeo tour · una foto → un plano (LTX-2.5)\n\n"
+                "Cada ejecución convierte **una foto real** del piso en un plano de ~5 s. Haces un plano por "
+                "foto y los montas en CapCut/DaVinci con música.\n\n"
+                "**Alargar un plano:** sube en *1 · INICIO* el `output/tour/ultimo_frame_…png` que guarda "
+                "cada ejecución y repite el mismo movimiento.\n\n"
+            )
+        note(
+            g,
+            uso
+            + "## Los mandos\n"
+            "| Mando | Dónde | Qué hace |\n"
+            "|---|---|---|\n"
+            "| **▼ MOVIMIENTO DE CÁMARA** | aquí | el movimiento del plano |\n"
+            "| **ESTANCIA** | aquí | una frase en inglés con lo que se ve; ayuda a no inventar |\n"
+            "| **duración / fps / semilla** | nodo del motor, a la derecha | 5 s a 24 fps por defecto |\n"
+            + ("| **resolución** | *Resolution Selector* | 16:9 a 0.9 MP (≈1280×720); sube a 2.0 para 1080p |\n"
+               if not flf else "| **ancho / alto** | nodo del motor, a la derecha | 1280×720 por defecto |\n")
+            + "\n**Prompt enhance** viene apagado a propósito: reescribe el prompt en plan cinematográfico "
+            "y tiende a añadir cosas que no están en el piso.\n\n"
+            "LTX genera también **audio** (ambiente de la habitación). En el montaje lo sustituyes por música.\n\n"
+            "Salidas en `output/tour/`: el vídeo y su último frame. Los enlaces de los modelos están en las "
+            "notas en inglés de la plantilla y en `docs/MODELOS.md`.",
+            title="LÉEME PRIMERO",
+        )
+        movimiento = combo(g, list(catalogo.keys()), default, title="▼ MOVIMIENTO DE CÁMARA")
+        estancia = g.add(
+            "PrimitiveStringMultiline",
+            ["The room is a bright living room with a grey sofa, a wooden coffee table and a large window."],
+            title="ESTANCIA (qué se ve, en inglés)",
+            color=ORANGE,
+        )
+    with g.group("CATÁLOGO DE MOVIMIENTOS", GREY):
+        cat = g.add(
+            "PrimitiveStringMultiline",
+            [json.dumps(catalogo, ensure_ascii=False, indent=2)],
+            title="CATÁLOGO de movimientos (JSON)",
+        )
+        mov_txt = g.add(
+            "JsonExtractString", ["", ""], {"json_string": cat.out(0), "key": movimiento.out(0)}, title="Movimiento"
+        )
+        prompt = g.add(
+            "StringConcatenate",
+            ["", "", "\n\n"],
+            {"string_a": mov_txt.out(0), "string_b": estancia.out(0)},
+            title="PROMPT ✅ final → motor",
+        )
+    with g.group("ÚLTIMO FRAME (para alargar el plano)", GREEN):
+        comps = g.add("GetVideoComponents", [], title="Frames del plano")
+        last = g.add("ImageFromBatch", [-1, 1], {"image": comps.out(0)}, title="Último frame")
+        g.add("SaveImage", ["tour/ultimo_frame"], {"images": last.out(0)}, title="GUARDAR ÚLTIMO FRAME")
+    return prompt, comps
+
+
+def _merge_ltx(template_file: str, g: Graph, prompt_node, comps_node, out_name: str, *, flf: bool):
+    """Mete el panel (Graph) encima de la plantilla oficial y lo cablea al subgrafo del motor."""
+    wf = copy.deepcopy(json.load(open(os.path.join(PLANTILLAS, template_file), encoding="utf-8")))
+    add = g.to_dict()
+    node_off, link_off = wf["last_node_id"], wf["last_link_id"]
+
+    # Colocar el panel encima de la plantilla
+    tmin_x = min(n["pos"][0] for n in wf["nodes"])
+    tmin_y = min(n["pos"][1] for n in wf["nodes"])
+    amax_y = max(n["pos"][1] + n["size"][1] for n in add["nodes"])
+    dx, dy = tmin_x - 60, tmin_y - amax_y - 160
+
+    for n in add["nodes"]:
+        n["id"] += node_off
+        n["pos"] = [n["pos"][0] + dx, n["pos"][1] + dy]
+        for i in n["inputs"]:
+            if i.get("link") is not None:
+                i["link"] += link_off
+        for o in n["outputs"]:
+            o["links"] = [l + link_off for l in o["links"]]
+    for l in add["links"]:
+        l[0] += link_off
+        l[1] += node_off
+        l[3] += node_off
+    for k, grp in enumerate(add["groups"]):
+        b = grp["bounding"]
+        grp["bounding"] = [b[0] + dx, b[1] + dy, b[2], b[3]]
+        grp["id"] = len(wf.get("groups", [])) + k + 1
+    wf["nodes"] += add["nodes"]
+    wf["links"] += add["links"]
+    wf.setdefault("groups", []).extend(add["groups"])
+    last_link = link_off + add["last_link_id"]
+
+    sub_ids = {sg["id"] for sg in wf["definitions"]["subgraphs"]}
+    motor = next(n for n in wf["nodes"] if n["type"] in sub_ids)
+    by_id = {n["id"]: n for n in wf["nodes"]}
+
+    def link(src, src_slot, dst, dst_name, typ):
+        nonlocal last_link
+        last_link += 1
+        slot = next(k for k, i in enumerate(dst["inputs"]) if i["name"] == dst_name)
+        dst["inputs"][slot]["link"] = last_link
+        src["outputs"][src_slot].setdefault("links", [])
+        src["outputs"][src_slot]["links"] = (src["outputs"][src_slot]["links"] or []) + [last_link]
+        wf["links"].append([last_link, src["id"], src_slot, dst["id"], slot, typ])
+
+    link(by_id[prompt_node.id + node_off], 0, motor, "value", "STRING")
+    link(motor, 0, by_id[comps_node.id + node_off], "video", "VIDEO")
+    wf["last_node_id"] = node_off + add["last_node_id"]
+    wf["last_link_id"] = last_link
+
+    # Ajustes del motor: prompt enlazado, sin "prompt enhance", 5 s
+    wv = motor["widgets_values"]
+    wv[0], wv[1], wv[2] = "", False, 5
+    if flf:
+        wv[3], wv[4] = 1280, 720
+    motor["title"] = "MOTOR · LTX-2.5 (plantilla oficial)"
+
+    # Negativo de tour inmobiliario dentro del subgrafo (el único cambio en el interior)
+    sg = wf["definitions"]["subgraphs"][0]
+    negs = [n for n in sg["nodes"] if n["type"] == "CLIPTextEncode" and not any(
+        i.get("name") == "text" and i.get("link") is not None for i in n.get("inputs", []))]
+    assert len(negs) == 1, "no encuentro el prompt negativo de la plantilla"
+    negs[0]["widgets_values"] = [LTX_NEG]
+
+    for n in wf["nodes"]:
+        if n["type"] == "SaveVideo":
+            n["widgets_values"][0] = "tour/plano_ltx" if not flf else "tour/transicion_ltx"
+            n["title"] = "GUARDAR PLANO"
+    loaders = [n for n in wf["nodes"] if n["type"] == "LoadImage"]
+    if flf:
+        first = next(n for n in loaders if n.get("title") == "Load First Frame")
+        last = next(n for n in loaders if n.get("title") == "Load Last Frame")
+        first["title"], first["widgets_values"][0] = "1 · INICIO (foto)", "foto_inicio.png"
+        last["title"], last["widgets_values"][0] = "2 · FINAL (foto del mismo espacio)", "foto_final.png"
+    else:
+        loaders[0]["title"], loaders[0]["widgets_values"][0] = "1 · INICIO (foto o último frame)", "foto_inicio.png"
+
+    wf["id"] = str(uuid5_ns(out_name))
+    with open(os.path.join(OUT, out_name), "w", encoding="utf-8") as fh:
+        json.dump(wf, fh, ensure_ascii=False, indent=2)
+        fh.write("\n")
+
+
+def uuid5_ns(name: str):
+    import uuid
+
+    return uuid.uuid5(uuid.NAMESPACE_URL, "workflowproduct/" + name)
+
+
+def build_ltx_tour():
+    g = Graph("21-ltx-i2v")
+    prompt, comps = _panel_ltx(g, _catalogo_ltx(LTX_I2V_PREFIX), "avance_lento", flf=False)
+    _merge_ltx("video_ltx2_5_i2v.json", g, prompt, comps, "21_video_tour_ltx25.json", flf=False)
+
+    g = Graph("22-ltx-flf")
+    prompt, comps = _panel_ltx(g, _catalogo_ltx(LTX_FLF_PREFIX), "transicion_foto_a_foto", flf=True)
+    _merge_ltx("video_ltx2_5_flf2v.json", g, prompt, comps, "22_video_transicion_ltx25.json", flf=True)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     build_rescue()
@@ -1557,6 +1746,7 @@ def main():
     build_retouch()
     build_estudio()
     build_video_tour()
+    build_ltx_tour()
     for f in sorted(os.listdir(OUT)):
         print("escrito:", os.path.join("workflows", f))
 

@@ -16,10 +16,12 @@ suscripciones: una vez descargados los modelos, cada foto te cuesta lo que tarde
 | [`workflows/01_packshot_catalogo.json`](workflows/01_packshot_catalogo.json) | Packshot de catálogo, con **4 niveles** encadenados |
 | [`workflows/02_lifestyle_escena.json`](workflows/02_lifestyle_escena.json) | Producto integrado en una escena, con **dos motores** a elegir |
 | [`workflows/03_retoque_zona.json`](workflows/03_retoque_zona.json) | “Rodear lo que no me gusta”: pintas una zona y sólo eso se regenera |
-| **[`workflows/20_video_tour_inmobiliario.json`](workflows/20_video_tour_inmobiliario.json)** | **Vídeo tour** para pisos turísticos: una foto → un plano de 5 s con movimiento de cámara (Wan 2.2 + SeedVR2 + FILM) |
+| **[`workflows/21_video_tour_ltx25.json`](workflows/21_video_tour_ltx25.json)** | **Vídeo tour** para pisos turísticos: una foto → un plano de 5 s con movimiento de cámara (**LTX-2.5**, el recomendado) |
+| [`workflows/22_video_transicion_ltx25.json`](workflows/22_video_transicion_ltx25.json) | Vídeo de una foto a otra del mismo espacio (LTX-2.5) |
+| [`workflows/20_video_tour_inmobiliario.json`](workflows/20_video_tour_inmobiliario.json) | Vídeo tour con **Wan 2.2** (alternativa): foto → plano o foto → foto, con SeedVR2 a 1080p y FILM a 32 fps |
 
 Empieza por **`10_estudio_producto.json`**: es el que usarás a diario. Los otros cuatro de producto
-son las mismas piezas por separado, más sencillas de leer y de modificar. Para vídeo, el **`20`**.
+son las mismas piezas por separado, más sencillas de leer y de modificar. Para vídeo, el **`21`**.
 
 Cada workflow lleva dentro sus propias notas (nodos `MarkdownNote`), así que se explica solo una
 vez abierto.
@@ -234,7 +236,17 @@ nodo usados existen en tu instalación.
 
 ---
 
-## Vídeo tour inmobiliario: `20_video_tour_inmobiliario.json`
+## Vídeo tour inmobiliario
+
+Hay dos motores, y conviene probar el mismo plano con los dos:
+
+- **`21_video_tour_ltx25.json`** y **`22_video_transicion_ltx25.json`** — **LTX-2.5**, el modelo
+  gratuito mejor valorado que puedes usar legalmente en España. Montados sobre las plantillas
+  oficiales de ComfyUI (`tools/plantillas_comfy/`), con el mismo panel de movimientos y el guardado
+  del último frame.
+- **`20_video_tour_inmobiliario.json`** — **Wan 2.2 14B**, que se describe a continuación.
+
+### Wan 2.2: `20_video_tour_inmobiliario.json`
 
 Convierte **una foto del piso en un plano de ~5 s** con un movimiento de cámara de gimbal. Se hace
 un plano por foto y se montan en CapCut o DaVinci. El método completo (por qué no se encadena todo
@@ -261,8 +273,8 @@ Tres usos del mismo grafo:
 **No encadenes habitaciones distintas**: la IA se inventaría lo que hay entre medias. Entre
 estancias, corte en el montaje.
 
-Modelos nuevos a descargar: Wan 2.2 14B imagen-a-vídeo, su text encoder, su VAE, las LoRA de 4 pasos y
-FILM (~36 GB en total). Están en [`docs/MODELOS.md`](docs/MODELOS.md#6--vídeo-wan-22-14b--film).
+Modelos a descargar: los de LTX-2.5 están en la sección 7 de [`docs/MODELOS.md`](docs/MODELOS.md) y los de
+Wan 2.2 (+ FILM, ~36 GB) en la sección 6.
 
 ---
 

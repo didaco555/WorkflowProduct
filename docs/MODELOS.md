@@ -4,8 +4,8 @@ Todos son gratuitos y de pesos abiertos. Los enlaces salen de las plantillas ofi
 ComfyUI (`Comfy-Org/workflow_templates`), así que son los archivos empaquetados que espera el
 núcleo de ComfyUI.
 
-Tamaño total con las variantes recomendadas: **~45 GB** para fotografía de producto, más
-**~36 GB** si vas a hacer vídeo tour (sección 6). Puedes empezar sólo con el bloque de
+Tamaño total con las variantes recomendadas: **~45 GB** para fotografía de producto. Para vídeo
+tour, LTX-2.5 (sección 7, la recomendada) o Wan 2.2 (sección 6, ~36 GB). Puedes empezar sólo con el bloque de
 Qwen-Image-Edit + BiRefNet + RealESRGAN (~30 GB) y añadir el resto después.
 
 ## Dónde va cada cosa
@@ -105,7 +105,7 @@ Cualquier archivo que dejes en `upscale_models/` aparece en el desplegable del n
 
 ## 6 · Vídeo: Wan 2.2 14B + FILM
 
-Para el workflow `20_video_tour_inmobiliario.json`. Wan 2.2 imagen-a-vídeo son **dos modelos**
+Para el workflow `20_video_tour_inmobiliario.json` (la alternativa a LTX-2.5 de la sección 7). Wan 2.2 imagen-a-vídeo son **dos modelos**
 (ruido alto y ruido bajo) que se usan uno detrás de otro; hacen falta los dos. Licencia Apache 2.0.
 El método y el porqué de cada ajuste están en [`VIDEO_TOUR.md`](VIDEO_TOUR.md).
 
@@ -129,6 +129,29 @@ elígelo en el nodo *Modelo · FILM*: es más rápido y en movimientos lentos ap
 
 **Actualiza ComfyUI**: los nodos de interpolación (`FrameInterpolate`) y el troceo de SeedVR2 para
 vídeo (`SeedVR2TemporalChunk`) son de este año.
+
+
+## 7 · Vídeo: LTX-2.5 (recomendado para vídeo tour)
+
+Para los workflows `21_video_tour_ltx25.json` (foto → plano) y `22_video_transicion_ltx25.json`
+(foto → foto). Es el modelo **gratuito mejor valorado que puedes usar en España** en ComfyUI de
+forma nativa: licencia comunitaria de Lightricks, gratis para uso comercial por debajo de 10 M$ de
+facturación. El porqué está en [`VIDEO_TOUR.md`](VIDEO_TOUR.md).
+
+> **Antes de descargar:** entra con tu cuenta en
+> [huggingface.co/Lightricks/LTX-2.5](https://huggingface.co/Lightricks/LTX-2.5) y acepta la
+> licencia. Sin eso, las descargas de ese repositorio fallan.
+
+- `diffusion_models/` → [ltx-2.5-22b-distilled-transformer-comfy-int8-convrot.safetensors](https://huggingface.co/Lightricks/LTX-2.5/resolve/main/diffusion_models/ltx-2.5-22b-distilled-transformer-comfy-int8-convrot.safetensors)
+- `vae/` → [ltx-2.5-video-vae-bf16.safetensors](https://huggingface.co/Lightricks/LTX-2.5/resolve/main/vae/ltx-2.5-video-vae-bf16.safetensors)
+- `vae/` → [ltx-2.5-audio-vae-bf16.safetensors](https://huggingface.co/Lightricks/LTX-2.5/resolve/main/vae/ltx-2.5-audio-vae-bf16.safetensors)
+- `text_encoders/` → [gemma4-12b-with-proj-ltx-2.5-comfy-int8-convrot.safetensors](https://huggingface.co/Lightricks/LTX-2.5/resolve/main/text_encoders/gemma4-12b-with-proj-ltx-2.5-comfy-int8-convrot.safetensors)
+- `text_encoders/` → [gemma4_e2b_it_int8_convrot.safetensors](https://huggingface.co/Comfy-Org/gemma-4/resolve/main/text_encoders/gemma4_e2b_it_int8_convrot.safetensors) *(el “prompt enhance”; va apagado, pero el workflow lo carga igual)*
+- `latent_upscale_models/` → [ltx-2.5-latent-spatial-upscaler-x2-bf16-1.0.safetensors](https://huggingface.co/Lightricks/LTX-2.5/resolve/main/latent_upscale_models/ltx-2.5-latent-spatial-upscaler-x2-bf16-1.0.safetensors) *(sólo el 21; crea la carpeta si no existe)*
+
+Son los archivos que piden las plantillas oficiales de ComfyUI para LTX-2.5. El modelo va en
+**int8 convrot**, el mismo formato que tu SeedVR2, y ComfyUI lo va pasando entre RAM y VRAM.
+
 
 ---
 
@@ -161,6 +184,15 @@ dl vae              https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/
 dl loras            https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/loras/wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors
 dl loras            https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/loras/wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors
 dl frame_interpolation https://huggingface.co/Comfy-Org/frame_interpolation/resolve/main/frame_interpolation/film_net_fp16.safetensors
+
+# vídeo tour con LTX-2.5 (workflows 21 y 22) — antes acepta la licencia en huggingface.co/Lightricks/LTX-2.5
+# y añade a curl tu token:  -H "Authorization: Bearer hf_…"
+dl diffusion_models https://huggingface.co/Lightricks/LTX-2.5/resolve/main/diffusion_models/ltx-2.5-22b-distilled-transformer-comfy-int8-convrot.safetensors
+dl vae              https://huggingface.co/Lightricks/LTX-2.5/resolve/main/vae/ltx-2.5-video-vae-bf16.safetensors
+dl vae              https://huggingface.co/Lightricks/LTX-2.5/resolve/main/vae/ltx-2.5-audio-vae-bf16.safetensors
+dl text_encoders    https://huggingface.co/Lightricks/LTX-2.5/resolve/main/text_encoders/gemma4-12b-with-proj-ltx-2.5-comfy-int8-convrot.safetensors
+dl text_encoders    https://huggingface.co/Comfy-Org/gemma-4/resolve/main/text_encoders/gemma4_e2b_it_int8_convrot.safetensors
+dl latent_upscale_models https://huggingface.co/Lightricks/LTX-2.5/resolve/main/latent_upscale_models/ltx-2.5-latent-spatial-upscaler-x2-bf16-1.0.safetensors
 ```
 
 Algunos repositorios de Hugging Face piden aceptar la licencia con la cuenta antes de descargar

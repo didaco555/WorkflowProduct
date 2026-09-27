@@ -409,6 +409,24 @@ SCHEMAS: dict[str, dict] = {
         "outputs": [("video", "VIDEO")],
     },
 
+    "GetVideoComponents": {
+        "inputs": [("video", "VIDEO", False)],
+        "widgets": [],
+        "outputs": [
+            ("images", "IMAGE"),
+            ("audio", "AUDIO"),
+            ("fps", "FLOAT"),
+            ("bit_depth", "COMBO"),
+            ("color_space", "COMBO"),
+        ],
+    },
+    "ResolutionSelector": {
+        # el widget `preview` es sólo visual y no se guarda en widgets_values
+        "inputs": [],
+        "widgets": [("aspect_ratio", "COMBO"), ("megapixels", "FLOAT"), ("multiple", "INT")],
+        "outputs": [("width", "INT"), ("height", "INT")],
+    },
+
     # ---- texto ----------------------------------------------------------------------------------
     "StringConcatenate": {
         "inputs": [],

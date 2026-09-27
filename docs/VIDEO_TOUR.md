@@ -1,7 +1,14 @@
 # Vídeo tour inmobiliario con IA — el método
 
-Workflow: **[`workflows/20_video_tour_inmobiliario.json`](../workflows/20_video_tour_inmobiliario.json)**.
-Modelos y descargas: [`MODELOS.md`](MODELOS.md#6--vídeo-wan-22-14b--film).
+Workflows:
+
+| Archivo | Motor | Para qué |
+|---|---|---|
+| **[`21_video_tour_ltx25.json`](../workflows/21_video_tour_ltx25.json)** | **LTX-2.5** | **foto → plano**. El recomendado. |
+| **[`22_video_transicion_ltx25.json`](../workflows/22_video_transicion_ltx25.json)** | **LTX-2.5** | **foto → foto** del mismo espacio |
+| [`20_video_tour_inmobiliario.json`](../workflows/20_video_tour_inmobiliario.json) | Wan 2.2 14B | las dos cosas en un grafo (FINAL opcional), con SeedVR2 y FILM |
+
+Modelos y descargas: [`MODELOS.md`](MODELOS.md) secciones 6 (Wan) y 7 (LTX-2.5).
 
 ## La idea en una frase
 
@@ -25,28 +32,37 @@ uno sale fiel al piso y se repite sin tocar los demás.
 
 ## Cuándo sí se encadena
 
-| Situación | Qué hacer en el workflow |
+| Situación | Qué hacer |
 |---|---|
-| Dos fotos **del mismo espacio** (dos ángulos del salón, puerta de la terraza → terraza) | INICIO = foto A, **FINAL** = foto B, movimiento `transicion_foto_a_foto`. El plano va de una a otra y **termina exactamente en la foto real**. |
-| Quieres **alargar un plano** (salón grande, 10 s de avance) | INICIO = `output/tour/ultimo_frame_…png` del plano anterior, **mismo movimiento**. |
-| Alargar **sin deriva** | Lo anterior + FINAL = la siguiente foto real del mismo espacio. Sigue el movimiento y aterriza en una foto real. |
+| Dos fotos **del mismo espacio** (dos ángulos del salón, puerta de la terraza → terraza) | Workflow **22** (o el 20 con FINAL activado): INICIO = foto A, FINAL = foto B, movimiento `transicion_foto_a_foto`. El plano va de una a otra y **termina exactamente en la foto real**. |
+| Quieres **alargar un plano** (salón grande, 10 s de avance) | Workflow **21** (o el 20): INICIO = `output/tour/ultimo_frame_…png` del plano anterior, **mismo movimiento**. |
+| Alargar **sin deriva** | Workflow **22** (o el 20 con FINAL): INICIO = último frame, FINAL = la siguiente foto real del mismo espacio. Sigue el movimiento y aterriza en una foto real. |
 
 El último frame es una imagen suelta: no sabe hacia dónde iba la cámara. Por eso hay que repetir el
 mismo movimiento en el prompt; si no, puede cambiar de dirección.
 
 ## Elección del modelo (septiembre 2026)
 
-| Modelo | Licencia | Veredicto |
-|---|---|---|
-| **Wan 2.2 14B I2V** | Apache 2.0 | **El elegido.** El más fiel a la foto de partida, sigue bien los movimientos de cámara escritos, nodo nativo de primer + último frame, LoRA de 4 pasos para ir rápido y el ecosistema más probado. |
-| LTX-2.5 (agosto 2026) | Comunitaria: gratis por debajo de 10 M$ de facturación | Alternativa si la velocidad manda: bastante más rápido y también tiene primer + último frame nativo. Es reciente y hay menos pruebas de fidelidad en interiores. |
-| HunyuanVideo 1.5 | Comunitaria de Tencent: excluye la UE, Reino Unido y Corea | **No se puede usar legalmente en España.** |
-| MiniMax H3 (agosto 2026) | Excluye la UE, Reino Unido, Corea y EE. UU. | **No se puede usar legalmente en España.** |
-| Wan 2.5 / 2.6 | Sólo API, sin pesos | No se puede correr en local. |
+Criterio: **gratis, que corra en ComfyUI en tu PC y que puedas usarlo legalmente en España para
+un servicio de pago**. La calidad sale del ranking de votos a ciegas de Artificial Analysis
+(imagen a vídeo, modelos de pesos abiertos).
 
-De lo que ya tenías se aprovecha **SeedVR2**, que es un restaurador de **vídeo**: sube el plano de
-720p a 1080p con coherencia entre frames. Se añade **FILM** (interpolación de frames, nodo nativo)
-para pasar de los 16 fps de Wan a 32 fps: en un travelling lento, 16 fps se ve a saltos.
+| Modelo | Ranking | ¿Lo puedes usar? | Veredicto |
+|---|---|---|---|
+| MiniMax H3 | **1.º** | **No**: su licencia excluye la UE, Reino Unido, Corea y EE. UU. | Es el mejor, pero en España no tienes licencia para usarlo. |
+| Cosmos 3 Super (NVIDIA) | 2.º | Licencia sí (OpenMDW); en tu PC, no | 64B de parámetros: pide una GPU de 48 GB o más y en ComfyUI sólo hay nodos de terceros para Linux. |
+| **LTX-2.5** (agosto 2026) | **el mejor de los que puedes usar** | **Sí**: gratis por debajo de 10 M$ de facturación | **El elegido.** Nativo en ComfyUI, primer + último frame, rápido. La generación anterior, LTX-2, ya superaba a Wan 2.2 en ese ranking. |
+| Wan 2.2 14B | por debajo de LTX-2 | Sí: Apache 2.0 | **La alternativa.** Las comparativas le siguen dando ventaja en seguir movimientos de cámara concretos a partir de una foto. |
+| HunyuanVideo 1.5 | — | **No**: su licencia excluye la UE | — |
+| Wan 2.5 / 2.6 | — | Sólo API, sin pesos | No se puede correr en local. |
+
+**Lo práctico:** haz el mismo plano con el 21 (LTX-2.5) y con el 20 (Wan 2.2) usando la misma foto
+y el mismo movimiento, y quédate con el que mejor respete tu piso. El ranking mide gustos
+generales; lo que importa aquí es que no se deformen puertas ni muebles.
+
+De lo que ya tenías, el workflow de Wan aprovecha **SeedVR2**, que es un restaurador de **vídeo**:
+sube el plano de 720p a 1080p con coherencia entre frames. LTX-2.5 ya sale a más resolución y a 24
+fps, así que en el 21 y el 22 no hace falta.
 
 ## Plan de planos para un piso típico (40–60 s)
 
@@ -61,6 +77,9 @@ para pasar de los 16 fps de Wan a 32 fps: en un travelling lento, 16 fps se ve a
 | 7 | Terraza o vistas | `retroceso_revelado` | Sólo si la foto ya enseña las vistas. **Nunca** pidas vistas que no están. |
 
 ## Ajustes
+
+- **LTX-2.5**: deja el *prompt enhance* apagado. Reescribe el prompt en plan cinematográfico y tiende
+  a añadir cosas que no están en el piso. El audio que genera (ambiente) lo cambias por música en el montaje.
 
 - **Fotos**: horizontales, con luz, sin gran angular extremo. La foto se recorta al centro para
   llenar el formato; una foto 3:2 pierde un poco de techo y suelo en 16:9, nada grave.
