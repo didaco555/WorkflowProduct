@@ -7,6 +7,7 @@ Workflows:
 | **[`25_video_tour_parallax.json`](../workflows/25_video_tour_parallax.json)** | **Depth Anything 3 + DepthFlow** | **foto → recorrido 2.5D sin IA generativa**: no puede inventar nada. El recomendado para enseñar el piso tal cual. |
 | **[`26_video_tour_h3_guiado.json`](../workflows/26_video_tour_h3_guiado.json)** | **2.5D + FastH3** | el recorrido 2.5D da 5 anclas reales y FastH3 genera el vídeo pasando por ellas: realismo de H3 sin salirse de la foto. **Licencia de H3: excluye la UE** |
 | **[`27_video_tour_h3_avance.json`](../workflows/27_video_tour_h3_avance.json)** | **FastH3 + SeedVR2** | **avanzar hasta el fondo de la habitación**: inicio = la foto, final = el fondo de la misma foto reconstruido con SeedVR2; H3 hace el viaje. **Licencia de H3: excluye la UE** |
+| **[`28_video_tour_h3_otro_angulo.json`](../workflows/28_video_tour_h3_otro_angulo.json)** | **Qwen 2511 + LoRA de ángulos + FastH3** | **cruzar la habitación hacia otro ángulo, con vida** (fuego, cortinas con brisa) y sin personas: Qwen genera la vista desde el otro punto y H3 camina hasta ella. **Licencia de H3: excluye la UE** |
 | [`21_video_tour_ltx25.json`](../workflows/21_video_tour_ltx25.json) | LTX-2.5 | foto → plano con IA (más "vida", pero puede inventar) |
 | **[`22_video_transicion_ltx25.json`](../workflows/22_video_transicion_ltx25.json)** | **LTX-2.5** | **foto → foto** del mismo espacio |
 | [`20_video_tour_inmobiliario.json`](../workflows/20_video_tour_inmobiliario.json) | Wan 2.2 14B | las dos cosas en un grafo (FINAL opcional), con SeedVR2 y FILM |
@@ -77,6 +78,20 @@ puestas, H3 casi no puede salirse del recorrido.
 | Enseñar el piso **exactamente como es**, movimiento suave con profundidad | **25 (2.5D)** |
 | Lo mismo con el acabado de H3, pegado a la foto | **26 (2.5D + H3)** |
 | Más "vida" (luz que cambia, cortinas), aceptando revisar cada plano por si inventa | 21 LTX-2.5 · 24/23 H3 con anclaje doble |
+
+## Cruzar la habitación hacia otro ángulo, con vida (workflow 28)
+
+Para vídeos como los de los tours "cinematográficos": la cámara se va a la otra parte de la
+habitación y se ve desde un ángulo que la foto no tenía, mientras el fuego arde y las cortinas se
+mueven.
+
+1. **Qwen-Image-Edit 2511 + la LoRA de ángulos de cámara** generan la habitación vista desde el
+   punto elegido (tres cuartos, lateral, esquina opuesta, la otra punta mirando atrás…).
+2. **FastH3** camina de la foto a esa vista nueva, con la vida escrita en AMBIENTE y sin personas.
+
+Aquí **sí se recrea**: todo lo que la foto no enseñaba sale de la IA. Por eso el workflow enseña
+primero la vista nueva (y la guarda) para revisarla antes de dar el vídeo por bueno, y en AMBIENTE
+sólo hay que describir lo que existe (si pides fuego y no hay chimenea, se la inventa).
 
 ## Avanzar hasta el fondo de la habitación (workflow 27)
 

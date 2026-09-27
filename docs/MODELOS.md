@@ -191,6 +191,18 @@ FastH3 de la sección 8.
   DepthFlow renderiza con OpenGL: en Windows con la gráfica de NVIDIA funciona sin más.
 
 
+
+## 10 · LoRA de ángulos de cámara para Qwen-Image-Edit 2511
+
+Para `28_video_tour_h3_otro_angulo.json`: genera la vista de la habitación desde otro punto.
+
+- `loras/` → [qwen-image-edit-2511-multiple-angles-lora.safetensors](https://huggingface.co/fal/Qwen-Image-Edit-2511-Multiple-Angles-LoRA/resolve/main/qwen-image-edit-2511-multiple-angles-lora.safetensors)
+
+Es la que usa la plantilla oficial de ComfyUI *Qwen multiangle*. Funciona con el Qwen-Image-Edit
+2511 y la LoRA Lightning que ya tienes (sección 1). Su formato de prompt es
+`<sks> {dirección} {altura} {plano}`; el workflow lo escribe solo a partir del desplegable.
+
+
 ---
 
 ## Descarga rápida por línea de comandos

@@ -143,8 +143,11 @@ def qwen_edit_engine(
     noise_mask_switch=None,
     differential: bool = False,
     turbo_switch=None,
+    extra_loras=(),
 ):
     """Motor Qwen-Image-Edit 2511 con conmutador TURBO (LoRA Lightning, 4 pasos) / CALIDAD.
+
+    `extra_loras` = [(archivo, fuerza, título)] que se aplican antes de la Lightning.
 
     Devuelve un `Engine` (imagen, entrada normalizada, clip, vae, modelo).
     """
@@ -163,6 +166,9 @@ def qwen_edit_engine(
             title="Differential Diffusion (fundido suave de máscara)",
         )
         model_port = dd.out(0)
+
+    for nombre, fuerza, titulo in extra_loras:
+        model_port = g.add("LoraLoaderModelOnly", [nombre, fuerza], {"model": model_port}, title=titulo).out(0)
 
     lora = g.add("LoraLoaderModelOnly", [QWEN_TURBO_LORA, 1.0], {"model": model_port}, title="LoRA Lightning 4 pasos")
 
@@ -2486,6 +2492,152 @@ def build_h3_avance():
     g.save(os.path.join(OUT, "27_video_tour_h3_avance.json"))
 
 
+# ======================================================================================
+# Vídeo tour con FastH3 hacia OTRO ÁNGULO de la habitación, con vida (fuego, cortinas…)
+# ======================================================================================
+# 1. Qwen-Image-Edit 2511 + LoRA de ángulos de cámara (fal) genera la vista desde otro punto de la
+#    habitación a partir de la foto. Formato de prompt de la LoRA: "<sks> {dirección} {altura} {plano}".
+# 2. FastH3 camina de la foto a esa vista nueva, con la vida que describas y sin personas.
+QWEN_ANGULOS_LORA = "qwen-image-edit-2511-multiple-angles-lora.safetensors"
+NUEVAS_VISTAS = {
+    "tres_cuartos_derecha": "<sks> front-right quarter view eye-level shot wide shot",
+    "tres_cuartos_izquierda": "<sks> front-left quarter view eye-level shot wide shot",
+    "lateral_derecho": "<sks> right side view eye-level shot wide shot",
+    "lateral_izquierdo": "<sks> left side view eye-level shot wide shot",
+    "esquina_opuesta_derecha": "<sks> back-right quarter view eye-level shot wide shot",
+    "esquina_opuesta_izquierda": "<sks> back-left quarter view eye-level shot wide shot",
+    "otra_punta_mirando_atras": "<sks> back view eye-level shot wide shot",
+    "mas_cerca": "<sks> front view eye-level shot medium shot",
+    "desde_arriba": "<sks> front view elevated shot wide shot",
+}
+H3_ANGULO_PROMPT = (
+    "One single continuous camera shot of a real home, no cuts, no scene changes, no people. "
+    "The video opens exactly on <Picture 1> and ends exactly on <Picture 2>: the camera moves smoothly through "
+    "the same room from the first viewpoint to the second one, as if someone walked across the room with a "
+    "gimbal, and the parts of the room shown in <Picture 2> come into view with natural parallax. "
+    "Keep walls, floor, windows, doors, furniture and decoration consistent with both pictures. "
+    "Do not add people, text or new objects. Smooth constant speed, photorealistic."
+)
+AMBIENTE_EJEMPLO = (
+    "The fire in the fireplace flickers and glows. Sheer curtains by the large window sway gently in the breeze. "
+    "Audio: soft crackling fire and a light breeze, no music, no voices."
+)
+
+
+def build_h3_otro_angulo():
+    g = Graph("28-h3-otro-angulo")
+
+    with g.group("PANEL DE CONTROL · lo único que tocas", ORANGE):
+        note(
+            g,
+            "# Vídeo tour · cruzar la habitación hacia otro ángulo, con vida\n\n"
+            "1. **Qwen-Image-Edit 2511 + LoRA de ángulos** genera, a partir de tu foto, **cómo se ve la "
+            "habitación desde otro punto** (el que elijas en ▼ NUEVO PUNTO DE VISTA). Lo que la foto no "
+            "enseña lo recrea con lo que sí se ve.\n"
+            "2. **FastH3** camina de tu foto a esa vista nueva, con la **vida** que describas en AMBIENTE "
+            "(fuego, cortinas con brisa…) y **sin personas**.\n\n"
+            "## Cómo trabajarlo\n"
+            "1. Ejecuta y mira primero la **vista previa de la NUEVA VISTA**: es donde acabará la cámara. "
+            "Si no te convence, cambia **SEMILLA VISTA** y repite. Queda guardada en `tour/nueva_vista`.\n"
+            "2. Cuando la vista esté bien, deja fija SEMILLA VISTA y cambia sólo **SEMILLA VÍDEO** para "
+            "probar trayectos distintos hacia ella.\n\n"
+            "## Los mandos\n"
+            "| Mando | Qué hace |\n"
+            "|---|---|\n"
+            "| **▼ NUEVO PUNTO DE VISTA** | tres cuartos, lateral, esquina opuesta, la otra punta mirando atrás, más cerca, desde arriba |\n"
+            "| **AMBIENTE** | la vida del vídeo, en inglés. **Describe sólo lo que existe en la foto**: si pones fuego y no hay chimenea, se la inventa |\n"
+            "| **ESTANCIA** | una frase en inglés con lo que se ve |\n"
+            "| **⚡ TURBO (vista)** | `true` = 4 pasos (rápido). `false` = 20 pasos (más fiel) |\n"
+            "| **FRAMES** | 158 = 6,6 s. H3 sólo acepta 17k+5: 124, 141, 158, 175… |\n\n"
+            "**Cuanto más lejos el ángulo, más recrea.** `tres_cuartos_*` cambia poco; `otra_punta_mirando_atras` "
+            "enseña paredes que la foto nunca vio y las inventa. Revisa la vista nueva antes de dar el vídeo "
+            "por bueno: es lo que el huésped verá como si fuera real.\n\n"
+            "**Licencia:** la de MiniMax H3 excluye la UE, Reino Unido, Corea y EE. UU. Úsalo bajo tu "
+            "responsabilidad.",
+            title="LÉEME PRIMERO",
+        )
+        vista = combo(g, list(NUEVAS_VISTAS), "tres_cuartos_derecha", title="▼ NUEVO PUNTO DE VISTA")
+        ambiente = g.add("PrimitiveStringMultiline", [AMBIENTE_EJEMPLO], title="AMBIENTE (la vida del vídeo)", color=ORANGE)
+        estancia = g.add(
+            "PrimitiveStringMultiline",
+            ["The room is a cosy living room with a fireplace, a grey sofa and a large window."],
+            title="ESTANCIA (qué se ve, en inglés)",
+            color=ORANGE,
+        )
+        turbo = g.add("PrimitiveBoolean", [True], title="⚡ TURBO (vista)", color=ORANGE)
+        semilla_vista = g.add("PrimitiveInt", [1, "fixed"], title="SEMILLA VISTA", color=ORANGE)
+        semilla_video = g.add("PrimitiveInt", [1, "randomize"], title="SEMILLA VÍDEO", color=ORANGE)
+        n_frames = g.add("PrimitiveInt", [158, "fixed"], title="FRAMES (158 = 6,6 s)", color=ORANGE)
+        w = g.add("PrimitiveInt", [1344, "fixed"], title="ANCHO", color=ORANGE)
+        h = g.add("PrimitiveInt", [768, "fixed"], title="ALTO", color=ORANGE)
+
+    with g.group("FOTO", BLUE):
+        foto = g.add("LoadImage", ["foto_inicio.png", "image"], title="FOTO del piso")
+        inicio = g.add(
+            "ImageScale",
+            ["lanczos", 1344, 768, "center"],
+            {"image": foto.out(0), "width": w.out(0), "height": h.out(0)},
+            title="INICIO · tu foto en 16:9",
+        )
+
+    with g.group("NUEVA VISTA · Qwen-Image-Edit 2511 + LoRA de ángulos de cámara", PURPLE):
+        cat = g.add(
+            "PrimitiveStringMultiline",
+            [json.dumps(NUEVAS_VISTAS, ensure_ascii=False, indent=2)],
+            title="Ángulos (formato de la LoRA: <sks> dirección altura plano)",
+        )
+        prompt_vista = g.add(
+            "JsonExtractString", ["", ""], {"json_string": cat.out(0), "key": vista.out(0)}, title="Prompt del ángulo"
+        )
+        eng = qwen_edit_engine(
+            g,
+            inicio.out(0),
+            prompt_vista.out(0),
+            "blurry, distorted, warped walls, bent lines, people, text, watermark, low quality",
+            turbo_switch=turbo.out(0),
+            extra_loras=[(QWEN_ANGULOS_LORA, 1.0, "LoRA · ángulos de cámara (fal)")],
+        )
+        ks = [n for n in g.nodes if n.type == "KSampler"][-1]
+        g.connect(semilla_vista.out(0), ks, "seed")
+        final = g.add(
+            "ImageScale",
+            ["lanczos", 1344, 768, "center"],
+            {"image": eng.image, "width": w.out(0), "height": h.out(0)},
+            title="FINAL · la vista nueva en 16:9",
+        )
+        g.add("PreviewImage", [], {"images": final.out(0)}, title="Vista previa · NUEVA VISTA (donde acaba la cámara)")
+        g.add("SaveImage", ["tour/nueva_vista"], {"images": final.out(0)}, title="GUARDAR NUEVA VISTA")
+
+    with g.group("PROMPT DEL VÍDEO", GREY):
+        base = g.add("PrimitiveStringMultiline", [H3_ANGULO_PROMPT], title="PROMPT base (cruzar hacia la vista nueva)")
+        p1 = g.add(
+            "StringConcatenate", ["", "", "\n\n"], {"string_a": base.out(0), "string_b": ambiente.out(0)}, title="+ ambiente"
+        )
+        prompt = g.add(
+            "StringConcatenate", ["", "", "\n\n"], {"string_a": p1.out(0), "string_b": estancia.out(0)}, title="PROMPT ✅ final"
+        )
+
+    frames_h3, audio = _motor_fasth3(
+        g,
+        inicio.out(0),
+        final.out(0),
+        prompt.out(0),
+        w.out(0),
+        h.out(0),
+        n_frames.out(0),
+        semilla_video.out(0),
+        titulo="MOTOR · FastVideo FastH3 8 pasos (como la plantilla oficial)",
+    )
+
+    with g.group("GUARDADO", GREEN):
+        video = g.add("CreateVideo", [24.0], {"images": frames_h3.out(0), "audio": audio.out(0)})
+        g.add("SaveVideo", ["tour/otro_angulo_h3", "auto", "auto"], {"video": video.out(0)}, title="GUARDAR PLANO")
+        ultimo = g.add("ImageFromBatch", [-1, 1], {"image": frames_h3.out(0)}, title="Último frame")
+        g.add("SaveImage", ["tour/ultimo_frame"], {"images": ultimo.out(0)}, title="GUARDAR ÚLTIMO FRAME")
+
+    g.save(os.path.join(OUT, "28_video_tour_h3_otro_angulo.json"))
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     build_rescue()
@@ -2499,6 +2651,7 @@ def main():
     build_parallax_tour()
     build_h3_guiado()
     build_h3_avance()
+    build_h3_otro_angulo()
     for f in sorted(os.listdir(OUT)):
         print("escrito:", os.path.join("workflows", f))
 
