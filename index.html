@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Humans Apocalypse — Arena Prototype</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,sans-serif}*{box-sizing:border-box}body{margin:0;background:#0d1319;color:#eff8e9;overflow:hidden}
+canvas{display:block;width:100vw;height:100vh;cursor:crosshair;background:#151f27}
+#hud{position:fixed;top:15px;left:20px;right:20px;display:flex;gap:22px;align-items:center;pointer-events:none;font-weight:800;text-shadow:0 2px 4px #000}
+#hud>div{background:#091117bb;padding:8px 13px;border:1px solid #52736a;border-radius:10px}
+#life{color:#9ae980}#timer{margin-left:auto}
+#panel{position:fixed;inset:0;display:grid;place-items:center;background:#071015b8;backdrop-filter:blur(5px)}
+#panel.hidden{display:none}#modal{width:min(760px,94vw);max-height:90vh;overflow:auto;background:#132029;border:2px solid #638b77;border-radius:18px;padding:clamp(20px,5vw,44px);box-shadow:0 22px 95px #000a;text-align:center}
+h1{font-size:clamp(2rem,6vw,4.1rem);line-height:1;margin:0 0 10px;color:#b9f475;letter-spacing:-.04em}h2{font-size:2rem;margin:5px 0 16px}.sub{color:#c6d6c8;line-height:1.5}button{font:inherit;font-weight:800;background:#b9f475;color:#14251a;border:0;border-radius:9px;padding:13px 24px;cursor:pointer;margin:7px}button:hover,button:focus-visible{background:#fff;outline:2px solid #b9f475}#choices{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}#choices button{background:#203c3c;color:#f0fff2;border:1px solid #8fae95;max-width:220px;min-height:120px;flex:1 1 175px;text-align:left}#choices button:hover{background:#356054}small{display:block;font-weight:400;line-height:1.4;margin-top:9px;color:#d3dfdb}
+footer{position:fixed;bottom:12px;left:0;right:0;text-align:center;font-size:12px;color:#b8c8c6;pointer-events:none}
+@media(max-width:650px){#hud{font-size:12px;gap:5px;left:6px;right:6px}#hud>div{padding:6px}#timer{display:none}footer{display:none}}
+</style></head><body>
+<canvas id="game" aria-label="Arena de Humans Apocalypse"></canvas>
+<div id="hud"><div id="life">VIDA 100/100</div><div id="wave">OLEADA 1 / 5</div><div id="kills">BAJAS 0</div><div id="timer">WASD · RATÓN · ESPACIO</div></div>
+<section id="panel"><div id="modal"><h1>HUMANS APOCALYPSE</h1><p class="sub">La humanidad ha invadido el apacible mundo de los zombis. Sobrevive a la invasión de los vivos.</p><p class="sub"><b>WASD</b> moverte · <b>Ratón</b> apuntar · Disparo automático · <b>Espacio</b> esquivar</p><button id="start">EMPEZAR PARTIDA</button><p class="sub">Prototipo de combate 0.2 · Gráficos provisionales</p></div></section>
+<footer>HUMANS APOCALYPSE · prototipo de diseño y combate · 2026</footer>
+<script>
+(()=>{'use strict';
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d'),panel=document.getElementById('panel'),modal=document.getElementById('modal');
+const hud={life:document.getElementById('life'),wave:document.getElementById('wave'),kills:document.getElementById('kills')};
+let W=innerWidth,H=innerHeight,dpr=1,last=0,state='menu',wave=1,remaining=0,spawnClock=0,elapsed=0,kills=0,shake=0;
+let player,enemies=[],bullets=[],drops=[],particles=[];
+const keys=new Set(),mouse={x:innerWidth/2,y:innerHeight/2};
+const upgrades=[
+{name:'Músculos podridos',description:'+25% de daño de proyectiles',apply:p=>p.damage*=1.25},
+{name:'Pies ligeros',description:'+16% de velocidad',apply:p=>p.speed*=1.16},
+{name:'Mandíbula de hierro',description:'+25 puntos de vida máxima y curación',apply:p=>{p.maxHp+=25;p.hp=Math.min(p.maxHp,p.hp+25)}},
+{name:'Dedos nerviosos',description:'+20% de cadencia',apply:p=>p.rate*=1.2},
+{name:'Bilis explosiva',description:'Proyectiles más grandes y penetrantes',apply:p=>{p.size+=2;p.pierce++}},
+{name:'Mutación regenerativa',description:'Regeneras lentamente vida',apply:p=>p.regen+=1.5},
+{name:'Piernas de ultratumba',description:'Recarga de esquiva más rápida',apply:p=>p.dashMax*=.78},
+{name:'Doble dentellada',description:'Un proyectil extra por disparo',apply:p=>p.shots++},
+{name:'Mal aliento',description:'+30% de velocidad de disparos',apply:p=>p.bulletSpeed*=1.3}
+];
+function resize(){dpr=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}
+addEventListener('resize',resize);resize();
+addEventListener('keydown',e=>{keys.add(e.key.toLowerCase());if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(e.key.toLowerCase()))e.preventDefault();if(e.key==='Escape'&&state==='playing'){state='paused';show('PAUSA','La invasión puede esperar.',[{label:'CONTINUAR',onClick:()=>{state='playing';panel.classList.add('hidden')}}])}else if(e.key==='Escape'&&state==='paused'){state='playing';panel.classList.add('hidden')}});
+addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
+addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY});
+document.getElementById('start').onclick=start;
+function rand(a,b){return a+Math.random()*(b-a)}function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function start(){wave=1;kills=0;elapsed=0;enemies=[];bullets=[];drops=[];particles=[];player={x:W/2,y:H/2,r:17,hp:100,maxHp:100,speed:220,damage:22,rate:2.9,cd:0,size:5,pierce:0,shots:1,regen:0,bulletSpeed:640,dash:0,dashMax:2,invuln:0,dx:0,dy:0};beginWave()}
+function beginWave(){state='playing';panel.classList.add('hidden');remaining=7+wave*5;spawnClock=.25;enemies=[];bullets=[];drops=[]}
+function show(title,desc,buttons){modal.replaceChildren();const h=document.createElement('h2');h.textContent=title;const p=document.createElement('p');p.className='sub';p.textContent=desc;const group=document.createElement('div');group.id='choices';for(const item of buttons){const b=document.createElement('button');b.textContent=item.label;if(item.desc){const sm=document.createElement('small');sm.textContent=item.desc;b.appendChild(sm)}b.onclick=item.onClick;group.appendChild(b)}modal.append(h,p,group);panel.classList.remove('hidden')}
+function endWave(){state='upgrade';if(wave>=5){state='victory';show('¡HAS SOBREVIVIDO!','Has defendido tu barrio de los humanos. Bajas: '+kills+'. Esta es una demo de cinco oleadas.',[{label:'VOLVER A JUGAR',onClick:start}]);return}let options=[...upgrades].sort(()=>Math.random()-.5).slice(0,3);show('OLEADA '+wave+' SUPERADA','Elige una mutación para seguir sobreviviendo.',options.map(o=>({label:o.name,desc:o.description,onClick:()=>{o.apply(player);player.hp=Math.min(player.maxHp,player.hp+12);wave++;beginWave()}})))}
+function spawn(){const side=Math.floor(rand(0,4)),x=side===0?-30:side===1?W+30:rand(0,W),y=side===2?-30:side===3?H+30:rand(0,H);const roll=Math.random();const type=roll<.25?'runner':roll<.45?'tank':'office';const stats=type==='runner'?{speed:125,hp:26,r:12,damage:12}:type==='tank'?{speed:55,hp:110,r:23,damage:18}:{speed:75,hp:50,r:17,damage:10};enemies.push({x,y,type,...stats,maxHp:stats.hp,hit:0,att:0})}
+function burst(x,y,color,n=8){for(let i=0;i<n;i++)particles.push({x,y,vx:rand(-130,130),vy:rand(-130,130),life:rand(.15,.48),color})}
+function shot(){const angle=Math.atan2(mouse.y-player.y,mouse.x-player.x);for(let i=0;i<player.shots;i++){const spread=(i-(player.shots-1)/2)*.16,a=angle+spread;bullets.push({x:player.x+Math.cos(a)*19,y:player.y+Math.sin(a)*19,vx:Math.cos(a)*player.bulletSpeed,vy:Math.sin(a)*player.bulletSpeed,r:player.size,pierce:player.pierce,hit:new Set(),life:1.5})}burst(player.x+Math.cos(angle)*22,player.y+Math.sin(angle)*22,'#c8ff74',3)}
+function update(dt){if(state!=='playing')return;elapsed+=dt;player.cd-=dt;player.invuln-=dt;player.dash=Math.max(0,player.dash-dt);player.hp=Math.min(player.maxHp,player.hp+player.regen*dt);
+let vx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0);let vy=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);const len=Math.hypot(vx,vy)||1;vx/=len;vy/=len;
+if((keys.has(' ')||keys.has('shift'))&&player.dash<=0&&(vx||vy)){player.dx=vx;player.dy=vy;player.dash=player.dashMax;player.invuln=.24;player.boost=.16}
+const boost=player.boost>0?3.3:1;player.boost=Math.max(0,(player.boost||0)-dt);player.x=clamp(player.x+vx*player.speed*boost*dt,20,W-20);player.y=clamp(player.y+vy*player.speed*boost*dt,20,H-20);
+if(player.cd<=0){shot();player.cd=1/player.rate}
+spawnClock-=dt;if(remaining>0&&spawnClock<=0){spawn();remaining--;spawnClock=Math.max(.24,.88-wave*.11)}
+for(const e of enemies){e.hit=Math.max(0,e.hit-dt);e.att-=dt;let dx=player.x-e.x,dy=player.y-e.y,dist=Math.hypot(dx,dy)||1;e.x+=dx/dist*e.speed*dt;e.y+=dy/dist*e.speed*dt;if(dist<player.r+e.r&&e.att<=0&&player.invuln<=0){player.hp-=e.damage;e.att=.9;player.invuln=.52;shake=10;burst(player.x,player.y,'#ff7780',12);if(player.hp<=0){state='dead';show('TE HAN EXTERMINADO','Los humanos han conquistado tu barrio. Oleada '+wave+' · Bajas '+kills,[{label:'REINTENTAR',onClick:start}]);break}}}
+for(const b of bullets){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;for(const e of enemies){if(e.hp<=0||b.hit.has(e))continue;const d=Math.hypot(b.x-e.x,b.y-e.y);if(d<e.r+b.r){b.hit.add(e);e.hp-=player.damage;e.hit=.12;burst(b.x,b.y,'#c9fa73',4);if(e.hp<=0){kills++;burst(e.x,e.y,'#85d97a',15);if(Math.random()<.13)drops.push({x:e.x,y:e.y,r:9});}if(b.pierce--<=0){b.life=0;break}}}}
+enemies=enemies.filter(e=>e.hp>0);bullets=bullets.filter(b=>b.life>0&&b.x>-60&&b.x<W+60&&b.y>-60&&b.y<H+60);
+for(let i=drops.length-1;i>=0;i--){const d=drops[i];if(Math.hypot(d.x-player.x,d.y-player.y)<player.r+d.r){player.hp=Math.min(player.maxHp,player.hp+19);burst(d.x,d.y,'#f4f78a',8);drops.splice(i,1)}}
+for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt}particles=particles.filter(p=>p.life>0);shake=Math.max(0,shake-dt*35);
+hud.life.textContent='VIDA '+Math.ceil(Math.max(0,player.hp))+'/'+player.maxHp;hud.wave.textContent='OLEADA '+wave+' / 5';hud.kills.textContent='BAJAS '+kills;if(state==='playing'&&remaining===0&&enemies.length===0)endWave()}
+function draw(){ctx.save();ctx.clearRect(0,0,W,H);ctx.fillStyle='#1c2930';ctx.fillRect(0,0,W,H);ctx.strokeStyle='#2b3c41';ctx.lineWidth=1;const off=40;for(let x=0;x<W;x+=off){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}for(let y=0;y<H;y+=off){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+if(shake>0)ctx.translate(rand(-shake,shake),rand(-shake,shake));
+for(const d of drops){ctx.fillStyle='#f8dc80';ctx.fillRect(d.x-10,d.y-10,20,20);ctx.fillStyle='#7c2238';ctx.fillRect(d.x-3,d.y-8,6,16);ctx.fillRect(d.x-8,d.y-3,16,6)}
+for(const b of bullets){ctx.beginPath();ctx.fillStyle='#d8fa79';ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill()}
+for(const e of enemies){ctx.fillStyle='#0006';ctx.beginPath();ctx.ellipse(e.x,e.y+e.r*.8,e.r*.9,e.r*.35,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=e.hit>0?'#fff':e.type==='runner'?'#f1a862':e.type==='tank'?'#956b91':'#638faf';ctx.beginPath();ctx.arc(e.x,e.y,e.r,0,Math.PI*2);ctx.fill();ctx.fillStyle='#e9c6a4';ctx.beginPath();ctx.arc(e.x,e.y-e.r*.23,e.r*.62,0,Math.PI*2);ctx.fill();ctx.fillStyle='#18222a';ctx.fillRect(e.x-e.r*.32,e.y-e.r*.45,3,3);ctx.fillRect(e.x+e.r*.2,e.y-e.r*.45,3,3);ctx.fillStyle='#1119';ctx.fillRect(e.x-e.r,e.y-e.r-10,e.r*2,4);ctx.fillStyle='#fa8181';ctx.fillRect(e.x-e.r,e.y-e.r-10,e.r*2*Math.max(0,e.hp/e.maxHp),4)}
+if(player){const a=Math.atan2(mouse.y-player.y,mouse.x-player.x);ctx.fillStyle='#0007';ctx.beginPath();ctx.ellipse(player.x,player.y+15,17,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=player.invuln>0?'#c6e6a7':'#79bd78';ctx.beginPath();ctx.arc(player.x,player.y,player.r,0,Math.PI*2);ctx.fill();ctx.fillStyle='#345d3d';ctx.beginPath();ctx.arc(player.x,player.y-7,14,Math.PI,0);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(player.x-6,player.y-1,4,0,7);ctx.arc(player.x+6,player.y-1,4,0,7);ctx.fill();ctx.fillStyle='#192b26';ctx.fillRect(player.x-6,player.y-2,2,4);ctx.fillRect(player.x+6,player.y-2,2,4);ctx.save();ctx.translate(player.x,player.y);ctx.rotate(a);ctx.fillStyle='#5c6c72';ctx.fillRect(9,-5,24,10);ctx.fillStyle='#242f39';ctx.fillRect(17,-7,11,4);ctx.restore()}
+for(const p of particles){ctx.globalAlpha=Math.min(1,p.life*3);ctx.fillStyle=p.color;ctx.fillRect(p.x-3,p.y-3,6,6)}ctx.globalAlpha=1;ctx.restore()}
+function loop(t){const dt=Math.min((t-last)/1000||0,.033);last=t;update(dt);draw();requestAnimationFrame(loop)}requestAnimationFrame(loop);
+})();
+</script></body></html>
